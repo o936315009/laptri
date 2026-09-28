@@ -1,88 +1,137 @@
-# Hệ Thống Quản Lý & Điểm Danh CLB Cầu Lông (SMASH)
+# HỆ THỐNG QUẢN LÝ CLB CẦU LÔNG (LẬP TRÍ) - BẢN VẬN HÀNH THỰC TẾ
 
-Ứng dụng web chuyên biệt phục vụ vận hành, tính tiền sân theo số buổi trong tháng, quản lý số dư ví thành viên, thu chi quỹ và bốc thăm chia sân cho **CLB Cầu Lông**.
-
----
-
-## 🌟 Chi Tiết Các Chức Năng Đã Có
-
-### 1. Trang Chủ (Dashboard)
-- **3 Thẻ Chỉ Số KPI Trực Quan Trên Cùng 1 Dòng:**
-  - **Quỹ CLB:** Số dư khả dụng hiện tại, tổng hợp thu chi chung của CLB (tiền mua cầu, thuê sân cố định, nước uống, tài trợ).
-  - **Quỹ Tạm Ứng:** Quỹ thành viên ứng trước / tiền cọc giải đấu, cọc sân dài hạn.
-  - **Tổng Ví Thành Viên:** Tổng số dư tiền gửi trong ví của tất cả các thành viên trong CLB.
-- **Theo dõi ví từng thành viên:** Bảng tra cứu trực quan số dư thực tế, số buổi đã tham gia trong tháng, cảnh báo ví bị âm tiền, nút nạp ví nhanh cho từng người.
-- **Giao dịch gần đây:** Nhật ký thời gian thực ghi nhận biến động dòng tiền (Nạp ví, Tiền sân, Thu/Chi quỹ, Phạt, Tạm ứng).
-
-### 2. Điểm Danh & Tự Động Tính Bậc Tiền Sân
-- **Phân loại đối tượng khi điểm danh:**
-  - **Thành viên chính thức (Official):** Hội viên gắn bó lâu dài.
-  - **Thành viên danh dự (Honorary):** Hội viên danh dự, khách quý CLB.
-  - **Khách giao lưu (A/B/C):** Khách ngoài đến giao lưu theo từng mức phí.
-- **Cơ chế tính bậc tiền sân theo số buổi trong tháng:**
-  - **0 – 4 buổi:** `50.000đ/buổi`
-  - **5 – 9 buổi:** `100.000đ/buổi`
-  - **10 – 15 buổi:** `150.000đ/buổi`
-  - **16 – 30+ buổi:** `200.000đ/buổi`
-  - *(Các mức buổi và đơn giá có thể thay đổi linh hoạt trong phần Cấu hình)*
-- **Tạo điểm danh nhanh đa năng (Quick Attendance):**
-  - **⚡ Điểm danh 1-chạm:** Nút `⚡` ngay tại hàng thành viên trên Trang chủ hoặc bảng điểm danh -> Hệ thống hiển thị số tiền trừ theo bậc và số dư ví, xác nhận 1 phát là xong ngay!
-  - **📋 Dán danh sách Zalo / Messenger:** Copy danh sách người tham gia từ Zalo (ví dụ: `1. Tuấn`, `2. Hoàng`, `3. Hương...`) dán vào ô, hệ thống tự động bóc tách số thứ tự, nhận diện và khớp chính xác tên hội viên trong CLB -> Bấm **"⚡ Điểm danh toàn bộ danh sách đã khớp"** để trừ ví hàng loạt trong 1 giây!
-  - **👥 Điểm danh theo nhóm:** 1 click điểm danh toàn bộ Thành viên chính thức hoặc Thành viên danh dự.
-- **Tự động trừ tiền vào ví thành viên:** Khi bấm xác nhận điểm danh, hệ thống tự tính tổng tiền, trừ trực tiếp vào ví của từng thành viên, tự động tăng số buổi tham gia trong tháng, ghi nhận doanh thu vào Quỹ CLB và lưu lịch sử giao dịch.
-
-### 3. Thanh Toán & Quỹ
-- **Thu / Chi Quỹ CLB:** Ghi nhận chi phí mua ống cầu Victor / Yonex, tiền thuê sân tháng cố định, nước uống hoặc thu tiền tài trợ.
-- **Quỹ thành viên ứng trước:** Quản lý tiền cọc giải đấu nội bộ hoặc thành viên nộp ứng trước.
-- **Nạp tiền vào ví:** Hỗ trợ nạp tiền mặt hoặc chuyển khoản (VietQR), tự động cộng số dư ví.
-- **Tự ghi nhận chi phí sân:** Tự động kết chuyển chi phí điểm danh vào lịch sử và quỹ.
-- **Theo dõi lịch sử giao dịch:** Bộ lọc giao dịch theo loại (Nạp ví, Tiền sân, Thu quỹ, Chi quỹ, Phạt, Tạm ứng) và tìm kiếm theo tên/nội dung.
-
-### 4. Quản Lý Thành Viên & Đổi Tên Nhanh
-- **✏️ Chỉnh sửa tên thành viên trực tiếp (Admin):** Nhấp vào biểu tượng chiếc bút cạnh tên bất kỳ thành viên nào (trên Trang chủ, Điểm danh, hay Quản lý thành viên) để đổi tên hoặc số điện thoại. Hệ thống tự động đồng bộ hóa tên mới xuyên suốt mọi bản ghi giao dịch và lịch sử điểm danh.
-- **Tạo thành viên chính thức:** Điền họ tên, số điện thoại, số dư ví ban đầu.
-- **Tạo tài khoản đăng nhập:** Thiết lập username/password cho từng thành viên tra cứu ví cá nhân.
-- **Cấp lại mật khẩu:** Khôi phục và đặt mật khẩu mới nhanh chóng khi thành viên quên.
-- **Tạo thành viên danh dự:** Hội viên danh dự của CLB.
-- **Tạo khách giao lưu A/B/C:** Thêm nhanh khách giao lưu trực tiếp tại sân với đơn giá riêng.
-
-### 5. Bốc Thăm Chia Sân & Ghép Cặp Cầu Lông (Matchmaker)
-- Tích chọn danh sách các bạn có mặt trên sân -> Bấm **"Tạo lượt đấu ngẫu nhiên"**.
-- Tự động chia các sân đấu theo thể thức:
-  - **Đánh Đôi (2 vs 2):** Cặp đôi Áo Xanh vs Cặp đôi Áo Đỏ (Sân 1, Sân 2...).
-  - **Đánh Đơn (1 vs 1):** Tay vợt 1 vs Tay vợt 2.
-  - Tự động sắp xếp người nghỉ ngơi chờ đổi ca nếu số lượng người lẻ.
-
-### 6. Cấu Hình & Sao Lưu Dữ Liệu
-- **Tên CLB:** Tùy biến tên CLB hiển thị (VD: `CLB CẦU LÔNG SMASH`).
-- **Màu giao diện:** BWF Emerald Green (Xanh thảm cầu lông BWF), Badminton Cyan (Xanh lông vũ), Ocean Blue, Sunset Orange, Yonex Crimson Red, Royal Purple.
-- **Đơn giá khách A/B/C:** Cài đặt giá tiền sân riêng cho từng nhóm khách.
-- **Mức phạt:** Cài đặt mức phạt mặc định khi đi muộn hoặc hủy sân sát giờ.
-- **Cấu hình bậc tiền sân:** Thêm, sửa, xóa các khoảng buổi và đơn giá tương ứng.
-- **Sao lưu / Khôi phục dữ liệu:**
-  - **Export JSON:** Tải tệp sao lưu về máy an toàn.
-  - **Import JSON:** Khôi phục lại toàn bộ dữ liệu từ tệp sao lưu.
-  - **Reset Demo Data:** Đưa về dữ liệu mẫu ban đầu.
+Ứng dụng web chuyên biệt phục vụ vận hành thực tế cho **Câu Lạc Bộ Cầu Lông**:
+- **Quản lý sân, tiền cầu:** Tự động chia tiền cầu theo số quả thực tế trong buổi sau khi trừ khách giao lưu.
+- **Tính bậc tiền sân:** Tự động tính tiền sân theo số buổi sinh hoạt trong tháng (0–4 buổi, 5–9 buổi, 10–15 buổi, 16+ buổi).
+- **Quản lý ví thành viên:** Trừ ví tự động, hỗ trợ nợ ví âm, tất toán công nợ cuối ngày/cuối tháng.
+- **Sổ quỹ CLB & Quỹ tạm ứng:** Đối soát minh bạch 100% dòng tiền (Thu quỹ, Tiền phạt, Mua cầu, Trả sân, Chi hỷ/hiếu/liên hoan).
+- **Đồng bộ đám mây thời gian thực:** Kết nối Google Firebase Realtime Database — khi điểm danh hoặc nạp tiền ví, toàn bộ điện thoại và máy tính của các thành viên đều cập nhật tức thì.
 
 ---
 
-## 🔑 Tài Khoản Quản Trị Mẫu
+## 🚀 HƯỚNG DẪN ĐƯA LÊN NỀN TẢNG MIỄN PHÍ THEO THỜI GIAN THỰC (VERCEL + FIREBASE)
 
-- **Tài khoản:** `admin`
-- **Mật khẩu:** `admin123`
+Bạn chỉ mất khoảng **3 - 5 phút** để đưa ứng dụng lên mạng internet hoàn toàn **miễn phí 100%**, có tên miền riêng (ví dụ: `https://clblaptri.vercel.app`) để gửi cho toàn bộ anh em trong CLB cùng truy cập.
 
 ---
 
-## 🚀 Hướng Dẫn Khởi Chạy Ứng Dụng
+### BƯỚC 1: Đẩy Mã Nguồn Lên GitHub
 
-Ứng dụng được thiết kế dạng Single Page Application thuần (HTML5 + Tailwind CSS + Lucide Icons + Vanilla JS), chạy trực tiếp trên mọi trình duyệt mà không cần cài đặt database hay Node.js:
+1. Trong thư mục dự án `d:\clblaptri`, nhấp đúp chuột vào file:
+   👉 **`day-code-len-github.bat`**
+2. Cửa sổ dòng lệnh sẽ tự động tải tất cả code lên repository GitHub của bạn: `https://github.com/o936315009/clb`
+3. *(Lưu ý: Nếu máy tính yêu cầu đăng nhập tài khoản GitHub, hãy bấm `Sign in with your browser` để xác thực).*
 
-1. **Mở trực tiếp:**
-   Nhấp đúp chuột vào tệp [index.html](file:///C:/Users/ADMIN/.gemini/antigravity/scratch/clb-cau-long/index.html) để mở trên Google Chrome, Microsoft Edge, Firefox hoặc Safari.
+---
 
-2. **Chạy qua Local Web Server (Tùy chọn):**
-   ```powershell
-   cd C:\Users\ADMIN\.gemini\antigravity\scratch\clb-cau-long
-   python -m http.server 8080
-   ```
-   Sau đó mở trình duyệt truy cập: `http://localhost:8080`
+### BƯỚC 2: Triển Khai Miễn Phí Trên Vercel (Có Tên Miền Riêng)
+
+[Vercel](https://vercel.com) là nền tảng máy chủ đám mây miễn phí tốt nhất thế giới dành cho ứng dụng web:
+
+1. Truy cập: [https://vercel.com/signup](https://vercel.com/signup)
+2. Chọn **"Continue with GitHub"** để đăng nhập bằng tài khoản GitHub của bạn.
+3. Tại trang bảng điều khiển (Dashboard) của Vercel:
+   - Bấm nút **"Add New..."** ➔ Chọn **"Project"**.
+   - Tìm repository **`clb`** (hoặc `o936315009/clb`) trong danh sách ➔ Bấm **"Import"**.
+4. Tại màn hình cấu hình dự án:
+   - **Project Name:** Đặt tên bạn muốn (ví dụ: `clblaptri` hoặc `clb-laptri`).
+   - Các mục khác giữ nguyên mặc định.
+   - Bấm nút **"Deploy"**.
+5. Đợi khoảng **30 - 60 giây**, màn hình sẽ hiện pháo hoa chúc mừng 🎉 kèm đường dẫn website chính thức của CLB:
+   👉 `https://clblaptri.vercel.app` (hoặc tên miền bạn đã chọn).
+
+---
+
+### BƯỚC 3: Cấu Hình Firebase Realtime Database (Đồng Bộ Thời Gian Thực)
+
+Hệ thống đã được tích hợp sẵn với Google Firebase Realtime Database của dự án `clblaptri`. Để mọi người dùng trên điện thoại có thể đọc và đồng bộ dữ liệu mượt mà:
+
+1. Truy cập vào trang quản trị: [Firebase Console](https://console.firebase.google.com/)
+2. Chọn dự án: **`clblaptri`** (hoặc tạo mới nếu muốn dùng database riêng).
+3. Vào menu bên trái ➔ Chọn **Build** ➔ **Realtime Database**.
+4. Chuyển sang tab **"Rules" (Quy tắc)**.
+5. Sao chép toàn bộ nội dung từ file `database.rules.json` và dán vào:
+
+```json
+{
+  "rules": {
+    ".read": true,
+    ".write": true,
+    "clubs": {
+      "$clubId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "memberships": {
+      "$clubId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "system": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
+```
+
+6. Bấm nút **"Publish" (Xuất bản)** để lưu quy tắc.
+7. Bây giờ, hệ thống đồng bộ 2 chiều thời gian thực (Realtime Sync) đã kích hoạt 100%! Bất kỳ thay đổi nào (điểm danh, nạp ví, tiền sân) sẽ nhảy số ngay lập tức trên máy của tất cả thành viên.
+
+---
+
+### BƯỚC 4: Tạo Biểu Tượng App Màn Hình Chính (PWA) Trên Điện Thoại
+
+Để các thành viên mở CLB nhanh như một ứng dụng app native:
+
+- **Trên iPhone / iPad (Trình duyệt Safari):**
+  1. Mở link web CLB trên Safari.
+  2. Bấm nút **Chia sẻ** (biểu tượng ô vuông có mũi tên trỏ lên ở thanh dưới).
+  3. Cuộn xuống chọn **"Thêm vào MH chính" (Add to Home Screen)** ➔ Bấm **Thêm**.
+- **Trên Android (Chrome / Cốc Cốc):**
+  1. Mở link web CLB trên Google Chrome.
+  2. Bấm vào biểu tượng **3 dấu chấm (⋮)** ở góc trên bên phải.
+  3. Chọn **"Thêm vào Màn hình chính"** (hoặc **Cài đặt ứng dụng**).
+
+---
+
+## 🌟 HƯỚNG DẪN BẮT ĐẦU VẬN HÀNH VỚI DỮ LIỆU MỚI
+
+Hệ thống đã được thiết kế sẵn sàng cho dữ liệu hoạt động mới sạch sẽ 100%:
+
+1. **Đăng nhập quản lý ban đầu:**
+   - **Tài khoản:** `chinh` hoặc `admin`
+   - **Mật khẩu:** `123` (hoặc `123456`)
+2. **Nhập danh sách thành viên mới (Hàng loạt trong 1 giây):**
+   - Vào tab **"Quản lý thành viên"**.
+   - Bấm nút: **`⚡ Dán danh sách Zalo / Excel`**.
+   - Dán danh sách họ tên từ nhóm Zalo của bạn (Ví dụ:
+     ```text
+     1. Nguyễn Văn An - 0901234567
+     2. Trần Văn Bình - 0912345678
+     3. Lê Hoàng Cường (Danh dự)
+     4. Phạm Thị Dung - 0988776655
+     5. Vũ Quốc Em
+     ```
+   - Bấm **"Xác nhận thêm vào CLB"** ➔ Toàn bộ thành viên sẽ được tạo ngay, tự có tài khoản đăng nhập (mật khẩu `123`) và đồng bộ lên đám mây.
+3. **Cài đặt thông tin Ngân hàng / VietQR của CLB:**
+   - Vào tab **"Cấu hình & Sao lưu"**.
+   - Cập nhật số tài khoản, tên ngân hàng và chủ tài khoản vào ô **"Thông tin VietQR / Ngân hàng"** để thành viên quét mã nạp ví.
+4. **Tổ chức buổi sinh hoạt đầu tiên:**
+   - Vào tab **"Điểm danh"** ➔ Tích chọn các thành viên và khách có mặt.
+   - Nhập số lượng quả cầu đã đánh ➔ Hệ thống tự động tính tiền cầu và chia đều cho từng người.
+   - Bấm **"Lưu & Chia tiền buổi cầu"** ➔ Ví của từng thành viên được tự động trừ, đồng thời sinh ảnh báo cáo kết quả để chia sẻ ngay vào nhóm Zalo!
+5. **Nút Làm Mới Sạch Dữ Liệu:**
+   - Trong tab **"Cấu hình & Sao lưu"**, nếu muốn xóa sạch dữ liệu chạy thử bất cứ lúc nào, bạn chỉ cần bấm nút **`🧹 Khởi tạo dữ liệu nhập mới (Sạch 100%)`**.
+
+---
+
+*Chúc Câu Lạc Bộ Cầu Lông hoạt động ngày càng phát triển, sôi nổi và gắn kết! 🏸🔥*

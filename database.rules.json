@@ -1,0 +1,28 @@
+{
+  "rules": {
+    ".read": true,
+    ".write": true,
+    "clubs": {
+      "$clubId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "memberships": {
+      "$clubId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "system": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}

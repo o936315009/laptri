@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Thống Kê Tất Toán Hoạt Động CLB - Tháng 09/2026</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background-color: #ffffff;
+        padding: 0;
+        margin: 0;
+      }
+      #settlementContainer {
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="p-3 sm:p-6 min-h-screen">
+
+  <!-- TOP ACTION BAR (Hidden in Print & Screenshot) -->
+  <header id="topActionBar" class="no-print max-w-[1050px] mx-auto mb-4 bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-2.5">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center text-xl shadow-sm">
+        🏸
+      </div>
+      <div>
+        <h1 class="text-sm sm:text-base font-black text-slate-900 leading-tight">Báo Cáo Tất Toán Tháng - CLB Cầu Lông</h1>
+        <p class="text-[11px] text-slate-500 font-medium">Bảng kê chi tiết theo TV chính thức, danh dự & khách giao lưu</p>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center flex-wrap gap-2">
+      <!-- Month Filter -->
+      <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700">
+        <span>📅</span>
+        <label for="monthSelect" class="sr-only">Tháng</label>
+        <select id="monthSelect" onchange="changeReportMonth(this.value)" class="bg-transparent font-bold focus:outline-none cursor-pointer">
+          <option value="09/2026" selected>Tháng 09/2026</option>
+          <option value="10/2026">Tháng 10/2026</option>
+          <option value="08/2026">Tháng 08/2026</option>
+        </select>
+      </div>
+
+      <!-- Action Buttons -->
+      <button type="button" onclick="copySettlementReportImage()" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer active:scale-95">
+        <span>📋</span> Sao chép ảnh (Ctrl+V)
+      </button>
+
+      <button type="button" onclick="downloadSettlementReportImage()" class="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer active:scale-95">
+        <span>📷</span> Tải file ảnh PNG
+      </button>
+
+      <button type="button" onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-300 transition flex items-center gap-1 cursor-pointer">
+        <span>🖨️</span> In / PDF
+      </button>
+
+      <a href="index.html" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition flex items-center gap-1">
+        <span>⬅️</span> Về ứng dụng
+      </a>
+    </div>
+  </header>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="toastMessage" class="hidden fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700 transition">
+    Thông báo
+  </div>
+
+  <!-- MAIN REPORT EXPORT CONTAINER -->
+  <main class="w-full flex justify-center">
+    <div id="settlementContainer" class="bg-white p-5 sm:p-8 rounded-3xl shadow-xl border border-slate-200 w-full max-w-[1050px] text-slate-900 select-none">
+      
+      <!-- 1. HEADER BANNER -->
+      <div class="flex items-center justify-between pb-4 mb-4 border-b-2 border-slate-100 gap-3">
+        <!-- Logo & Brand Left -->
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-500 text-white flex items-center justify-center text-2xl font-black shadow-md border-2 border-white">
+            🏸
+          </div>
+          <div>
+            <div class="text-xs font-black uppercase tracking-widest text-emerald-700">CÂU LẠC BỘ CẦU LÔNG</div>
+            <div class="text-lg font-black text-slate-900 tracking-tight">SMASH & PASSION CLUB</div>
+          </div>
+        </div>
+
+        <!-- Center Dark Pill Banner -->
+        <div class="flex-1 max-w-[460px] text-center mx-2">
+          <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white py-2 px-5 rounded-full shadow-lg border border-indigo-900/50">
+            <h2 id="reportTitleText" class="text-sm sm:text-base font-black tracking-wide uppercase text-amber-300">
+              TẤT TOÁN HOẠT ĐỘNG CLB - THÁNG 09/2026
+            </h2>
+          </div>
+          <div class="text-[10px] text-slate-500 mt-1 font-semibold italic">
+            Thời gian kết toán: Ngày cuối tháng • Tự động đối soát công nợ
+          </div>
+        </div>
+
+        <!-- Right Slogan Badge -->
+        <div class="text-right hidden sm:block">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+            <span>✨</span> Cùng chơi - Cùng vui - Cùng tiến bộ
+          </span>
+          <div class="text-[10px] text-slate-400 mt-1 font-medium">Bản phát hành chính thức</div>
+        </div>
+      </div>
+
+      <!-- 2. SECTION I: THÀNH VIÊN CHÍNH THỨC -->
+      <div class="mb-5 rounded-xl border border-emerald-300 overflow-hidden shadow-xs">
+        <!-- Section Header -->
+        <div class="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white px-3.5 py-2 font-black text-xs tracking-wider uppercase flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <span>👥</span> I. THÀNH VIÊN CHÍNH THỨC
+          </span>
+          <span class="text-[10px] font-bold text-emerald-200 lowercase bg-emerald-900/60 px-2 py-0.5 rounded-full">
+            quỹ cố định 200k/tháng
+          </span>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-emerald-50/80 text-emerald-950 font-bold border-b border-emerald-200 divide-x divide-emerald-200/60 text-[11px]">
+                <th class="py-2 px-2 text-center w-10">STT</th>
+                <th class="py-2 px-3 min-w-[170px]">Thành viên</th>
+                <th class="py-2 px-2 text-center w-24">Số lượng<br><span class="font-normal text-[10px] text-emerald-800">(buổi chơi)</span></th>
+                <th class="py-2 px-2 text-right w-28 bg-emerald-100/60 font-black">Tổng Nộp<br><span class="font-normal text-[10px] text-emerald-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-28">Chi phí mỗi buổi<br><span class="font-normal text-[10px] text-emerald-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-24">Tiền sân<br><span class="font-normal text-[10px] text-emerald-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-24">Quỹ CLB<br><span class="font-normal text-[10px] text-emerald-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-20">Phạt<br><span class="font-normal text-[10px] text-emerald-800">(đồng)</span></th>
+              </tr>
+            </thead>
+            <tbody id="tableOfficialBody" class="divide-y divide-slate-100 font-medium">
+              <tr class="hover:bg-emerald-50/30 transition divide-x divide-slate-100 text-slate-800">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">1</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Nguyễn Văn A</td>
+                <td class="py-2 px-2 text-center font-bold">12</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">1.200.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">900.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">200.000</td>
+                <td class="py-2 px-2 text-right text-rose-600 font-bold">100.000</td>
+              </tr>
+              <tr class="hover:bg-emerald-50/30 transition divide-x divide-slate-100 text-slate-800 bg-slate-50/30">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">2</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Trần Văn B</td>
+                <td class="py-2 px-2 text-center font-bold">10</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">950.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">750.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">200.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+              <tr class="hover:bg-emerald-50/30 transition divide-x divide-slate-100 text-slate-800">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">3</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Lê Văn C</td>
+                <td class="py-2 px-2 text-center font-bold">8</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">800.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">600.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">200.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+              <tr class="hover:bg-emerald-50/30 transition divide-x divide-slate-100 text-slate-800 bg-slate-50/30">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">4</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Phạm Văn D</td>
+                <td class="py-2 px-2 text-center font-bold">8</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">800.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">600.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">200.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+              <tr class="hover:bg-emerald-50/30 transition divide-x divide-slate-100 text-slate-800">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">5</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Hoàng Văn E</td>
+                <td class="py-2 px-2 text-center font-bold">6</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">600.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">450.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">150.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="bg-emerald-100/90 text-emerald-950 font-black divide-x divide-emerald-200 border-t-2 border-emerald-300">
+                <td colspan="2" class="py-2 px-3 text-center uppercase tracking-wide">Tổng (Thành viên chính thức)</td>
+                <td class="py-2 px-2 text-center text-sm font-black">44</td>
+                <td class="py-2 px-2 text-right text-sm font-black text-emerald-900">4.350.000</td>
+                <td class="py-2 px-2 text-right font-bold text-slate-700">100.000</td>
+                <td class="py-2 px-2 text-right font-black">3.300.000</td>
+                <td class="py-2 px-2 text-right font-black">950.000</td>
+                <td class="py-2 px-2 text-right font-black text-rose-700">100.000</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. SECTION II: THÀNH VIÊN DANH DỰ -->
+      <div class="mb-5 rounded-xl border border-sky-300 overflow-hidden shadow-xs">
+        <!-- Section Header -->
+        <div class="bg-gradient-to-r from-sky-800 via-sky-700 to-indigo-800 text-white px-3.5 py-2 font-black text-xs tracking-wider uppercase flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <span>⭐</span> II. THÀNH VIÊN DANH DỰ
+          </span>
+          <span class="text-[10px] font-bold text-sky-200 lowercase bg-sky-900/60 px-2 py-0.5 rounded-full">
+            quỹ linh hoạt theo số buổi
+          </span>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-sky-50/80 text-sky-950 font-bold border-b border-sky-200 divide-x divide-sky-200/60 text-[11px]">
+                <th class="py-2 px-2 text-center w-10">STT</th>
+                <th class="py-2 px-3 min-w-[170px]">Thành viên</th>
+                <th class="py-2 px-2 text-center w-24">Số lượng<br><span class="font-normal text-[10px] text-sky-800">(buổi chơi)</span></th>
+                <th class="py-2 px-2 text-right w-28 bg-sky-100/60 font-black">Tổng Nộp<br><span class="font-normal text-[10px] text-sky-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-28">Chi phí mỗi buổi<br><span class="font-normal text-[10px] text-sky-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-24">Tiền sân<br><span class="font-normal text-[10px] text-sky-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-24">Quỹ CLB<br><span class="font-normal text-[10px] text-sky-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-20">Phạt<br><span class="font-normal text-[10px] text-sky-800">(đồng)</span></th>
+              </tr>
+            </thead>
+            <tbody id="tableHonoraryBody" class="divide-y divide-slate-100 font-medium">
+              <tr class="hover:bg-sky-50/30 transition divide-x divide-slate-100 text-slate-800">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">1</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Nguyễn Văn H</td>
+                <td class="py-2 px-2 text-center font-bold">6</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">600.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">450.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">150.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+              <tr class="hover:bg-sky-50/30 transition divide-x divide-slate-100 text-slate-800 bg-slate-50/30">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">2</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Đỗ Văn I</td>
+                <td class="py-2 px-2 text-center font-bold">5</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">500.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">375.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">125.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+              <tr class="hover:bg-sky-50/30 transition divide-x divide-slate-100 text-slate-800">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">3</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Lý Văn K</td>
+                <td class="py-2 px-2 text-center font-bold">4</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">400.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">300.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="bg-sky-100/90 text-sky-950 font-black divide-x divide-sky-200 border-t-2 border-sky-300">
+                <td colspan="2" class="py-2 px-3 text-center uppercase tracking-wide">Tổng (Thành viên danh dự)</td>
+                <td class="py-2 px-2 text-center text-sm font-black">15</td>
+                <td class="py-2 px-2 text-right text-sm font-black text-sky-950">1.500.000</td>
+                <td class="py-2 px-2 text-right font-bold text-slate-700">100.000</td>
+                <td class="py-2 px-2 text-right font-black">1.125.000</td>
+                <td class="py-2 px-2 text-right font-black">375.000</td>
+                <td class="py-2 px-2 text-right font-black text-slate-500">0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4. SECTION III: KHÁCH GIAO LƯU -->
+      <div class="mb-5 rounded-xl border border-orange-300 overflow-hidden shadow-xs">
+        <!-- Section Header -->
+        <div class="bg-gradient-to-r from-orange-700 via-amber-600 to-amber-700 text-white px-3.5 py-2 font-black text-xs tracking-wider uppercase flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <span>👥</span> III. KHÁCH GIAO LƯU
+          </span>
+          <span class="text-[10px] font-bold text-amber-100 lowercase bg-orange-900/50 px-2 py-0.5 rounded-full">
+            100% tiền sân theo buổi • không nộp quỹ
+          </span>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-amber-50/80 text-amber-950 font-bold border-b border-orange-200 divide-x divide-orange-200/60 text-[11px]">
+                <th class="py-2 px-2 text-center w-10">STT</th>
+                <th class="py-2 px-3 min-w-[170px]">Thành viên</th>
+                <th class="py-2 px-2 text-center w-24">Số lượng<br><span class="font-normal text-[10px] text-amber-800">(buổi chơi)</span></th>
+                <th class="py-2 px-2 text-right w-28 bg-orange-100/60 font-black">Tổng Nộp<br><span class="font-normal text-[10px] text-amber-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-28">Chi phí mỗi buổi<br><span class="font-normal text-[10px] text-amber-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-24">Tiền sân<br><span class="font-normal text-[10px] text-amber-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-24">Quỹ CLB<br><span class="font-normal text-[10px] text-amber-800">(đồng)</span></th>
+                <th class="py-2 px-2 text-right w-20">Phạt<br><span class="font-normal text-[10px] text-amber-800">(đồng)</span></th>
+              </tr>
+            </thead>
+            <tbody id="tableGuestBody" class="divide-y divide-slate-100 font-medium">
+              <tr class="hover:bg-amber-50/30 transition divide-x divide-slate-100 text-slate-800">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">1</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Khách 01</td>
+                <td class="py-2 px-2 text-center font-bold">4</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">400.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">400.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+              <tr class="hover:bg-amber-50/30 transition divide-x divide-slate-100 text-slate-800 bg-slate-50/30">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">2</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Khách 02</td>
+                <td class="py-2 px-2 text-center font-bold">3</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">300.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">300.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+              <tr class="hover:bg-amber-50/30 transition divide-x divide-slate-100 text-slate-800">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">3</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Khách 03</td>
+                <td class="py-2 px-2 text-center font-bold">2</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">200.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">200.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+              <tr class="hover:bg-amber-50/30 transition divide-x divide-slate-100 text-slate-800 bg-slate-50/30">
+                <td class="py-2 px-2 text-center font-bold text-slate-600">4</td>
+                <td class="py-2 px-3 font-bold text-slate-900">Khách 04</td>
+                <td class="py-2 px-2 text-center font-bold">1</td>
+                <td class="py-2 px-2 text-right font-black text-slate-900">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-600">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-700">100.000</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+                <td class="py-2 px-2 text-right text-slate-400">0</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="bg-orange-100/90 text-orange-950 font-black divide-x divide-orange-200 border-t-2 border-orange-300">
+                <td colspan="2" class="py-2 px-3 text-center uppercase tracking-wide">Tổng (Khách giao lưu)</td>
+                <td class="py-2 px-2 text-center text-sm font-black">10</td>
+                <td class="py-2 px-2 text-right text-sm font-black text-orange-950">1.000.000</td>
+                <td class="py-2 px-2 text-right font-bold text-slate-700">100.000</td>
+                <td class="py-2 px-2 text-right font-black">1.000.000</td>
+                <td class="py-2 px-2 text-right font-black text-slate-400">0</td>
+                <td class="py-2 px-2 text-right font-black text-slate-400">0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- 5. FOOTER SUMMARY DASHBOARD (TỔNG KẾT TẤT TOÁN) -->
+      <div class="rounded-2xl overflow-hidden border border-purple-300 shadow-md mb-4">
+        <!-- Purple Banner -->
+        <div class="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-950 text-white px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">📊</span>
+            <h3 id="footerReportTitle" class="text-xs sm:text-sm font-black uppercase tracking-wider text-amber-300">
+              TỔNG KẾT TẤT TOÁN THÁNG 09/2026
+            </h3>
+          </div>
+          <span class="text-[10px] text-purple-200 font-semibold bg-purple-950/60 px-2.5 py-0.5 rounded-full border border-purple-800">
+            Dữ liệu tổng hợp toàn CLB
+          </span>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="bg-gradient-to-br from-purple-50/60 via-indigo-50/40 to-slate-50 p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+          <!-- KPI 1 -->
+          <div class="bg-white p-2.5 rounded-xl border border-purple-200/80 shadow-2xs text-center">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Tổng người tham gia</div>
+            <div class="text-base sm:text-lg font-black text-purple-900 mt-0.5">17</div>
+            <div class="text-[9px] text-purple-700 font-medium mt-0.5">(14 TV + 3 Khách)</div>
+          </div>
+
+          <!-- KPI 2 -->
+          <div class="bg-white p-2.5 rounded-xl border border-purple-200/80 shadow-2xs text-center">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Tổng số buổi chơi</div>
+            <div class="text-base sm:text-lg font-black text-indigo-900 mt-0.5">69</div>
+            <div class="text-[9px] text-indigo-700 font-medium mt-0.5">Trung bình 4.1 buổi/người</div>
+          </div>
+
+          <!-- KPI 3 -->
+          <div class="bg-white p-2.5 rounded-xl border-2 border-emerald-400 shadow-xs text-center bg-gradient-to-b from-white to-emerald-50/40">
+            <div class="text-[10px] font-black text-emerald-800 uppercase tracking-tight">Tổng nộp</div>
+            <div class="text-base sm:text-lg font-black text-emerald-700 mt-0.5">6.850.000 đ</div>
+            <div class="text-[9px] text-emerald-800 font-bold mt-0.5">Sân + Quỹ + Phạt</div>
+          </div>
+
+          <!-- KPI 4 -->
+          <div class="bg-white p-2.5 rounded-xl border border-purple-200/80 shadow-2xs text-center">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Tổng tiền sân</div>
+            <div class="text-base sm:text-lg font-black text-blue-900 mt-0.5">5.425.000 đ</div>
+            <div class="text-[9px] text-blue-700 font-medium mt-0.5">79.2% tổng chi phí</div>
+          </div>
+
+          <!-- KPI 5 -->
+          <div class="bg-white p-2.5 rounded-xl border border-purple-200/80 shadow-2xs text-center">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Tổng vào quỹ CLB</div>
+            <div class="text-base sm:text-lg font-black text-teal-900 mt-0.5">1.325.000 đ</div>
+            <div class="text-[9px] text-teal-700 font-medium mt-0.5">Quỹ hoạt động chung</div>
+          </div>
+
+          <!-- KPI 6 -->
+          <div class="bg-white p-2.5 rounded-xl border border-purple-200/80 shadow-2xs text-center">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Tổng tiền phạt</div>
+            <div class="text-base sm:text-lg font-black text-rose-600 mt-0.5">100.000 đ</div>
+            <div class="text-[9px] text-rose-700 font-medium mt-0.5">Vi phạm / Đi muộn</div>
+          </div>
+        </div>
+
+        <!-- RECONCILE WALLET BOX -->
+        <div class="bg-gradient-to-r from-purple-100/90 via-indigo-100/80 to-purple-100/90 p-3 border-t border-purple-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-purple-700 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+              💳
+            </div>
+            <div>
+              <span class="font-extrabold text-purple-950 uppercase text-[11px]">Đối chiếu Ví thành viên & Công nợ:</span>
+              <span class="text-slate-600 text-[10px] block">Áp dụng cơ chế cho phép ví âm, tất toán sạch cuối tháng</span>
+            </div>
+          </div>
+
+          <div class="flex items-center flex-wrap gap-2 sm:gap-4 font-bold text-[11px]">
+            <div class="bg-white/90 px-3 py-1.5 rounded-lg border border-purple-200/80 shadow-2xs">
+              <span class="text-slate-500 font-medium">Tổng đã trừ từ Ví:</span>
+              <b class="text-slate-900 font-black ml-1">1.800.000 đ</b>
+            </div>
+            <div class="bg-white/90 px-3 py-1.5 rounded-lg border border-purple-200/80 shadow-2xs">
+              <span class="text-slate-500 font-medium">Tổng còn phải thu:</span>
+              <b class="text-rose-600 font-black ml-1">4.950.000 đ</b>
+            </div>
+            <div class="bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-300 shadow-2xs">
+              <span class="text-emerald-800 font-medium">Dư Ví cuối tháng:</span>
+              <b class="text-emerald-700 font-black ml-1">0 đ (Tất toán hoàn tất ✅)</b>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. FOOTER SLOGAN & BRAND -->
+      <div class="text-center pt-2 border-t border-slate-100 text-slate-600 text-xs font-semibold flex items-center justify-center gap-2">
+        <span class="text-emerald-600">🏸</span>
+        <span>Cảm ơn tất cả các thành viên và khách giao lưu đã đồng hành cùng CLB!</span>
+        <span class="text-emerald-600">🏸</span>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Auto hide top action bar for clean screenshots if ?export=1
+    if (window.location.search.includes('export=1') || window.location.search.includes('clean=1')) {
+      const topBar = document.getElementById('topActionBar');
+      if (topBar) topBar.style.display = 'none';
+      document.body.classList.remove('p-3', 'sm:p-6');
+      document.body.style.padding = '0';
+      document.body.style.background = '#ffffff';
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastMessage');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3500);
+    }
+
+    function changeReportMonth(val) {
+      document.getElementById('reportTitleText').textContent = `TẤT TOÁN HOẠT ĐỘNG CLB - THÁNG ${val}`;
+      document.getElementById('footerReportTitle').textContent = `TỔNG KẾT TẤT TOÁN THÁNG ${val}`;
+      showToast(`Đã cập nhật tiêu đề báo cáo tháng ${val}`);
+    }
+
+    async function downloadSettlementReportImage() {
+      const container = document.getElementById('settlementContainer');
+      if (!container) return;
+
+      showToast('Đang kết xuất file ảnh độ phân giải cao 2x Retina...');
+
+      try {
+        const canvas = await html2canvas(container, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          windowWidth: 1100
+        });
+
+        const monthSelect = document.getElementById('monthSelect');
+        const monthVal = (monthSelect ? monthSelect.value : '09/2026').replace('/', '-');
+        const filename = `Tat-Toan-CLB-Thang-${monthVal}.png`;
+
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast(`✓ Đã tải file ảnh [${filename}] thành công!`);
+      } catch (err) {
+        console.error('Export error:', err);
+        alert('Có lỗi khi tạo ảnh: ' + err.message);
+      }
+    }
+
+    async function copySettlementReportImage() {
+      const container = document.getElementById('settlementContainer');
+      if (!container) return;
+
+      showToast('Đang sao chép ảnh vào bộ nhớ tạm...');
+
+      try {
+        const canvas = await html2canvas(container, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          windowWidth: 1100
+        });
+
+        if (canvas.toBlob && navigator.clipboard && window.ClipboardItem) {
+          canvas.toBlob(async (blob) => {
+            try {
+              await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': blob })
+              ]);
+              alert('✓ ĐÃ SAO CHÉP ẢNH TẤT TOÁN VÀO CLIPBOARD!\n\nBây giờ bạn chỉ cần mở Zalo hoặc Messenger và bấm Ctrl + V (hoặc Chạm giữ -> Dán) để gửi ảnh nhanh cho các thành viên.');
+            } catch (e) {
+              downloadSettlementReportImage();
+            }
+          }, 'image/png');
+        } else {
+          downloadSettlementReportImage();
+        }
+      } catch (err) {
+        console.error('Copy error:', err);
+        downloadSettlementReportImage();
+      }
+    }
+  </script>
+</body>
+</html>

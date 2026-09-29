@@ -14537,6 +14537,9 @@ async function handleLogin(e) {
     }
 
     closeModal('loginModal');
+    // Tự động chuyển về Trang Chủ (Dashboard) ngay khi đăng nhập thành công
+    switchTab('dashboard');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     renderAttendanceRoleBanner();
     renderUserAccessTable();
     showToast('✓ Đăng nhập thành công với quyền Admin Nhà Phát Triển!', 'success');
@@ -14648,12 +14651,22 @@ async function handleLogin(e) {
     };
     saveData();
     closeModal('loginModal');
+
+    // Dọn trống ô nhập mật khẩu để đảm bảo bảo mật
+    const passInput = document.getElementById('loginPassword');
+    if (passInput) passInput.value = '';
+
     updateDevAdminUI();
     renderAuthBadge();
     renderAttendanceRoleBanner();
     renderSelfAttendanceBanner();
     renderActivityMemberChips();
     renderUserAccessTable();
+
+    // Tự động chuyển về Trang Chủ (Dashboard) ngay khi đăng nhập thành công
+    switchTab('dashboard');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     renderDashboard();
     renderFinanceTab();
     renderMemberManagementList();
@@ -14696,6 +14709,11 @@ function handleLogout() {
   renderSelfAttendanceBanner();
   renderActivityMemberChips();
   renderUserAccessTable();
+
+  // Tự động chuyển về Trang Chủ (Dashboard) khi đăng xuất
+  switchTab('dashboard');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
   renderDashboard();
   renderFinanceTab();
   renderMemberManagementList();
@@ -16652,6 +16670,8 @@ function handleFirstLoginChangePasswordSubmit(e) {
   member.hasChangedPassword = true;
   saveData();
   closeModal('modalFirstLoginChangePassword');
+  switchTab('dashboard');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   showToast('✓ Cập nhật mật khẩu thành công! Tài khoản của bạn đã được bảo vệ an toàn.', 'success');
 }
 

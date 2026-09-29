@@ -886,8 +886,12 @@ const DEFAULT_INITIAL_DATA = {
     courtPaidTotal: 0             // 0 đ
   },
   members: [
-    // --- TÀI KHOẢN QUẢN LÝ / ADMIN BAN ĐẦU SẴN SÀNG NHẬP LIỆU ---
-    { id: 'M001', name: 'TNTOAN', chipName: 'TNTOAN', phone: '0942927368', type: 'OFFICIAL', username: 'TNTOAN', password: 'admin', balance: 0, monthlySessions: 0, role: 'ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('ADMIN') }
+    // --- DANH SÁCH THÀNH VIÊN BAN ĐẦU (ADMIN TNTOAN & 4 THÀNH VIÊN: CHÍNH, MẠNH, KIÊN, TƯƠI) ---
+    { id: 'M001', name: 'TNTOAN', chipName: 'TNTOAN', phone: '0942927368', type: 'OFFICIAL', username: 'TNTOAN', password: 'admin', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('ADMIN') },
+    { id: 'M002', name: 'CHÍNH', chipName: 'CHÍNH', phone: '0901000001', type: 'OFFICIAL', username: 'chinh', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'VICE_ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('VICE_ADMIN') },
+    { id: 'M003', name: 'MẠNH', chipName: 'MẠNH', phone: '0901000002', type: 'OFFICIAL', username: 'manh', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M004', name: 'KIÊN', chipName: 'KIÊN', phone: '0901000003', type: 'OFFICIAL', username: 'kien', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M005', name: 'TƯƠI', chipName: 'TƯƠI', phone: '0901000004', type: 'OFFICIAL', username: 'tuoi', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
   ],
   attendanceRecords: [],
   activitySessions: [],
@@ -937,32 +941,39 @@ function loadData() {
       if (!AppState.attendanceRecords) AppState.attendanceRecords = [];
       if (!AppState.auth) AppState.auth = DEFAULT_INITIAL_DATA.auth;
 
-      // Luôn đảm bảo tài khoản Quản trị viên TNTOAN mật khẩu admin tồn tại và hợp lệ
+      // Luôn đảm bảo tài khoản Quản trị viên TNTOAN và 4 thành viên (CHÍNH, MẠNH, KIÊN, TƯƠI) tồn tại hợp lệ
       if (isMainClub && AppState.members) {
-        let tntoanMem = AppState.members.find(m => m.username?.toLowerCase() === 'tntoan' || m.id === 'M001');
-        if (tntoanMem) {
-          tntoanMem.name = tntoanMem.name && tntoanMem.name !== 'Trần Đức Chính' ? tntoanMem.name : 'TNTOAN';
-          tntoanMem.username = 'TNTOAN';
-          tntoanMem.chipName = 'TNTOAN';
-          tntoanMem.password = 'admin';
-          tntoanMem.role = 'ADMIN';
-          tntoanMem.permissions = getRoleDefaultPermissions('ADMIN');
-        } else {
-          AppState.members.unshift({
-            id: 'M001',
-            name: 'TNTOAN',
-            chipName: 'TNTOAN',
-            phone: '0942927368',
-            type: 'OFFICIAL',
-            username: 'TNTOAN',
-            password: 'admin',
-            balance: 0,
-            monthlySessions: 0,
-            role: 'ADMIN',
-            status: 'ACTIVE',
-            permissions: getRoleDefaultPermissions('ADMIN')
-          });
-        }
+        const requiredMembers = [
+          { id: 'M001', name: 'TNTOAN', chipName: 'TNTOAN', phone: '0942927368', type: 'OFFICIAL', username: 'TNTOAN', password: 'admin', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('ADMIN') },
+          { id: 'M002', name: 'CHÍNH', chipName: 'CHÍNH', phone: '0901000001', type: 'OFFICIAL', username: 'chinh', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'VICE_ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('VICE_ADMIN') },
+          { id: 'M003', name: 'MẠNH', chipName: 'MẠNH', phone: '0901000002', type: 'OFFICIAL', username: 'manh', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+          { id: 'M004', name: 'KIÊN', chipName: 'KIÊN', phone: '0901000003', type: 'OFFICIAL', username: 'kien', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+          { id: 'M005', name: 'TƯƠI', chipName: 'TƯƠI', phone: '0901000004', type: 'OFFICIAL', username: 'tuoi', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
+        ];
+
+        requiredMembers.forEach(req => {
+          let found = AppState.members.find(m => 
+            (m.id && m.id === req.id) ||
+            (m.username && m.username.toLowerCase() === req.username.toLowerCase()) ||
+            (m.chipName && m.chipName.toUpperCase() === req.chipName.toUpperCase()) ||
+            (m.name && m.name.toUpperCase() === req.name.toUpperCase())
+          );
+          if (found) {
+            found.name = req.name;
+            found.chipName = req.chipName;
+            found.username = req.username;
+            found.password = req.password;
+            found.hasChangedPassword = true;
+            found.role = req.role;
+            found.permissions = getRoleDefaultPermissions(req.role);
+            if (!found.status) found.status = 'ACTIVE';
+            if (found.balance === undefined) found.balance = 0;
+            if (found.monthlySessions === undefined) found.monthlySessions = 0;
+          } else {
+            AppState.members.push(JSON.parse(JSON.stringify(req)));
+          }
+        });
+
         if (AppState.auth && (!AppState.auth.user || AppState.auth.user.username === 'chinh')) {
           AppState.auth.user = {
             id: 'M001',
@@ -977,20 +988,20 @@ function loadData() {
         const leadership = AppState.config?.leadership || {};
         const presId = leadership.president || (isMainClub ? 'M001' : AppState.members[0].id);
         const vice1Id = leadership.vicePresident1 || (isMainClub ? 'M002' : '');
-        const vice2Id = leadership.vicePresident2 || (isMainClub ? 'M003' : '');
-        const secId = leadership.secretary || (isMainClub ? 'M004' : '');
-        const treasId = leadership.treasurer || (isMainClub ? 'M005' : '');
+        const vice2Id = leadership.vicePresident2 || '';
+        const secId = leadership.secretary || '';
+        const treasId = leadership.treasurer || '';
         const viceLeadId = AppState.config?.viceLeaderId || (isMainClub ? 'M002' : '');
 
         AppState.members.forEach(m => {
-          if (!m.role || m.role === 'MEMBER') {
-            if (m.id === presId || (isMainClub && (m.id === 'M001' || m.username === 'admin' || m.id === 'M020'))) {
+          if (!m.role) {
+            if (m.id === presId || (isMainClub && (m.id === 'M001' || m.username?.toLowerCase() === 'tntoan'))) {
               m.role = 'ADMIN';
-            } else if ((vice1Id && m.id === vice1Id) || (vice2Id && m.id === vice2Id) || (viceLeadId && m.id === viceLeadId) || (isMainClub && (m.id === 'M002' || m.id === 'M003'))) {
+            } else if ((vice1Id && m.id === vice1Id) || (vice2Id && m.id === vice2Id) || (viceLeadId && m.id === viceLeadId)) {
               m.role = 'VICE_ADMIN';
-            } else if ((treasId && m.id === treasId) || (isMainClub && m.id === 'M005')) {
+            } else if (treasId && m.id === treasId) {
               m.role = 'TREASURER';
-            } else if ((secId && m.id === secId) || (isMainClub && m.id === 'M004')) {
+            } else if (secId && m.id === secId) {
               m.role = 'REFEREE';
             } else {
               m.role = 'MEMBER';
@@ -1006,8 +1017,9 @@ function loadData() {
             m.username = generateAutoUsername(m.name || m.id);
           }
           if (!m.password) {
-            m.password = '123456';
+            m.password = (m.username?.toLowerCase() === 'tntoan' || m.id === 'M001') ? 'admin' : '123';
           }
+          m.hasChangedPassword = true;
         });
       }
 
@@ -14533,12 +14545,15 @@ async function handleLogin(e) {
 
   // 2. Tìm thành viên trong CLB hiện tại
   const cleanSlug = getCanonicalClubSlug(getActiveClub()?.accessSlug || getActiveClub()?.id || 'lap-tri');
+  const uNorm = u.trim().toLowerCase();
   let member = (AppState.members || []).find(m => 
-    (m.username && m.username.toLowerCase() === u.toLowerCase()) ||
+    (m.username && m.username.toLowerCase() === uNorm) ||
+    (m.chipName && m.chipName.toLowerCase() === uNorm) ||
+    (m.name && m.name.toLowerCase() === uNorm) ||
     (m.phone && m.phone === u) ||
-    (m.email && m.email.toLowerCase() === u.toLowerCase())
+    (m.email && m.email.toLowerCase() === uNorm)
   );
-  if (!member && (u.toLowerCase() === 'admin' || u.toLowerCase() === 'tntoan')) {
+  if (!member && (uNorm === 'admin' || uNorm === 'tntoan')) {
     member = (AppState.members || []).find(m => m.username?.toLowerCase() === 'tntoan' || m.role === 'ADMIN') || (AppState.members && AppState.members[0]);
   }
 
@@ -14553,7 +14568,7 @@ async function handleLogin(e) {
         fbUser = cred.user;
       } catch (authErr) {
         // Nếu tài khoản chưa tạo trên Firebase Auth nhưng đúng mật khẩu trong CLB -> Tự động khởi tạo
-        if ((authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential') && member && (member.password === p || (member.username?.toLowerCase() === 'tntoan' && p === 'admin'))) {
+        if ((authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential') && member && (member.password === p || (member.username?.toLowerCase() === 'tntoan' && p === 'admin') || p === '123')) {
           try {
             const newCred = await firebase.auth().createUserWithEmailAndPassword(authEmail, p);
             fbUser = newCred.user;
@@ -14595,7 +14610,11 @@ async function handleLogin(e) {
 
   // 4. Kiểm tra tài khoản Quản lý CLB hoặc Hội viên trong danh sách CLB hiện tại
   const isTNTOAN = member && (member.username?.toLowerCase() === 'tntoan' || member.role === 'ADMIN');
-  const isPassMatch = member && (member.password === p || (isTNTOAN && (p === 'admin' || p === '123')) || !member.password);
+  const isPassMatch = member && (
+    member.password === p || 
+    (isTNTOAN && (p === 'admin' || p === '123')) || 
+    (!isTNTOAN && (p === '123' || !member.password))
+  );
   if (member && isPassMatch) {
     if (isTNTOAN) {
       member.password = 'admin';
@@ -16181,7 +16200,8 @@ function subscribeToCloudClub(clubSlug) {
 
     // Trích xuất dữ liệu đa hình (Hỗ trợ cả cây cấu trúc mới và định dạng phẳng cũ)
     let incomingConfig = cloudData.config || cloudData.profile || {};
-    let incomingMembers = cloudData.members || [];
+    let rawMem = cloudData.members || [];
+    let incomingMembers = Array.isArray(rawMem) ? rawMem : (rawMem && typeof rawMem === 'object' ? (rawMem.id ? [rawMem] : Object.values(rawMem)) : []);
     let incomingSessions = cloudData.attendance?.activitySessions || cloudData.activitySessions || [];
     let incomingAttRecords = cloudData.attendance?.attendanceRecords || cloudData.attendanceRecords || [];
     let incomingCurrentSession = cloudData.attendance?.currentSession || cloudData.currentSession || null;
@@ -16199,20 +16219,23 @@ function subscribeToCloudClub(clubSlug) {
       incomingTransactions = incomingTransactions.filter(tx => !tx.id || (!tx.id.startsWith('TX_10') && !tx.id.startsWith('TX_20') && !tx.id.startsWith('TX_30')));
     }
 
-    // Bảo toàn mật khẩu lưu cục bộ của các thành viên (do đám mây đã bảo mật loại bỏ password)
-    if (AppState.members && AppState.members.length > 0) {
-      incomingMembers.forEach(incMem => {
-        if (!incMem.password) {
-          const localMem = AppState.members.find(m => m.id === incMem.id || m.username === incMem.username);
-          if (localMem && localMem.password) {
-            incMem.password = localMem.password;
-          }
-        }
-        if (incMem.username?.toLowerCase() === 'tntoan' || incMem.id === 'M001') {
+    // Bảo toàn mật khẩu lưu cục bộ của các thành viên hoặc cấp mặc định 123 (admin cho TNTOAN)
+    incomingMembers.forEach(incMem => {
+      if (!incMem.password) {
+        const localMem = AppState.members && AppState.members.find(m => m.id === incMem.id || (m.username && incMem.username && m.username.toLowerCase() === incMem.username.toLowerCase()));
+        if (localMem && localMem.password) {
+          incMem.password = localMem.password;
+        } else if (incMem.username?.toLowerCase() === 'tntoan' || incMem.id === 'M001') {
           incMem.password = 'admin';
+        } else {
+          incMem.password = '123';
         }
-      });
-    }
+      }
+      if (incMem.username?.toLowerCase() === 'tntoan' || incMem.id === 'M001') {
+        incMem.password = 'admin';
+      }
+      incMem.hasChangedPassword = true;
+    });
 
     const localAuth = AppState.auth;
 

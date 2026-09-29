@@ -1693,33 +1693,48 @@ function renderDashboard() {
   const advFundEl = document.getElementById('kpiAdvanceFund');
   if (advFundEl) advFundEl.textContent = formatMoney(AppState.funds.advanceFund);
 
-  // 5. KPI 3: Số dư ví thành viên (Nếu là hội viên, hiển thị ví cá nhân; nếu là Admin, hiển thị tổng ví CLB)
+  // 5. KPI 3: Số dư ví cá nhân (Đối với tất cả tài khoản đăng nhập: Quản lý, Phó nhóm, Thủ quỹ hay Hội viên đều hiển thị ví cá nhân của chính mình)
   const currentUser = AppState.auth?.user;
-  const isMemberRole = currentUser && currentUser.role === 'MEMBER';
   const totalWalletEl = document.getElementById('kpiTotalWallet');
   const kpiWalletLabelEl = document.getElementById('kpiWalletLabel');
   const kpiWalletDescEl = document.getElementById('kpiWalletDesc');
+  const totalClubWallet = (AppState.members || []).reduce((sum, m) => sum + (m.balance || 0), 0);
 
-  if (isMemberRole && currentUser) {
-    const mem = (AppState.members || []).find(m => m.id === currentUser.id) || (AppState.members ? AppState.members[0] : null);
-    const b = calculateMemberWalletBreakdown(mem);
+  if (currentUser) {
+    const mem = (AppState.members || []).find(m => 
+      m.id === currentUser.id || 
+      (m.username && m.username.toLowerCase() === (currentUser.username || '').toLowerCase()) ||
+      (m.name && m.name.toLowerCase() === (currentUser.name || '').toLowerCase())
+    ) || (AppState.members ? AppState.members[0] : null);
+
+    const b = mem ? calculateMemberWalletBreakdown(mem) : null;
+    const myBalance = (mem && mem.balance !== undefined) ? mem.balance : (b ? b.balance : 0);
+
     if (totalWalletEl) {
-      totalWalletEl.textContent = formatMoney(b.balance);
-      totalWalletEl.className = b.balance < 0 
+      totalWalletEl.textContent = formatMoney(myBalance);
+      totalWalletEl.className = myBalance < 0 
         ? 'text-xs sm:text-lg md:text-2xl font-black text-rose-600 block truncate' 
-        : 'text-xs sm:text-lg md:text-2xl font-black text-slate-900 block truncate';
+        : 'text-xs sm:text-lg md:text-2xl font-black text-emerald-700 block truncate';
     }
-    if (kpiWalletLabelEl) kpiWalletLabelEl.textContent = 'Ví Của Bạn';
-    if (kpiWalletDescEl) kpiWalletDescEl.textContent = `Tài khoản: ${currentUser.name || currentUser.username}`;
+    if (kpiWalletLabelEl) {
+      kpiWalletLabelEl.textContent = 'Ví Của Bạn';
+    }
+    if (kpiWalletDescEl) {
+      const displayName = mem ? (mem.chipName || mem.name) : (currentUser.name || currentUser.username);
+      if (currentUser.role === 'MEMBER') {
+        kpiWalletDescEl.textContent = `Tài khoản: ${displayName}`;
+      } else {
+        kpiWalletDescEl.innerHTML = `Ví cá nhân: <b>${escapeHtml(displayName)}</b> <span class="text-slate-400 font-normal">| Tổng ví CLB: ${formatMoney(totalClubWallet)}</span>`;
+      }
+    }
   } else {
-    // Admin / Ban quản trị: Tổng số dư ví toàn CLB
-    const totalWallet = (AppState.members || []).reduce((sum, m) => sum + (m.balance || 0), 0);
+    // Khi chưa đăng nhập: Hiển thị tổng số dư ví toàn CLB
     if (totalWalletEl) {
-      totalWalletEl.textContent = formatMoney(totalWallet);
+      totalWalletEl.textContent = formatMoney(totalClubWallet);
       totalWalletEl.className = 'text-xs sm:text-lg md:text-2xl font-black text-slate-900 block truncate';
     }
     if (kpiWalletLabelEl) kpiWalletLabelEl.textContent = 'Ví Thành Viên';
-    if (kpiWalletDescEl) kpiWalletDescEl.textContent = 'Tổng tiền trong ví';
+    if (kpiWalletDescEl) kpiWalletDescEl.textContent = 'Tổng tiền ví toàn CLB';
   }
 
   // 6. Render thống kê hoạt động theo buổi & chi phí kỳ này
@@ -3329,12 +3344,7 @@ function renderActivityMemberChips() {
   let officialMembers = AppState.members.filter(m => m.type === 'OFFICIAL');
   let honoraryMembers = AppState.members.filter(m => m.type === 'HONORARY' || m.type === 'UNOFFICIAL');
 
-  // Nếu người xem là thành viên thông thường (MEMBER), ẩn hoàn toàn tài khoản Quản lý toàn quyền CLB (ADMIN)
-  // Các thành viên tham gia quản lý (Phó nhóm, Thủ quỹ, Trọng tài) vẫn hiển thị đầy đủ giống mọi thành viên
-  if (AppState.auth?.user?.role === 'MEMBER') {
-    officialMembers = officialMembers.filter(m => !isClubMasterAdmin(m));
-    honoraryMembers = honoraryMembers.filter(m => !isClubMasterAdmin(m));
-  }
+  // Các thành viên quản lý tham gia sinh hoạt và điểm danh bình thường giống mọi thành viên
 
   let offSelectedCount = 0;
   let honSelectedCount = 0;
@@ -6118,7 +6128,25 @@ function renderFinanceTab() {
   if (dashAdv) dashAdv.textContent = formatMoney(advStats.totalAdvanceFund);
 
   const dashWallet = document.getElementById('kpiTotalWallet');
-  if (dashWallet) dashWallet.textContent = formatMoney(stats.wallet.total);
+  if (dashWallet) {
+    const curUser = AppState.auth?.user;
+    if (curUser) {
+      const mem = (AppState.members || []).find(m => 
+        m.id === curUser.id || 
+        (m.username && m.username.toLowerCase() === (curUser.username || '').toLowerCase()) ||
+        (m.name && m.name.toLowerCase() === (curUser.name || '').toLowerCase())
+      ) || (AppState.members ? AppState.members[0] : null);
+      const b = mem ? calculateMemberWalletBreakdown(mem) : null;
+      const myBal = (mem && mem.balance !== undefined) ? mem.balance : (b ? b.balance : 0);
+      dashWallet.textContent = formatMoney(myBal);
+      dashWallet.className = myBal < 0 
+        ? 'text-xs sm:text-lg md:text-2xl font-black text-rose-600 block truncate' 
+        : 'text-xs sm:text-lg md:text-2xl font-black text-emerald-700 block truncate';
+    } else {
+      dashWallet.textContent = formatMoney(stats.wallet.total);
+      dashWallet.className = 'text-xs sm:text-lg md:text-2xl font-black text-slate-900 block truncate';
+    }
+  }
 
   // Render bảng giao dịch
   renderFullTransactionTable();
@@ -8223,7 +8251,7 @@ function renderMemberManagementList() {
   const memBtn = document.getElementById('filter-mem-members');
   const otherBtn = document.getElementById('filter-mem-other');
 
-  const baseList = isMemberRoleMem ? (AppState.members || []).filter(m => !isClubMasterAdmin(m)) : (AppState.members || []);
+  const baseList = AppState.members || [];
   const totalCount = baseList.length;
   const isMemberItem = m => m.type !== 'GUEST_A' && m.type !== 'GUEST_B' && m.type !== 'GUEST_C' && !String(m.type || '').startsWith('GUEST') && m.type !== 'OTHER';
   const memCount = baseList.filter(isMemberItem).length;
@@ -15434,10 +15462,6 @@ function setElText(id, text) {
  */
 function generateLiveSettlementReportData(monthStr) {
   let members = AppState.members || [];
-  // Nếu người xem là thành viên thông thường (MEMBER), ẩn tài khoản Quản lý toàn quyền CLB (Master Admin)
-  if (AppState.auth?.user?.role === 'MEMBER') {
-    members = members.filter(m => !isClubMasterAdmin(m));
-  }
 
   if (!members || members.length === 0) {
     return SETTLEMENT_REPORT_PRESET;
@@ -16879,7 +16903,7 @@ function copyFirebaseRulesCode() {
  */
 function isClubMasterAdmin(member) {
   if (!member) return false;
-  return member.role === 'ADMIN' || member.isClubMasterAdmin === true;
+  return member.role === 'ADMIN' || member.id === 'M001' || (member.username && member.username.toLowerCase() === 'tntoan') || member.isClubMasterAdmin === true;
 }
 
 /**

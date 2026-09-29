@@ -15722,6 +15722,18 @@ function updateCloudSyncUI(status, message = '') {
     headerBadgeClass = 'bg-sky-50 text-sky-800 border-sky-300 shadow-2xs';
     showPing = true;
     pingColor = 'bg-sky-400';
+  } else if (status === 'PERMISSION_DENIED') {
+    // ⚠️ TRẠNG THÁI BỊ CHẶN QUYỀN GHI: Chấm vàng cam cảnh báo cần mở Rules
+    dotColor = 'bg-amber-500 shadow-[0_0_8px_#f59e0b]';
+    badgeText = 'Chưa mở Rules';
+    badgeClass = 'bg-amber-100 text-amber-900 border border-amber-300';
+    icon = '⚠️';
+    title = 'Chưa cấp quyền ghi Firebase (PERMISSION_DENIED)';
+    desc = 'Firebase đang chặn quyền ghi. Vui lòng mở tab Rules trên Firebase Console và đổi .write: true để đồng bộ online.';
+    headerTitle = 'Đám mây: Bị chặn quyền ghi (PERMISSION_DENIED). Bấm để xem hướng dẫn mở Rules!';
+    headerBadgeClass = 'bg-amber-50 text-amber-900 border-amber-300 shadow-2xs hover:bg-amber-100 cursor-pointer';
+    showPing = true;
+    pingColor = 'bg-amber-400';
   } else {
     // 🔴 TRẠNG THÁI MẤT KẾT NỐI (DISCONNECTED / OFFLINE / ERROR / LOCAL_READY): Chấm đỏ cảnh báo mất kết nối
     dotColor = 'bg-rose-500 shadow-[0_0_6px_#f43f5e]';
@@ -15730,19 +15742,17 @@ function updateCloudSyncUI(status, message = '') {
     icon = '🔴';
     title = 'Mất kết nối đám mây (Bộ nhớ máy)';
     desc = message || 'Hệ thống đang hoạt động ngoại tuyến, dữ liệu lưu an toàn trên máy.';
-    headerTitle = 'Đám mây: Mất kết nối (Bộ nhớ máy)';
-    headerBadgeClass = 'bg-rose-50/80 text-rose-700 border-rose-300 shadow-2xs';
+    headerTitle = 'Đám mây: Mất kết nối (Bộ nhớ máy). Bấm để kiểm tra!';
+    headerBadgeClass = 'bg-rose-50/80 text-rose-700 border-rose-300 shadow-2xs hover:bg-rose-100 cursor-pointer';
     showPing = false;
   }
 
-  // 1. Giữ lại Biểu tượng Đám mây Header [ ☁️ 🟢 ] (Hiện trạng thái kết nối hoặc mất kết nối)
+  // 1. Giữ lại Biểu tượng Đám mây Header [ ☁️ 🟢 ] (Hiện trạng thái kết nối, bấm để xem chi tiết)
   if (badge) {
-    badge.className = `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border shrink-0 select-none cursor-default ${headerBadgeClass}`;
+    badge.className = `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border shrink-0 select-none transition cursor-pointer hover:opacity-90 ${headerBadgeClass}`;
     badge.style.display = 'flex';
-    badge.onclick = null;
-    badge.removeAttribute('onclick');
-    badge.removeAttribute('title');
-    badge.title = '';
+    badge.onclick = () => { if (typeof openCloudSyncModal === 'function') openCloudSyncModal(); };
+    badge.title = headerTitle;
   }
   if (ping) {
     ping.className = showPing ? `animate-ping absolute inline-flex h-full w-full rounded-full ${pingColor} opacity-75` : 'hidden';
@@ -16005,7 +16015,14 @@ function subscribeToCloudClub(clubSlug) {
       return;
     }
 
-    // BẢO VỆ AN TOÀN: Nếu đám mây trống hoặc ít hơn 3 thành viên trong khi máy cục bộ có >= 10 thành viên, không ghi đè xóa sạch
+    // BẢO VỆ AN TOÀN 1: Nếu cục bộ có thay đổi chưa đẩy được do quyền ghi bị từ chối, và phiên bản máy mới hơn đám mây
+    if (window._hasUnsyncedLocalChanges && AppState._lastModified && cloudData._lastModified && AppState._lastModified > cloudData._lastModified) {
+      console.warn('Dữ liệu máy cục bộ mới hơn đám mây nhưng chưa đẩy được do chặn quyền ghi. Không ghi đè.');
+      setTimeout(() => { pushDataToCloud(); }, 600);
+      return;
+    }
+
+    // BẢO VỆ AN TOÀN 2: Nếu đám mây trống hoặc ít hơn 3 thành viên trong khi máy cục bộ có >= 10 thành viên, không ghi đè xóa sạch
     const rawMembers = cloudData.members || [];
     if (rawMembers.length < 3 && AppState.members && AppState.members.length >= 10) {
       setTimeout(() => { pushDataToCloud(); }, 600);
@@ -16104,9 +16121,11 @@ function subscribeToCloudClub(clubSlug) {
   }, err => {
     console.warn('Lỗi lắng nghe Firebase, chuyển sang chế độ bộ nhớ máy:', err);
     if (err && (err.code === 'PERMISSION_DENIED' || String(err).includes('permission_denied'))) {
-      showToast('⚠️ Firebase: Quyền truy cập bị từ chối (PERMISSION_DENIED). Cần cấu hình Rules trên Firebase Console!', 'warning');
+      updateCloudSyncUI('PERMISSION_DENIED');
+      showToast('⚠️ Firebase: Quyền truy cập bị từ chối (PERMISSION_DENIED). Cần cấu hình Rules trên Firebase Console!', 'warning', 8000);
+    } else {
+      updateCloudSyncUI('LOCAL_READY');
     }
-    updateCloudSyncUI('LOCAL_READY');
   });
 }
 
@@ -16196,6 +16215,7 @@ function pushDataToCloud() {
         pushResolved = true;
         clearTimeout(safetyTimeout);
         isSyncingToCloud = false;
+        window._hasUnsyncedLocalChanges = false;
         updateCloudSyncUI('CONNECTED');
       })
       .catch(err => {
@@ -16204,9 +16224,12 @@ function pushDataToCloud() {
         isSyncingToCloud = false;
         console.warn('Lỗi đẩy dữ liệu lên Firebase, giữ dữ liệu cục bộ:', err);
         if (err && (err.code === 'PERMISSION_DENIED' || String(err).includes('permission_denied'))) {
-          showToast('⚠️ Không thể lưu đám mây: Quyền Firebase bị từ chối (PERMISSION_DENIED). Cần mở Rules trên Firebase Console!', 'warning');
+          window._hasUnsyncedLocalChanges = true;
+          updateCloudSyncUI('PERMISSION_DENIED');
+          showToast('⚠️ Không thể lưu lên đám mây: Firebase chặn quyền ghi (PERMISSION_DENIED). Cần mở tab Rules (.write: true) trên Firebase Console!', 'warning', 8000);
+        } else {
+          updateCloudSyncUI('LOCAL_READY');
         }
-        updateCloudSyncUI('LOCAL_READY');
       });
   }, 300);
 }
@@ -16295,41 +16318,59 @@ function testCloudConnection() {
   }
 
   updateCloudSyncUI('CONNECTING');
-  showToast('Đang kiểm tra kết nối đến Google Firebase...', 'info');
+  showToast('Đang kiểm tra kết nối & quyền đọc/ghi Google Firebase...', 'info');
 
   if (!firebaseDb) {
     initFirebaseCloudSync();
   }
 
+  if (!firebaseDb) {
+    updateCloudSyncUI('LOCAL_READY');
+    showToast('⚠️ Không thể khởi tạo Firebase SDK. Vui lòng thử lại sau giây lát!', 'warning');
+    return;
+  }
+
+  const club = getActiveClub();
+  const cleanSlug = getCanonicalClubSlug(club?.accessSlug || club?.id || 'lap-tri');
+  const testRef = firebaseDb.ref('clubs/' + cleanSlug + '/_healthCheck');
+
   let resolved = false;
   const timeout = setTimeout(() => {
     if (!resolved) {
       resolved = true;
-      if (isCloudActuallyConnected) {
-        updateCloudSyncUI('CONNECTED');
-        showToast('✓ Kết nối đám mây hoạt động hoàn hảo!', 'success');
-      } else {
-        updateCloudSyncUI('LOCAL_READY');
-        showToast('💡 Đám mây chưa phản hồi. Dữ liệu đang được bảo vệ an toàn trên Bộ nhớ máy siêu tốc!', 'info');
-      }
+      updateCloudSyncUI('LOCAL_READY');
+      showToast('💡 Đám mây chưa phản hồi kịp thời. Dữ liệu đang được lưu an toàn trên bộ nhớ máy!', 'info');
     }
-  }, 2500);
+  }, 4000);
 
-  if (firebaseDb) {
-    firebaseDb.ref('.info/connected').once('value', snap => {
+  // Thử nghiệm thực tế bằng hành động GHI (Write Test)
+  testRef.set({ testTimestamp: Date.now(), client: 'web-test' })
+    .then(() => {
       if (resolved) return;
       resolved = true;
       clearTimeout(timeout);
-      if (snap.val() === true) {
-        isCloudActuallyConnected = true;
-        updateCloudSyncUI('CONNECTED');
-        showToast('✓ Kết nối đám mây Google Firebase hoạt động hoàn hảo!', 'success');
+      isCloudActuallyConnected = true;
+      window._hasUnsyncedLocalChanges = false;
+      updateCloudSyncUI('CONNECTED');
+      showToast('🎉 Kết nối đám mây Google Firebase THÀNH CÔNG! Quyền đọc/ghi hai chiều đã mở hoàn toàn.', 'success');
+      testRef.remove().catch(() => {});
+      // Kích hoạt đồng bộ đẩy dữ liệu hiện tại lên đám mây ngay lập tức
+      pushDataToCloud();
+    })
+    .catch(err => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeout);
+      console.warn('Lỗi kiểm tra quyền ghi Firebase:', err);
+      if (err && (err.code === 'PERMISSION_DENIED' || String(err).includes('permission_denied'))) {
+        window._hasUnsyncedLocalChanges = true;
+        updateCloudSyncUI('PERMISSION_DENIED');
+        showToast('⚠️ Firebase chặn quyền GHI (PERMISSION_DENIED)! Vui lòng mở tab Rules trên Firebase Console và đổi .write: true.', 'error', 9000);
       } else {
         updateCloudSyncUI('LOCAL_READY');
-        showToast('💡 Đang ở chế độ Bộ nhớ máy cục bộ siêu tốc. Dữ liệu lưu an toàn trên máy.', 'info');
+        showToast('⚠️ Không thể kết nối ghi đám mây: ' + (err.message || err), 'warning');
       }
     });
-  }
 }
 
 function copyMobileSyncUrl() {

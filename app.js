@@ -1141,6 +1141,7 @@ function saveLocalDataOnly() {
 
 function saveData() {
   try {
+    AppState._lastModified = Date.now();
     STORAGE_KEY = getCurrentClubStorageKey();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(AppState));
 
@@ -15986,15 +15987,15 @@ function initFirebaseCloudSync() {
     }
   } catch (e) {}
 
-  // 2. Kiểm tra thư viện Firebase SDK - nếu chưa tải xong, tự động thử lại sau (tối đa 25 lần)
+  // 2. Kiểm tra thư viện Firebase SDK - nếu chưa tải xong, tự động thử lại (liên tục thử lại trên mạng di động)
   if (typeof firebase === 'undefined' || typeof firebase.database === 'undefined') {
     if (!window._firebaseRetryCount) window._firebaseRetryCount = 0;
-    if (window._firebaseRetryCount < 25) {
-      window._firebaseRetryCount++;
-      setTimeout(initFirebaseCloudSync, 200);
-      return;
+    window._firebaseRetryCount++;
+    const retryDelay = window._firebaseRetryCount < 25 ? 200 : 2000;
+    setTimeout(initFirebaseCloudSync, retryDelay);
+    if (window._firebaseRetryCount === 25) {
+      updateCloudSyncUI('CONNECTING', 'Đang tải thư viện đồng bộ Google Firebase...');
     }
-    updateCloudSyncUI('LOCAL_READY');
     return;
   }
 
@@ -16043,16 +16044,64 @@ function initFirebaseCloudSync() {
       }
     });
 
-    // Bắt sự kiện mạng của thiết bị (mất mạng / có mạng trở lại)
+    // Bắt sự kiện mạng của thiết bị (mất mạng / có mạng trở lại / chuyển đổi tab / mở khóa màn hình điện thoại)
     if (!window._networkOnlineOfflineAttached) {
       window._networkOnlineOfflineAttached = true;
+
       window.addEventListener('online', () => {
-        if (firebaseDb) updateCloudSyncUI('CONNECTING');
+        if (firebaseDb && firebase.database) {
+          try { firebase.database().goOnline(); } catch (e) {}
+        }
+        updateCloudSyncUI('CONNECTING', 'Thiết bị đã có mạng trở lại, đang kết nối đám mây...');
+        if (!firebaseDb) {
+          initFirebaseCloudSync();
+        } else {
+          const activeClub = getActiveClub();
+          const activeSlug = activeClub?.accessSlug || activeClub?.id || 'lap-tri';
+          subscribeToCloudClub(activeSlug);
+        }
       });
+
       window.addEventListener('offline', () => {
         isCloudActuallyConnected = false;
-        updateCloudSyncUI('DISCONNECTED');
+        if (firebaseDb && firebase.database) {
+          try { firebase.database().goOffline(); } catch (e) {}
+        }
+        updateCloudSyncUI('DISCONNECTED', 'Thiết bị mất kết nối mạng. Dữ liệu đang lưu an toàn trên máy.');
       });
+
+      // Tự động khôi phục kết nối WebSocket thời gian thực khi người dùng quay lại tab hoặc mở khóa màn hình điện thoại
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          if (firebaseDb && firebase.database) {
+            try { firebase.database().goOnline(); } catch (e) {}
+          }
+          if (!isCloudActuallyConnected && firebaseDb) {
+            updateCloudSyncUI('CONNECTING', 'Đang khôi phục phiên thời gian thực...');
+            const activeClub = getActiveClub();
+            const activeSlug = activeClub?.accessSlug || activeClub?.id || 'lap-tri';
+            subscribeToCloudClub(activeSlug);
+          } else if (!firebaseDb) {
+            initFirebaseCloudSync();
+          }
+        }
+      });
+
+      // Watchdog định kỳ mỗi 20 giây: Nếu thiết bị có mạng (navigator.onLine) nhưng kết nối đám mây bị ngắt hoặc chưa khởi tạo, tự động kích hoạt lại
+      setInterval(() => {
+        if (navigator.onLine && (!isCloudActuallyConnected || !firebaseDb)) {
+          if (firebaseDb && firebase.database) {
+            try { firebase.database().goOnline(); } catch (e) {}
+          }
+          const activeClub = getActiveClub();
+          const activeSlug = activeClub?.accessSlug || activeClub?.id || 'lap-tri';
+          if (firebaseDb) {
+            subscribeToCloudClub(activeSlug);
+          } else {
+            initFirebaseCloudSync();
+          }
+        }
+      }, 20000);
     }
 
     // Bắt đầu lắng nghe thay đổi của CLB hiện tại
@@ -16267,7 +16316,22 @@ function subscribeToCloudClub(clubSlug) {
     AppState.closedMonths = incomingClosedMonths;
     AppState.transactions = incomingTransactions;
     AppState.topUpRequests = incomingTopUpRequests;
-    if (incomingCurrentSession) AppState.currentSession = incomingCurrentSession;
+    if (incomingCurrentSession) {
+      AppState.currentSession = incomingCurrentSession;
+      applyLiveSessionFromCloud(incomingCurrentSession);
+    } else {
+      if (AppState.currentSession) {
+        delete AppState.currentSession;
+        const clubId = getActiveClubId();
+        localStorage.removeItem('CLB_SESSION_' + clubId);
+        const savedSes = (incomingSessions || []).find(s => s.date === activityState.date);
+        if (savedSes) {
+          activityState.isEditingAttendance = false;
+          activityState.isEditingFinalizedSession = false;
+          activityState.temporaryAttendanceSaved = false;
+        }
+      }
+    }
     if (localAuth) AppState.auth = localAuth;
 
     STORAGE_KEY = getCurrentClubStorageKey();
@@ -16324,13 +16388,22 @@ function subscribeToCloudClub(clubSlug) {
 }
 
 function pushDataToCloud() {
-  if (!firebaseDb || isReceivingFromCloud) return;
+  if (!firebaseDb) return;
+  if (isReceivingFromCloud) {
+    clearTimeout(cloudSyncDebounceTimer);
+    cloudSyncDebounceTimer = setTimeout(pushDataToCloud, 400);
+    return;
+  }
   const club = getActiveClub();
   const cleanSlug = getCanonicalClubSlug(club?.accessSlug || club?.id || 'lap-tri');
 
   clearTimeout(cloudSyncDebounceTimer);
   cloudSyncDebounceTimer = setTimeout(() => {
-    if (!firebaseDb || isReceivingFromCloud) return;
+    if (!firebaseDb) return;
+    if (isReceivingFromCloud) {
+      cloudSyncDebounceTimer = setTimeout(pushDataToCloud, 400);
+      return;
+    }
     isSyncingToCloud = true;
     updateCloudSyncUI('SYNCING');
 

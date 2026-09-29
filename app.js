@@ -16840,6 +16840,19 @@ function manualTriggerCloudSync() {
   }, 1000);
 }
 
+function copyFirebaseRulesCode() {
+  const rules = `{\n  "rules": {\n    ".read": true,\n    ".write": true\n  }\n}`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(rules).then(() => {
+      showToast('📋 Đã sao chép mã Rules! Hãy mở tab Rules trên Firebase và dán (Ctrl+V) rồi bấm Publish.', 'success', 6000);
+    }).catch(() => {
+      prompt('Sao chép mã Rules này để dán vào tab Rules trên Firebase Console:', rules);
+    });
+  } else {
+    prompt('Sao chép mã Rules này để dán vào tab Rules trên Firebase Console:', rules);
+  }
+}
+
 // ==========================================
 // 21. PHÂN HỆ BẢO MẬT, ĐỔI MẬT KHẨU LẦN ĐẦU, 1 PHIÊN ĐĂNG NHẬP, TỰ ĐỘNG SAO LƯU & SỔ CHI PHÍ CÁ NHÂN
 // ==========================================

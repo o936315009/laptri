@@ -15654,7 +15654,7 @@ function getStoredFirebaseConfig() {
       if (cfg && typeof cfg === 'object') {
         let pId = cfg.projectId || DEFAULT_FIREBASE_CONFIG.projectId;
         if (pId === 'clblaptri') pId = 'laptri-8e2b3';
-        return {
+        const merged = {
           apiKey: cfg.apiKey || DEFAULT_FIREBASE_CONFIG.apiKey,
           authDomain: `${pId}.firebaseapp.com`,
           databaseURL: (cfg.databaseURL && !cfg.databaseURL.includes('clblaptri')) ? cfg.databaseURL : `https://${pId}-default-rtdb.firebaseio.com`,
@@ -15664,9 +15664,12 @@ function getStoredFirebaseConfig() {
           appId: cfg.appId || DEFAULT_FIREBASE_CONFIG.appId,
           measurementId: cfg.measurementId || DEFAULT_FIREBASE_CONFIG.measurementId
         };
+        try { localStorage.setItem(CLOUD_CONFIG_STORAGE_KEY, JSON.stringify(merged)); } catch (e) {}
+        return merged;
       }
     }
   } catch (e) {}
+  try { localStorage.setItem(CLOUD_CONFIG_STORAGE_KEY, JSON.stringify(DEFAULT_FIREBASE_CONFIG)); } catch (e) {}
   return DEFAULT_FIREBASE_CONFIG;
 }
 

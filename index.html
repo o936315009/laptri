@@ -106,13 +106,13 @@
         </div>
 
         <!-- Biểu tượng Đám mây [ ☁️ 🟢 ] (Hiện trạng thái kết nối hoặc mất kết nối) -->
-        <div id="headerCloudSyncBadge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 shadow-2xs shrink-0 select-none cursor-default">
+        <div id="headerCloudSyncBadge" onclick="openCloudSyncModal()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs shrink-0 select-none transition cursor-pointer hover:opacity-90" title="Đám mây: Đã kết nối Google Firebase (laptri-8e2b3)">
           <span class="text-sm leading-none select-none">☁️</span>
           <span class="relative flex h-2 w-2">
-            <span id="cloudSyncPing" class="hidden"></span>
-            <span id="cloudSyncDot" class="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
+            <span id="cloudSyncPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span id="cloudSyncDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></span>
           </span>
-          <span id="cloudSyncText" class="hidden">Đám mây</span>
+          <span id="cloudSyncText" class="hidden">Đã kết nối</span>
         </div>
 
         <!-- Date display -->
@@ -3104,9 +3104,12 @@
               <span class="text-xl">☁️</span>
               Đồng Bộ Đám Mây Đa Thiết Bị (Real-time Cloud Sync)
             </h2>
-            <div id="settingsCloudStatusBadge" class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-700">
-              <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-              <span>Chưa kết nối đám mây</span>
+            <div id="settingsCloudStatusBadge" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <span class="relative flex h-2.5 w-2.5 shrink-0">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+              </span>
+              <span>Đã kết nối Google Firebase (laptri-8e2b3)</span>
             </div>
           </div>
 

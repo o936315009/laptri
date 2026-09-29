@@ -5364,8 +5364,58 @@
     </div>
   </div>
 
+  <!-- MODAL CHẶN TRUY CẬP & NHẬP LIỆU KHI MẤT KẾT NỐI THỜI GIAN THỰC 2 CHIỀU (CHỈ LƯU TRỮ ONLINE) -->
+  <div id="realtimeOfflineBlockerModal" class="fixed inset-0 bg-slate-900/85 backdrop-blur-md z-[9990] flex items-center justify-center p-3 sm:p-4 select-none">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border-2 border-rose-300 overflow-hidden flex flex-col p-6 sm:p-7 text-center animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Icon trạng thái động -->
+      <div class="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-rose-50 border-2 border-rose-200 flex items-center justify-center text-3xl sm:text-4xl mb-4 shadow-inner relative">
+        <span id="realtimeBlockerIcon">⏳</span>
+        <span id="realtimeBlockerPulse" class="absolute -top-1 -right-1 flex h-4 w-4">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-4 w-4 bg-amber-500"></span>
+        </span>
+      </div>
+
+      <!-- Tiêu đề lớn -->
+      <h3 id="realtimeBlockerTitle" class="text-base sm:text-lg font-black text-slate-900 mb-2 leading-tight">
+        Đang Kết Nối Máy Chủ Thời Gian Thực...
+      </h3>
+
+      <!-- Hộp giải thích chính sách CHỈ LƯU TRỮ ONLINE -->
+      <div class="bg-rose-50/80 border border-rose-200/80 rounded-2xl p-3.5 mb-4 text-left space-y-1.5">
+        <div class="flex items-center gap-1.5 text-rose-800 font-black text-[11px] sm:text-xs">
+          <span>🔒</span>
+          <span>CHẾ ĐỘ: CHỈ LƯU TRỮ VÀ ĐỒNG BỘ ONLINE</span>
+        </div>
+        <p id="realtimeBlockerMessage" class="text-[10px] sm:text-[11px] text-rose-900/90 leading-relaxed font-medium">
+          Hệ thống được thiết lập chế độ dữ liệu đám mây tập trung. Để ngăn ngừa sai lệch số dư ví và thất thoát dữ liệu, <strong>tất cả các tài khoản tạm thời không thể truy cập hoặc nhập dữ liệu</strong> khi chưa có kết nối thời gian thực 2 chiều với máy chủ Google Firebase.
+        </p>
+      </div>
+
+      <!-- Thanh trạng thái kết nối -->
+      <div class="flex items-center justify-center gap-2 text-[11px] sm:text-xs font-bold text-slate-600 mb-5 py-2 px-3 bg-slate-100 rounded-xl border border-slate-200">
+        <span id="realtimeBlockerStatusDot" class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+        <span id="realtimeBlockerStatusText">Đang kiểm tra kết nối với máy chủ Google Firebase...</span>
+      </div>
+
+      <!-- Các nút thao tác -->
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button type="button" onclick="retryRealtimeConnection()" id="btnRetryRealtime" class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5">
+          <span>🔄</span>
+          <span>Thử kết nối lại ngay</span>
+        </button>
+        <button type="button" onclick="openCloudSyncModalFromBlocker()" class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition cursor-pointer flex items-center justify-center gap-1">
+          <span>⚙️</span>
+          <span>Cấu hình đám mây</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- MODAL ĐỒNG BỘ ĐÁM MÂY (FIREBASE REALTIME DATABASE) -->
-  <div id="modalCloudSync" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4">
+  <div id="modalCloudSync" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[9995] hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-150">
       
       <!-- Modal Header -->

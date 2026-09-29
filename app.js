@@ -1140,6 +1140,9 @@ function saveLocalDataOnly() {
 }
 
 function saveData() {
+  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('lưu dữ liệu')) {
+    return false;
+  }
   try {
     AppState._lastModified = Date.now();
     STORAGE_KEY = getCurrentClubStorageKey();
@@ -2239,6 +2242,9 @@ let activityState = {
 };
 
 function saveActivitySessionState() {
+  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('lưu phiên điểm danh')) {
+    return;
+  }
   try {
     const clubId = getActiveClubId();
     const sessionKey = 'CLB_SESSION_' + clubId;
@@ -3393,6 +3399,9 @@ function renderActivityMemberChips() {
 }
 
 function toggleActivityMember(memberId) {
+  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('điểm danh thành viên')) {
+    return;
+  }
   const existingSes = (AppState.activitySessions || []).find(s => s.date === activityState.date);
   if (existingSes && !activityState.isEditingFinalizedSession) {
     if (isMonthClosed(activityState.date)) {
@@ -3425,6 +3434,9 @@ function toggleActivityMember(memberId) {
 }
 
 function selectAllActivityMembers() {
+  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('chọn tất cả thành viên')) {
+    return;
+  }
   if (!isAttendanceManager()) {
     showToast('⚠️ Chỉ Ban Quản lý mới có quyền thao tác chọn tất cả danh sách thành viên!', 'warning');
     return;
@@ -3446,6 +3458,9 @@ function selectAllActivityMembers() {
 }
 
 function deselectAllActivityMembers() {
+  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('bỏ chọn thành viên')) {
+    return;
+  }
   if (!isAttendanceManager()) {
     showToast('⚠️ Chỉ Ban Quản lý mới có quyền thao tác bỏ chọn tất cả danh sách thành viên!', 'warning');
     return;
@@ -8463,6 +8478,9 @@ function handleMemberSubmit(e) {
 }
 
 function deleteMember(memberId) {
+  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('xóa thành viên')) {
+    return;
+  }
   const member = AppState.members.find(m => m.id === memberId);
   if (!member) return;
 
@@ -8513,6 +8531,9 @@ function updateSelectedMembersCount() {
 }
 
 function deleteSelectedMembers() {
+  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('xóa các thành viên đã chọn')) {
+    return;
+  }
   const checkboxes = document.querySelectorAll('.member-select-checkbox:checked');
   const selectedIds = Array.from(checkboxes).map(cb => cb.value);
   if (selectedIds.length === 0) {
@@ -14522,6 +14543,9 @@ function openLoginModal() {
 
 async function handleLogin(e) {
   if (e) e.preventDefault();
+  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('đăng nhập tài khoản')) {
+    return;
+  }
   const u = document.getElementById('loginUsername').value.trim();
   const p = document.getElementById('loginPassword').value.trim();
 
@@ -14725,6 +14749,11 @@ function handleLogout() {
 // 19. TRỢ GIÚP MODAL
 // ==========================================
 function openModal(modalId) {
+  if (modalId !== 'modalCloudSync' && modalId !== 'realtimeOfflineBlockerModal') {
+    if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('mở biểu mẫu nhập dữ liệu')) {
+      return;
+    }
+  }
   const modal = document.getElementById(modalId);
   if (modal) {
     modal.classList.remove('hidden');
@@ -15852,6 +15881,100 @@ function getStoredFirebaseConfig() {
 
 let cloudInitTimeout = null;
 
+// ==========================================
+// CÁC HÀM QUẢN LÝ KHÓA TRUY CẬP KHI MẤT KẾT NỐI THỜI GIAN THỰC 2 CHIỀU
+// (CHỈ LƯU TRỮ & ĐỒNG BỘ ONLINE - NGĂN CHẶN NHẬP LIỆU TRÊN TẤT CẢ TÀI KHOẢN)
+// ==========================================
+function showRealtimeConnectingBlocker(statusText = 'Đang kết nối đám mây Google Firebase...') {
+  const modal = document.getElementById('realtimeOfflineBlockerModal');
+  if (!modal) return;
+  const icon = document.getElementById('realtimeBlockerIcon');
+  const title = document.getElementById('realtimeBlockerTitle');
+  const dot = document.getElementById('realtimeBlockerStatusDot');
+  const text = document.getElementById('realtimeBlockerStatusText');
+
+  if (icon) icon.textContent = '⏳';
+  if (title) title.textContent = 'Đang Kết Nối Máy Chủ Thời Gian Thực...';
+  if (dot) dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse';
+  if (text) text.textContent = statusText;
+  modal.classList.remove('hidden');
+}
+
+function showRealtimeOfflineBlocker(reason = '', statusText = '') {
+  const modal = document.getElementById('realtimeOfflineBlockerModal');
+  if (!modal) return;
+
+  const icon = document.getElementById('realtimeBlockerIcon');
+  const title = document.getElementById('realtimeBlockerTitle');
+  const msg = document.getElementById('realtimeBlockerMessage');
+  const dot = document.getElementById('realtimeBlockerStatusDot');
+  const text = document.getElementById('realtimeBlockerStatusText');
+
+  if (icon) icon.textContent = '📡';
+  if (title) title.textContent = 'Mất Kết Nối Thời Gian Thực 2 Chiều';
+  if (msg) {
+    msg.innerHTML = `Hệ thống được thiết lập chế độ <strong>CHỈ LƯU TRỮ VÀ ĐỒNG BỘ ONLINE</strong>. Để bảo đảm dữ liệu điểm danh, ví và quỹ không bị sai lệch, <strong>tất cả các tài khoản tạm thời không thể truy cập hoặc nhập dữ liệu</strong> khi chưa có kết nối thời gian thực 2 chiều với máy chủ Google Firebase.`;
+  }
+  if (dot) {
+    dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse';
+  }
+  if (text) {
+    text.textContent = statusText || (reason ? `Trạng thái: ${reason}` : 'Trạng thái: Đã ngắt kết nối với máy chủ Google Firebase');
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function hideRealtimeOfflineBlocker() {
+  const modal = document.getElementById('realtimeOfflineBlockerModal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+function retryRealtimeConnection() {
+  const text = document.getElementById('realtimeBlockerStatusText');
+  const dot = document.getElementById('realtimeBlockerStatusDot');
+  const icon = document.getElementById('realtimeBlockerIcon');
+  if (text) text.textContent = 'Đang tiến hành kết nối lại...';
+  if (dot) dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-sky-500 animate-spin';
+  if (icon) icon.textContent = '🔄';
+
+  showToast('Đang kết nối lại máy chủ Google Firebase...', 'info');
+  if (firebaseDb && firebase.database) {
+    try { firebase.database().goOnline(); } catch (e) {}
+  }
+  if (typeof initFirebaseCloudSync === 'function') {
+    initFirebaseCloudSync();
+  }
+  if (firebaseDb) {
+    const activeClub = getActiveClub();
+    const activeSlug = activeClub?.accessSlug || activeClub?.id || 'lap-tri';
+    subscribeToCloudClub(activeSlug);
+  }
+}
+
+function openCloudSyncModalFromBlocker() {
+  const modal = document.getElementById('modalCloudSync');
+  if (modal) {
+    modal.classList.remove('hidden');
+  }
+  const input = document.getElementById('cloudFirebaseConfigInput');
+  const stored = getStoredFirebaseConfig();
+  if (input) {
+    input.value = stored ? JSON.stringify(stored, null, 2) : '';
+  }
+}
+
+function assertRealtimeOnlineConnected(actionDesc = 'thao tác') {
+  if (!isCloudActuallyConnected) {
+    showRealtimeOfflineBlocker('Không có kết nối thời gian thực 2 chiều');
+    showToast(`⚠️ Không có kết nối thời gian thực 2 chiều! Bạn không thể ${actionDesc} khi đang ngoại tuyến.`, 'error', 5000);
+    return false;
+  }
+  return true;
+}
+
 function updateCloudSyncUI(status, message = '') {
   const badge = document.getElementById('headerCloudSyncBadge');
   const dot = document.getElementById('cloudSyncDot');
@@ -15864,18 +15987,21 @@ function updateCloudSyncUI(status, message = '') {
   const bannerDesc = document.getElementById('cloudStatusDesc');
 
   let dotColor = 'bg-emerald-500';
-  let badgeText = 'Bộ nhớ máy (Siêu tốc)';
-  let badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300';
+  let badgeText = 'Đang kiểm tra...';
+  let badgeClass = 'bg-slate-100 text-slate-800 border border-slate-300';
   let icon = '⚡';
-  let title = 'Bộ nhớ máy cục bộ (Sẵn sàng & Siêu tốc)';
-  let desc = 'Dữ liệu được lưu trữ trực tiếp và tức thì trên trình duyệt máy này.';
-  let headerTitle = 'Đám mây: Bộ nhớ máy cục bộ (Sẵn sàng & Siêu tốc)';
+  let title = 'Bộ nhớ máy cục bộ';
+  let desc = 'Đang kết nối đám mây online...';
+  let headerTitle = 'Đang kiểm tra kết nối thời gian thực...';
   let headerBadgeClass = 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200 shadow-2xs';
   let showPing = false;
   let pingColor = 'bg-emerald-400';
 
   if (status === 'CONNECTED') {
-    // 🟢 TRẠNG THÁI KẾT NỐI: Chấm xanh lá phát sáng
+    // 🟢 TRẠNG THÁI KẾT NỐI: Chấm xanh lá phát sáng & Mở khóa thao tác toàn bộ
+    isCloudActuallyConnected = true;
+    hideRealtimeOfflineBlocker();
+
     dotColor = 'bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse';
     badgeText = 'Đã kết nối';
     badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300';
@@ -15888,6 +16014,8 @@ function updateCloudSyncUI(status, message = '') {
     pingColor = 'bg-emerald-400';
   } else if (status === 'SYNCING') {
     // 🟡 TRẠNG THÁI ĐANG ĐỒNG BỘ: Chấm vàng quay
+    hideRealtimeOfflineBlocker();
+
     dotColor = 'bg-amber-500 animate-spin';
     badgeText = 'Đang lưu...';
     badgeClass = 'bg-amber-100 text-amber-800 border border-amber-300';
@@ -15900,6 +16028,10 @@ function updateCloudSyncUI(status, message = '') {
     pingColor = 'bg-amber-400';
   } else if (status === 'CONNECTING') {
     // 🔵 TRẠNG THÁI ĐANG KẾT NỐI: Chấm xanh dương nhấp nháy
+    if (!isCloudActuallyConnected) {
+      showRealtimeConnectingBlocker(message || 'Đang kết nối đám mây Google Firebase...');
+    }
+
     dotColor = 'bg-sky-500 animate-pulse';
     badgeText = 'Đang kết nối...';
     badgeClass = 'bg-sky-100 text-sky-800 border border-sky-300';
@@ -15911,7 +16043,10 @@ function updateCloudSyncUI(status, message = '') {
     showPing = true;
     pingColor = 'bg-sky-400';
   } else if (status === 'PERMISSION_DENIED') {
-    // ⚠️ TRẠNG THÁI BỊ CHẶN QUYỀN GHI: Chấm vàng cam cảnh báo cần mở Rules
+    // ⚠️ TRẠNG THÁI BỊ CHẶN QUYỀN GHI: Khóa thao tác nhập liệu
+    isCloudActuallyConnected = false;
+    showRealtimeOfflineBlocker('Quyền ghi bị chặn (PERMISSION_DENIED)', 'Chưa mở quyền ghi Rules (.write: true) trên Firebase Console');
+
     dotColor = 'bg-amber-500 shadow-[0_0_8px_#f59e0b]';
     badgeText = 'Chưa mở Rules';
     badgeClass = 'bg-amber-100 text-amber-900 border border-amber-300';
@@ -15923,14 +16058,17 @@ function updateCloudSyncUI(status, message = '') {
     showPing = true;
     pingColor = 'bg-amber-400';
   } else {
-    // 🔴 TRẠNG THÁI MẤT KẾT NỐI (DISCONNECTED / OFFLINE / ERROR / LOCAL_READY): Chấm đỏ cảnh báo mất kết nối
+    // 🔴 TRẠNG THÁI MẤT KẾT NỐI: Khóa toàn bộ thao tác nhập liệu trên tất cả tài khoản
+    isCloudActuallyConnected = false;
+    showRealtimeOfflineBlocker(message || 'Mất kết nối thời gian thực 2 chiều', 'Trạng thái: Đã ngắt kết nối với máy chủ Google Firebase');
+
     dotColor = 'bg-rose-500 shadow-[0_0_6px_#f43f5e]';
     badgeText = 'Mất kết nối';
     badgeClass = 'bg-rose-100 text-rose-800 border border-rose-300';
     icon = '🔴';
-    title = 'Mất kết nối đám mây (Bộ nhớ máy)';
-    desc = message || 'Hệ thống đang hoạt động ngoại tuyến, dữ liệu lưu an toàn trên máy.';
-    headerTitle = 'Đám mây: Mất kết nối (Bộ nhớ máy). Bấm để kiểm tra!';
+    title = 'Mất kết nối thời gian thực 2 chiều';
+    desc = message || 'Hệ thống ở chế độ CHỈ LƯU TRỮ ONLINE: Không thể nhập liệu khi mất kết nối.';
+    headerTitle = 'Đám mây: Mất kết nối (Chế độ CHỈ LƯU TRỮ ONLINE - Khóa nhập liệu)';
     headerBadgeClass = 'bg-rose-50/80 text-rose-700 border-rose-300 shadow-2xs hover:bg-rose-100 cursor-pointer';
     showPing = false;
   }

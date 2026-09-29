@@ -1140,9 +1140,6 @@ function saveLocalDataOnly() {
 }
 
 function saveData() {
-  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('lưu dữ liệu')) {
-    return false;
-  }
   try {
     AppState._lastModified = Date.now();
     STORAGE_KEY = getCurrentClubStorageKey();
@@ -2251,9 +2248,6 @@ let activityState = {
 };
 
 function saveActivitySessionState() {
-  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('lưu phiên điểm danh')) {
-    return;
-  }
   try {
     const clubId = getActiveClubId();
     const sessionKey = 'CLB_SESSION_' + clubId;
@@ -14552,9 +14546,6 @@ function openLoginModal() {
 
 async function handleLogin(e) {
   if (e) e.preventDefault();
-  if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('đăng nhập tài khoản')) {
-    return;
-  }
   const u = document.getElementById('loginUsername').value.trim();
   const p = document.getElementById('loginPassword').value.trim();
 
@@ -14758,11 +14749,6 @@ function handleLogout() {
 // 19. TRỢ GIÚP MODAL
 // ==========================================
 function openModal(modalId) {
-  if (modalId !== 'modalCloudSync' && modalId !== 'realtimeOfflineBlockerModal') {
-    if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('mở biểu mẫu nhập dữ liệu')) {
-      return;
-    }
-  }
   const modal = document.getElementById(modalId);
   if (modal) {
     modal.classList.remove('hidden');
@@ -15950,7 +15936,9 @@ function retryRealtimeConnection() {
   if (dot) dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-sky-500 animate-spin';
   if (icon) icon.textContent = '🔄';
 
-  showToast('Đang kết nối lại máy chủ Google Firebase...', 'info');
+  updateCloudSyncUI('CONNECTING', 'Đang kết nối lại Google Firebase...');
+  showToast('🔄 Đang kết nối lại máy chủ Google Firebase...', 'info', 3000);
+
   if (firebaseDb && firebase.database) {
     try { firebase.database().goOnline(); } catch (e) {}
   }
@@ -15962,9 +15950,13 @@ function retryRealtimeConnection() {
     const activeSlug = activeClub?.accessSlug || activeClub?.id || 'lap-tri';
     subscribeToCloudClub(activeSlug);
   }
+  setTimeout(() => {
+    hideRealtimeOfflineBlocker();
+  }, 1000);
 }
 
 function openCloudSyncModalFromBlocker() {
+  hideRealtimeOfflineBlocker();
   const modal = document.getElementById('modalCloudSync');
   if (modal) {
     modal.classList.remove('hidden');
@@ -15978,8 +15970,10 @@ function openCloudSyncModalFromBlocker() {
 
 function assertRealtimeOnlineConnected(actionDesc = 'thao tác') {
   if (!isCloudActuallyConnected) {
-    showRealtimeOfflineBlocker('Không có kết nối thời gian thực 2 chiều');
-    showToast(`⚠️ Không có kết nối thời gian thực 2 chiều! Bạn không thể ${actionDesc} khi đang ngoại tuyến.`, 'error', 5000);
+    showToast(`⚠️ Không có kết nối thời gian thực 2 chiều! Bạn không thể ${actionDesc} khi đang ngoại tuyến.`, 'warning', 4000);
+    if (!navigator.onLine) {
+      showRealtimeOfflineBlocker('Không có kết nối thời gian thực 2 chiều');
+    }
     return false;
   }
   return true;
@@ -16038,8 +16032,6 @@ function updateCloudSyncUI(status, message = '') {
     pingColor = 'bg-amber-400';
   } else if (status === 'CONNECTING') {
     // 🔵 TRẠNG THÁI ĐANG KẾT NỐI: Chấm xanh dương nhấp nháy
-    // Không hiện modal chặn ngay lập tức để tránh chớp màn hình khi tải trang bình thường.
-    // Nếu quá thời gian chờ (4s) mà chưa kết nối, cloudInitTimeout sẽ chuyển sang DISCONNECTED và hiện modal.
     dotColor = 'bg-sky-500 animate-pulse';
     badgeText = 'Đang kết nối...';
     badgeClass = 'bg-sky-100 text-sky-800 border border-sky-300';
@@ -16051,9 +16043,8 @@ function updateCloudSyncUI(status, message = '') {
     showPing = true;
     pingColor = 'bg-sky-400';
   } else if (status === 'PERMISSION_DENIED') {
-    // ⚠️ TRẠNG THÁI BỊ CHẶN QUYỀN GHI: Khóa thao tác nhập liệu
+    // ⚠️ TRẠNG THÁI BỊ CHẶN QUYỀN GHI
     isCloudActuallyConnected = false;
-    showRealtimeOfflineBlocker('Quyền ghi bị chặn (PERMISSION_DENIED)', 'Chưa mở quyền ghi Rules (.write: true) trên Firebase Console');
 
     dotColor = 'bg-amber-500 shadow-[0_0_8px_#f59e0b]';
     badgeText = 'Chưa mở Rules';
@@ -16066,9 +16057,11 @@ function updateCloudSyncUI(status, message = '') {
     showPing = true;
     pingColor = 'bg-amber-400';
   } else {
-    // 🔴 TRẠNG THÁI MẤT KẾT NỐI: Khóa toàn bộ thao tác nhập liệu trên tất cả tài khoản
+    // 🔴 TRẠNG THÁI MẤT KẾT NỐI
     isCloudActuallyConnected = false;
-    showRealtimeOfflineBlocker(message || 'Mất kết nối thời gian thực 2 chiều', 'Trạng thái: Đã ngắt kết nối với máy chủ Google Firebase');
+    if (!navigator.onLine) {
+      showRealtimeOfflineBlocker(message || 'Mất kết nối thời gian thực 2 chiều', 'Trạng thái: Đã ngắt kết nối với máy chủ Google Firebase');
+    }
 
     dotColor = 'bg-rose-500 shadow-[0_0_6px_#f43f5e]';
     badgeText = 'Mất kết nối';
@@ -16182,6 +16175,7 @@ function initFirebaseCloudSync() {
       if (isConnected) {
         hasEstablishedFirstConnection = true;
         clearTimeout(cloudInitTimeout);
+        hideRealtimeOfflineBlocker();
         updateCloudSyncUI('CONNECTED');
       } else {
         if (hasEstablishedFirstConnection) {
@@ -16384,6 +16378,11 @@ function subscribeToCloudClub(clubSlug) {
   currentCloudClubRef = firebaseDb.ref('clubs/' + cleanSlug);
 
   currentCloudClubRef.on('value', snapshot => {
+    isCloudActuallyConnected = true;
+    clearTimeout(cloudInitTimeout);
+    hideRealtimeOfflineBlocker();
+    updateCloudSyncUI('CONNECTED');
+
     const cloudData = snapshot.val();
     if (!cloudData) {
       if (AppState && AppState.members && AppState.members.length > 0 && !isSyncingToCloud) {

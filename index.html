@@ -618,7 +618,7 @@
                       <span>Tất cả</span>
                     </label>
                   </div>
-                  <input type="number" id="actFrontAmountInput" value="0" min="0" step="10000" oninput="onFrontAmountChanged(this.value)" class="w-full text-xs font-semibold border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  <input type="number" id="actFrontAmountInput" value="0" min="0" step="any" oninput="onFrontAmountChanged(this.value)" class="w-full text-xs font-semibold border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                 </div>
               </div>
             </div>
@@ -2883,7 +2883,7 @@
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Đơn giá 1 hộp cầu:</label>
               <div class="flex items-center gap-2">
-                <input type="number" id="configDailyBoxPrice" min="0" step="5000" value="340000" 
+                <input type="number" id="configDailyBoxPrice" min="0" step="any" value="340000" 
                   oninput="updateDailyRateCalculatedPreview()" 
                   class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-bold text-emerald-800 text-right" />
                 <span class="text-xs font-semibold text-slate-500 shrink-0">VNĐ</span>
@@ -3008,15 +3008,15 @@
           <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Khách Loại A (Level A - VNĐ/buổi):</label>
-              <input type="number" id="guestPriceA" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" value="90000" step="10000" />
+              <input type="number" id="guestPriceA" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" value="90000" min="0" step="any" />
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Khách Loại B (Level B - VNĐ/buổi):</label>
-              <input type="number" id="guestPriceB" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" value="70000" step="10000" />
+              <input type="number" id="guestPriceB" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" value="70000" min="0" step="any" />
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Khách Loại C (Level C - VNĐ/buổi):</label>
-              <input type="number" id="guestPriceC" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" value="50000" step="10000" />
+              <input type="number" id="guestPriceC" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" value="50000" min="0" step="any" />
             </div>
           </div>
 
@@ -3247,7 +3247,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền nạp (VNĐ):</label>
-          <input type="number" id="topUpAmount" required min="10000" step="10000" value="200000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-bold text-slate-900" />
+          <input type="number" id="topUpAmount" required min="0" step="any" value="200000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-bold text-slate-900" />
           <div class="flex gap-2 mt-2">
             <button type="button" onclick="setTopUpAmount(100000)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] font-semibold text-slate-700 cursor-pointer">+100k</button>
             <button type="button" onclick="setTopUpAmount(200000)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] font-semibold text-slate-700 cursor-pointer">+200k</button>
@@ -3347,7 +3347,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền (VNĐ):</label>
-          <input type="number" id="fundAmount" required min="1000" step="5000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" />
+          <input type="number" id="fundAmount" required min="0" step="any" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" />
         </div>
 
         <div>
@@ -3402,7 +3402,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền (VNĐ):</label>
-          <input type="number" id="advanceAmount" required min="10000" step="10000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" />
+          <input type="number" id="advanceAmount" required min="0" step="any" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" />
         </div>
 
         <div>
@@ -3454,7 +3454,7 @@
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Số tiền chi trả (VNĐ):</label>
-            <input type="number" id="payShuttleAmount" required min="10000" step="10000" value="680000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-black text-rose-600 text-right" />
+            <input type="number" id="payShuttleAmount" required min="0" step="any" value="680000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-black text-rose-600 text-right" />
           </div>
         </div>
 
@@ -3515,7 +3515,7 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Số tiền chi trả cho chủ sân (VNĐ):</label>
-          <input type="number" id="payCourtAmount" required min="50000" step="50000" value="1500000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-black text-rose-600 text-right text-base" />
+          <input type="number" id="payCourtAmount" required min="0" step="any" value="1500000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-black text-rose-600 text-right text-base" />
         </div>
 
         <div class="flex gap-2">
@@ -3619,7 +3619,7 @@
           <div class="p-3 bg-gradient-to-r from-purple-50/70 to-indigo-50/70 rounded-2xl border border-purple-200 space-y-2">
             <div>
               <label class="block text-xs font-bold text-purple-950 mb-1">Số tiền thành viên nộp (VNĐ):</label>
-              <input type="number" id="settlementAmount" required min="1000" step="5000" oninput="updateSettlementNewBalancePreview()" class="w-full px-3 py-2 text-xs border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 font-black text-emerald-800 text-right text-base bg-white" />
+              <input type="number" id="settlementAmount" required min="0" step="any" oninput="updateSettlementNewBalancePreview()" class="w-full px-3 py-2 text-xs border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 font-black text-emerald-800 text-right text-base bg-white" />
             </div>
 
             <div class="flex items-center justify-between text-xs pt-1 border-t border-purple-200/80">
@@ -4010,7 +4010,7 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Mức thu mỗi người (VNĐ):</label>
-            <input type="number" id="monthlyFundAmount" required min="10000" step="10000" value="200000" oninput="updateMonthlyFundSummary()" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold text-emerald-800 text-right" />
+            <input type="number" id="monthlyFundAmount" required min="0" step="any" value="200000" oninput="updateMonthlyFundSummary()" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold text-emerald-800 text-right" />
           </div>
         </div>
 
@@ -4067,38 +4067,38 @@
   </div>
 
   <!-- 2. MODAL PHẠT NHANH THEO NGÀY (A.2) -->
-  <div id="quickFineModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-2xl rounded-3xl p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[92vh]">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4 shrink-0">
+  <div id="quickFineModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white w-full max-w-2xl rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[92vh]">
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3 shrink-0">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm">A.2</div>
+          <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm shrink-0">A.2</div>
           <div>
-            <h3 class="text-base font-bold text-slate-900 leading-tight">Danh Sách Xử Phạt Nhanh (Theo Ngày)</h3>
-            <p class="text-[11px] text-slate-500">Áp dụng cho tất cả thành viên • Xác nhận → tự động trừ trực tiếp vào Ví thành viên & cộng Quỹ CLB</p>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">Danh Sách Xử Phạt Nhanh (Theo Ngày)</h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-500">Áp dụng cho tất cả thành viên • Trừ trực tiếp Ví & nộp Quỹ CLB</p>
           </div>
         </div>
-        <button type="button" onclick="closeModal('quickFineModal')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button type="button" onclick="closeModal('quickFineModal')" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <form onsubmit="handleQuickFineSubmit(event)" class="space-y-4 overflow-y-auto pr-1 flex-1">
-        <div class="flex items-center justify-between">
+      <form onsubmit="handleQuickFineSubmit(event)" class="space-y-3 overflow-y-auto pr-1 flex-1 flex flex-col">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
           <div class="flex items-center gap-2">
-            <label class="text-xs font-bold text-slate-700">Ngày xử phạt:</label>
-            <input type="date" id="quickFineGlobalDate" required class="px-3 py-1.5 text-xs border border-slate-200 rounded-xl font-bold text-slate-800 bg-white" />
+            <label class="text-xs font-bold text-slate-700 whitespace-nowrap">Ngày xử phạt:</label>
+            <input type="date" id="quickFineGlobalDate" required class="px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl font-bold text-slate-800 bg-white" />
           </div>
-          <button type="button" onclick="addQuickFineRow()" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl border border-amber-300 flex items-center gap-1 transition cursor-pointer">
+          <button type="button" onclick="addQuickFineRow()" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl border border-amber-300 flex items-center gap-1 transition cursor-pointer shrink-0">
             <span>➕</span> Thêm dòng phạt
           </button>
         </div>
 
-        <!-- Danh sách dòng phạt -->
-        <div class="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
-          <table class="w-full text-left text-xs">
+        <!-- Danh sách dòng phạt (Cuộn ngang êm ái trên di động, không bị bóp méo chữ) -->
+        <div class="border border-slate-200 rounded-2xl overflow-x-auto bg-slate-50/50 shadow-inner">
+          <table class="w-full min-w-[490px] text-left text-xs">
             <thead class="bg-slate-100 text-slate-700 font-black border-b border-slate-200 text-[11px]">
               <tr>
-                <th class="py-2.5 px-3">Thành viên vi phạm (*)</th>
-                <th class="py-2.5 px-3">Nội dung / Lý do phạt (*)</th>
-                <th class="py-2.5 px-3 w-32 text-right">Tiền phạt (đ)</th>
+                <th class="py-2.5 px-3 min-w-[145px]">Thành viên vi phạm (*)</th>
+                <th class="py-2.5 px-3 min-w-[165px]">Nội dung / Lý do phạt (*)</th>
+                <th class="py-2.5 px-3 w-28 min-w-[110px] text-right">Tiền phạt (đ)</th>
                 <th class="py-2.5 px-2 w-10 text-center">Xóa</th>
               </tr>
             </thead>
@@ -4154,7 +4154,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền thưởng nhận được (VNĐ) (*):</label>
-          <input type="number" id="prizeAmount" required min="10000" step="10000" placeholder="VD: 2000000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-black text-blue-900 text-lg" />
+          <input type="number" id="prizeAmount" required min="0" step="any" placeholder="VD: 2000000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-black text-blue-900 text-lg" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -4207,7 +4207,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền tài trợ (VNĐ) (*):</label>
-          <input type="number" id="sponsorAmount" required min="10000" step="10000" placeholder="VD: 5000000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-black text-purple-900 text-lg" />
+          <input type="number" id="sponsorAmount" required min="0" step="any" placeholder="VD: 5000000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-black text-purple-900 text-lg" />
         </div>
 
         <div>
@@ -4233,17 +4233,17 @@
   </div>
 
   <!-- 5. MODAL KHOẢN THU KHÁC (A.5) -->
-  <div id="otherIncomeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-100">
+  <div id="otherIncomeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm">A.5</div>
+          <div class="w-8 h-8 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm shrink-0">A.5</div>
           <div>
             <h3 class="text-base font-bold text-slate-900">Khoản Thu Khác</h3>
             <p class="text-[11px] text-slate-500">Cộng trực tiếp vào Quỹ CLB • Không tác động Ví TV</p>
           </div>
         </div>
-        <button type="button" onclick="closeModal('otherIncomeModal')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button type="button" onclick="closeModal('otherIncomeModal')" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
       <form onsubmit="handleOtherIncomeSubmit(event)" class="space-y-4">
@@ -4254,7 +4254,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền (VNĐ) (*):</label>
-          <input type="number" id="otherIncomeAmount" required min="1000" step="5000" placeholder="VD: 500000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-black text-teal-900 text-lg" />
+          <input type="number" id="otherIncomeAmount" required min="0" step="any" placeholder="VD: 500000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-black text-teal-900 text-lg" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -4281,17 +4281,17 @@
   </div>
 
   <!-- 6. MODAL CHI HOẠT ĐỘNG CHUNG CLB (B.1) -->
-  <div id="generalExpenseModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-100">
+  <div id="generalExpenseModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-sm">B.1</div>
+          <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-sm shrink-0">B.1</div>
           <div>
             <h3 class="text-base font-bold text-slate-900">Chi Hoạt Động Chung CLB</h3>
             <p class="text-[11px] text-slate-500">Trừ trực tiếp vào Quỹ CLB • Không trừ Ví TV</p>
           </div>
         </div>
-        <button type="button" onclick="closeModal('generalExpenseModal')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button type="button" onclick="closeModal('generalExpenseModal')" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
       <form onsubmit="handleGeneralExpenseSubmit(event)" class="space-y-4">
@@ -4318,7 +4318,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền chi (VNĐ) (*):</label>
-          <input type="number" id="generalExpenseAmount" required min="1000" step="5000" placeholder="VD: 1500000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-black text-rose-600 text-lg" />
+          <input type="number" id="generalExpenseAmount" required min="0" step="any" placeholder="VD: 1500000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-black text-rose-600 text-lg" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -4399,7 +4399,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền chi (VNĐ) (*):</label>
-          <input type="number" id="memberExpenseAmount" required min="10000" step="50000" value="1000000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-black text-rose-600 text-lg" />
+          <input type="number" id="memberExpenseAmount" required min="0" step="any" value="1000000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-black text-rose-600 text-lg" />
           <div class="flex gap-2 mt-1.5">
             <button type="button" onclick="setMemberExpenseAmountQuick(500000)" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-[11px] font-semibold text-slate-700 cursor-pointer">500k</button>
             <button type="button" onclick="setMemberExpenseAmountQuick(1000000)" class="px-2 py-0.5 bg-pink-100 hover:bg-pink-200 rounded text-[11px] font-semibold text-pink-800 cursor-pointer">1.000k</button>
@@ -4486,7 +4486,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Số dư ví ban đầu (VNĐ):</label>
-          <input type="number" id="memberInitialBalance" value="0" step="10000" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" />
+          <input type="number" id="memberInitialBalance" value="0" step="any" min="0" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none font-bold" />
         </div>
 
         <div class="pt-2 flex gap-3">
@@ -4568,7 +4568,7 @@
             </span>
           </div>
           <div class="flex items-center gap-2">
-            <input type="number" id="newActDailyBoxPrice" min="0" step="5000" value="340000" oninput="updateNewActBoxPricePreview(this.value)" class="w-full px-3 py-2 text-xs font-bold text-emerald-800 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right" />
+            <input type="number" id="newActDailyBoxPrice" min="0" step="any" value="340000" oninput="updateNewActBoxPricePreview(this.value)" class="w-full px-3 py-2 text-xs font-bold text-emerald-800 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right" />
             <span class="text-xs font-semibold text-slate-500 shrink-0">VNĐ/hộp</span>
           </div>
           <p class="text-[10px] text-slate-400 mt-1">
@@ -5008,7 +5008,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block font-bold text-slate-700 mb-1">Số dư Quỹ CLB ban đầu (VNĐ):</label>
-                <input type="number" id="newClubInitialFund" step="100000" min="0" value="2000000" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-white font-extrabold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <input type="number" id="newClubInitialFund" step="any" min="0" value="2000000" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-white font-extrabold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                 <p class="text-[10px] text-slate-400 mt-1">Khoản tiền khởi tạo trong Quỹ chung CLB (Mặc định 2.000.000đ)</p>
               </div>
 
@@ -5728,7 +5728,7 @@ const firebaseConfig = {
           <label class="block font-bold text-slate-700 mb-1">Số tiền chi (VNĐ) (*):</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">💵</span>
-            <input type="number" id="pexpAmount" required min="1000" step="1000" placeholder="VD: 150000" class="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <input type="number" id="pexpAmount" required min="0" step="any" placeholder="VD: 150000" class="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl bg-white font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
         </div>
 

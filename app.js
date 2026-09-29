@@ -3741,11 +3741,11 @@ function renderActivityExpenseRows() {
           </div>
           <div>
             <label class="block text-[10px] text-slate-400 font-bold mb-1 text-right">Đơn giá</label>
-            <input type="number" min="0" step="5000" value="${exp.unitPrice}" oninput="updateExpenseUnitPrice(${exp.id}, this.value)" class="w-full text-xs font-black border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right text-slate-900" />
+            <input type="number" min="0" step="any" value="${exp.unitPrice}" oninput="updateExpenseUnitPrice(${exp.id}, this.value)" class="w-full text-xs font-black border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right text-slate-900" />
           </div>
           <div>
             <label class="block text-[10px] text-slate-400 font-bold mb-1 text-right">Số tiền</label>
-            <input type="number" min="0" step="5000" value="${exp.amount}" oninput="updateExpenseAmountDirect(${exp.id}, this.value)" class="w-full text-xs font-black text-emerald-800 border border-slate-200 rounded-xl px-2.5 py-2 bg-emerald-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right" />
+            <input type="number" min="0" step="any" value="${exp.amount}" oninput="updateExpenseAmountDirect(${exp.id}, this.value)" class="w-full text-xs font-black text-emerald-800 border border-slate-200 rounded-xl px-2.5 py-2 bg-emerald-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right" />
           </div>
         </div>
       </div>
@@ -6530,19 +6530,19 @@ function addQuickFineRow(preMemberId = '', preReason = '', preAmount = 50000) {
   tr.id = rowId;
   tr.className = 'hover:bg-slate-50 transition';
   tr.innerHTML = `
-    <td class="py-2 px-3">
+    <td class="py-2 px-3 min-w-[145px]">
       <select class="quick-fine-member w-full text-xs font-bold border border-slate-200 rounded-lg p-1.5 bg-white focus:ring-1 focus:ring-amber-500">
         <option value="">-- Chọn thành viên --</option>
         ${memberOptions}
       </select>
     </td>
-    <td class="py-2 px-3">
+    <td class="py-2 px-3 min-w-[165px]">
       <input type="text" value="${preReason}" placeholder="Đi muộn >15p, vắng không phép, lỗi trang phục..." class="quick-fine-reason w-full text-xs border border-slate-200 rounded-lg p-1.5 focus:ring-1 focus:ring-amber-500" list="fineCommonReasons" />
     </td>
-    <td class="py-2 px-3">
-      <input type="number" value="${preAmount}" min="5000" step="5000" oninput="updateQuickFineSummary()" class="quick-fine-amount w-full text-xs font-black text-amber-900 border border-slate-200 rounded-lg p-1.5 text-right focus:ring-1 focus:ring-amber-500" />
+    <td class="py-2 px-3 min-w-[110px]">
+      <input type="number" value="${preAmount}" min="0" step="any" oninput="updateQuickFineSummary()" class="quick-fine-amount w-full text-xs font-black text-amber-900 border border-slate-200 rounded-lg p-1.5 text-right focus:ring-1 focus:ring-amber-500" />
     </td>
-    <td class="py-2 px-2 text-center">
+    <td class="py-2 px-2 text-center w-10">
       <button type="button" onclick="removeQuickFineRow('${rowId}')" class="text-slate-400 hover:text-rose-600 font-black p-1 text-sm cursor-pointer" title="Xóa dòng này">✕</button>
     </td>
   `;
@@ -13983,7 +13983,7 @@ function renderFeeTiersConfigTable() {
         </td>
         <td class="py-2.5 px-3 text-right">
           <div class="inline-flex items-center justify-end gap-1">
-            <input type="number" step="5000" min="0" value="${tier.price}" oninput="updateTierField(${idx}, 'price', Number(this.value))" class="w-32 px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs text-right font-black text-brand-700 bg-white focus:outline-none focus:border-brand-500" />
+            <input type="number" step="any" min="0" value="${tier.price}" oninput="updateTierField(${idx}, 'price', Number(this.value))" class="w-32 px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs text-right font-black text-brand-700 bg-white focus:outline-none focus:border-brand-500" />
             <span class="text-xs font-bold text-slate-400">đ</span>
           </div>
         </td>
@@ -14034,7 +14034,7 @@ function renderFeeTiersConfigTable() {
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">Mức tiền sân trừ vào ví:</label>
             <div class="relative">
-              <input type="number" step="5000" min="0" value="${tier.price}" oninput="updateTierField(${idx}, 'price', Number(this.value))" class="w-full pl-3 pr-12 py-2 text-sm font-black text-brand-700 bg-white border border-slate-200 rounded-xl focus:border-brand-500 focus:outline-none" />
+              <input type="number" step="any" min="0" value="${tier.price}" oninput="updateTierField(${idx}, 'price', Number(this.value))" class="w-full pl-3 pr-12 py-2 text-sm font-black text-brand-700 bg-white border border-slate-200 rounded-xl focus:border-brand-500 focus:outline-none" />
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-brand-700 pointer-events-none">VNĐ</span>
             </div>
             <div class="text-[10px] text-slate-400 mt-1 flex items-center justify-between">

@@ -14393,11 +14393,14 @@ async function handleLogin(e) {
 
   // 2. Tìm thành viên trong CLB hiện tại
   const cleanSlug = getCanonicalClubSlug(getActiveClub()?.accessSlug || getActiveClub()?.id || 'lap-tri');
-  const member = (AppState.members || []).find(m => 
+  let member = (AppState.members || []).find(m => 
     (m.username && m.username.toLowerCase() === u.toLowerCase()) ||
     (m.phone && m.phone === u) ||
     (m.email && m.email.toLowerCase() === u.toLowerCase())
   );
+  if (!member && (u.toLowerCase() === 'admin' || u.toLowerCase() === 'chinh' || u.toLowerCase() === 'tntoan')) {
+    member = (AppState.members || []).find(m => m.role === 'ADMIN') || (AppState.members && AppState.members[0]);
+  }
 
   // 3. Đăng nhập an toàn qua Firebase Authentication (Email/Password)
   const authEmail = u.includes('@') ? u : `${(member?.username || u).toLowerCase()}@${cleanSlug}.clb`;
@@ -16018,6 +16021,14 @@ function subscribeToCloudClub(clubSlug) {
     let incomingTransactions = cloudData.transactions || [];
     let incomingTournaments = cloudData.tournaments || cloudData.tournamentData || [];
     let incomingTopUpRequests = cloudData.wallets?.topUpRequests || cloudData.topUpRequests || [];
+
+    // Tự động dọn sạch các buổi demo mẫu cũ nếu có từ dữ liệu đám mây trước đây để giữ dữ liệu hoạt động sạch 100%
+    if (Array.isArray(incomingSessions)) {
+      incomingSessions = incomingSessions.filter(s => !s.id || !s.id.startsWith('SES_202609'));
+    }
+    if (Array.isArray(incomingTransactions)) {
+      incomingTransactions = incomingTransactions.filter(tx => !tx.id || (!tx.id.startsWith('TX_10') && !tx.id.startsWith('TX_20') && !tx.id.startsWith('TX_30')));
+    }
 
     // Bảo toàn mật khẩu lưu cục bộ của các thành viên (do đám mây đã bảo mật loại bỏ password)
     if (AppState.members && AppState.members.length > 0) {

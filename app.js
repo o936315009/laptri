@@ -7509,7 +7509,7 @@ function renderTopUpBadges() {
 }
 
 /**
- * Hiển thị khối quản lý yêu cầu nạp tiền trong tab "Thanh toán & Quỹ"
+ * Hiển thị khối quản lý yêu cầu nạp tiền trong tab "Thanh Toán & Ví"
  */
 function renderFinancePendingTopUpSection() {
   const section = document.getElementById('financePendingTopUpSection');
@@ -8180,6 +8180,8 @@ function validateInlineGuestName() {
 }
 
 function setMemberListFilter(filter) {
+  if (filter === 'OFFICIAL' || filter === 'HONORARY') filter = 'MEMBERS';
+  if (filter === 'GUEST') filter = 'OTHER';
   memberListFilter = filter;
   document.querySelectorAll('.mem-filter-btn').forEach(btn => {
     btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
@@ -8216,21 +8218,34 @@ function renderMemberManagementList() {
     else filterTabsContainer.classList.remove('hidden');
   }
 
-  const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-  let list = AppState.members;
+  // Cập nhật số lượng trên các nút phân loại: Tất cả, Danh sách thành viên, Khác
+  const allBtn = document.getElementById('filter-mem-all');
+  const memBtn = document.getElementById('filter-mem-members');
+  const otherBtn = document.getElementById('filter-mem-other');
 
-  // Nếu là tài khoản thành viên thông thường (MEMBER), ẩn hoàn toàn tài khoản Quản lý toàn quyền CLB (ADMIN)
-  // Các thành viên tham gia quản lý (Phó nhóm, Thủ quỹ, Trọng tài) và hội viên khác hiển thị đầy đủ 100%
-  if (isMemberRoleMem) {
-    list = list.filter(m => !isClubMasterAdmin(m));
+  const baseList = isMemberRoleMem ? (AppState.members || []).filter(m => !isClubMasterAdmin(m)) : (AppState.members || []);
+  const totalCount = baseList.length;
+  const isMemberItem = m => m.type !== 'GUEST_A' && m.type !== 'GUEST_B' && m.type !== 'GUEST_C' && !String(m.type || '').startsWith('GUEST') && m.type !== 'OTHER';
+  const memCount = baseList.filter(isMemberItem).length;
+  const otherCount = totalCount - memCount;
+
+  if (allBtn) {
+    allBtn.innerHTML = `Tất cả <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200/80 text-slate-700 font-bold">${totalCount}</span>`;
+  }
+  if (memBtn) {
+    memBtn.innerHTML = `Danh sách thành viên <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-bold">${memCount}</span>`;
+  }
+  if (otherBtn) {
+    otherBtn.innerHTML = `Khác <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-800 font-bold">${otherCount}</span>`;
   }
 
-  if (memberListFilter === 'OFFICIAL') {
-    list = list.filter(m => m.type === 'OFFICIAL');
-  } else if (memberListFilter === 'HONORARY' || memberListFilter === 'UNOFFICIAL') {
-    list = list.filter(m => m.type === 'HONORARY' || m.type === 'UNOFFICIAL');
-  } else if (memberListFilter === 'GUEST') {
-    list = list.filter(m => m.type.startsWith('GUEST'));
+  const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  let list = baseList;
+
+  if (memberListFilter === 'MEMBERS' || memberListFilter === 'OFFICIAL' || memberListFilter === 'HONORARY') {
+    list = list.filter(isMemberItem);
+  } else if (memberListFilter === 'OTHER' || memberListFilter === 'GUEST') {
+    list = list.filter(m => !isMemberItem(m));
   }
 
   if (query) {

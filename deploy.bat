@@ -11,7 +11,7 @@ git add index.html app.js database.rules.json deploy.bat
 
 echo.
 echo [2/4] Dang tao ban ghi commit...
-git commit -m "feat: thiet lap luu tru database realtime va toi uu hoa dong bo"
+git commit -m "feat: cap nhat giao dien Thanh Toan & Vi, danh sach thanh vien va khac"
 
 echo.
 echo [3/4] Dang day len nhanh chinh (main)...

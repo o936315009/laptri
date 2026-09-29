@@ -153,7 +153,7 @@
           <button onclick="switchTab('finance')" id="nav-finance" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-slate-600 hover:bg-slate-100">
             <div class="flex items-center space-x-2.5">
               <i data-lucide="wallet" class="w-4 h-4"></i>
-              <span>Thanh toán & Quỹ</span>
+              <span>Thanh Toán & Ví</span>
             </div>
             <span id="navFinancePendingBadge" class="hidden px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-black">0</span>
           </button>
@@ -755,7 +755,7 @@
         </div>
       </div>
 
-      <!-- ================= 3. TAB: THANH TOÁN & QUỸ ================= -->
+      <!-- ================= 3. TAB: THANH TOÁN & VÍ ================= -->
       <section id="tab-finance" class="tab-pane hidden space-y-4">
         
         <!-- KHỐI QUẢN LÝ YÊU CẦU NẠP TIỀN CHỜ KẾ TOÁN XÁC THỰC -->
@@ -1304,9 +1304,9 @@
             <div>
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <i data-lucide="users" class="w-5 h-5 text-brand-600"></i>
-                Danh sách Hội Viên Cầu Lông & Khách
+                Danh Sách Thành Viên & Khác
               </h2>
-              <p class="text-xs text-slate-500 mt-0.5">Tạo tài khoản, quản lý số dư ví, cấp lại mật khẩu và phân loại</p>
+              <p class="text-xs text-slate-500 mt-0.5">Tạo tài khoản, quản lý số dư ví, cấp lại mật khẩu và phân loại: Danh sách thành viên và khác</p>
             </div>
 
             <div id="memberManagementAdminButtons" class="flex flex-wrap items-center gap-2">
@@ -1336,10 +1336,9 @@
           <!-- Filter & Search -->
           <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="flex p-1 bg-slate-100 rounded-xl text-xs font-semibold space-x-1 w-full sm:w-auto">
-              <button onclick="setMemberListFilter('ALL')" id="filter-mem-all" class="mem-filter-btn px-3 py-1.5 rounded-lg bg-white shadow-sm text-slate-800">Tất cả</button>
-              <button onclick="setMemberListFilter('OFFICIAL')" id="filter-mem-official" class="mem-filter-btn px-3 py-1.5 rounded-lg text-slate-600">Chính thức</button>
-              <button onclick="setMemberListFilter('HONORARY')" id="filter-mem-honorary" class="mem-filter-btn px-3 py-1.5 rounded-lg text-slate-600">Thành viên danh dự</button>
-              <button onclick="setMemberListFilter('GUEST')" id="filter-mem-guest" class="mem-filter-btn px-3 py-1.5 rounded-lg text-slate-600">Khách giao lưu</button>
+              <button onclick="setMemberListFilter('ALL')" id="filter-mem-all" class="mem-filter-btn px-3 py-1.5 rounded-lg bg-white shadow-sm text-slate-800 transition">Tất cả</button>
+              <button onclick="setMemberListFilter('MEMBERS')" id="filter-mem-members" class="mem-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-800 transition">Danh sách thành viên</button>
+              <button onclick="setMemberListFilter('OTHER')" id="filter-mem-other" class="mem-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-800 transition">Khác</button>
             </div>
 
             <div class="relative w-full sm:w-64">
@@ -5969,7 +5968,7 @@ const firebaseConfig = {
         <i data-lucide="wallet" class="w-5 h-5 mb-0.5"></i>
         <span id="mNavFinancePendingDot" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white"></span>
       </div>
-      <span class="text-[10px] font-bold">Thu / Chi</span>
+      <span class="text-[10px] font-bold">Thanh Toán & Ví</span>
     </button>
     <button type="button" onclick="switchTab('members')" id="m-nav-members" class="flex flex-col items-center justify-center py-1 px-1 text-slate-500 hover:text-brand-700 transition active:scale-95 text-center flex-1 cursor-pointer">
       <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
@@ -6085,6 +6084,6 @@ const firebaseConfig = {
   <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- Application Logic - Thực thi tức thì khi HTML đã dựng xong -->
-  <script defer src="app.js?v=3.9"></script>
+  <script defer src="app.js?v=4.0"></script>
 </body>
 </html>

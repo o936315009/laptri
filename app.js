@@ -20,6 +20,33 @@ function safeRemoveStorage(key) {
   try { localStorage.removeItem(key); } catch (e) {}
 }
 
+// Kênh đồng bộ tức thì giữa các tab/cửa sổ trên cùng trình duyệt
+let appBroadcastChannel = null;
+try {
+  if (typeof window !== 'undefined' && typeof window.BroadcastChannel !== 'undefined') {
+    appBroadcastChannel = new BroadcastChannel('CLB_REALTIME_SYNC_CHANNEL');
+    appBroadcastChannel.onmessage = (event) => {
+      if (!event.data) return;
+      if (event.data.type === 'SESSION_UPDATED' && event.data.session) {
+        applyLiveSessionFromCloud(event.data.session);
+        if (typeof currentTab !== 'undefined') {
+          if (currentTab === 'attendance') renderAttendanceTab();
+          else if (currentTab === 'dashboard') renderDashboard();
+        }
+      } else if (event.data.type === 'DATA_UPDATED') {
+        loadData();
+        renderDashboard();
+        if (typeof currentTab !== 'undefined') {
+          if (currentTab === 'attendance') renderAttendanceTab();
+          else if (currentTab === 'finance') renderFinanceTab();
+          else if (currentTab === 'members') renderMemberManagementList();
+          else if (currentTab === 'tournament') renderTournamentModule();
+        }
+      }
+    };
+  }
+} catch (e) {}
+
 // ==========================================
 // HỆ THỐNG ĐA CÂU LẠC BỘ (MULTI-CLUB REGISTRY & STATE RESOLUTION)
 // ==========================================
@@ -1094,6 +1121,13 @@ function saveData() {
         const nameEl = document.getElementById('headerClubName');
         if (nameEl) nameEl.textContent = currentClub.name;
       }
+    }
+
+    // Phát tín hiệu tức thì đến các tab/cửa sổ khác trên máy
+    if (appBroadcastChannel) {
+      try {
+        appBroadcastChannel.postMessage({ type: 'DATA_UPDATED' });
+      } catch (err) {}
     }
 
     // Tự động đẩy lên Google Firebase Cloud Sync (nếu có kết nối)
@@ -2185,6 +2219,13 @@ function saveActivitySessionState() {
       updatedAt: Date.now()
     };
     localStorage.setItem(sessionKey, JSON.stringify(serializable));
+
+    // Phát tín hiệu tức thì đến các tab/cửa sổ khác trên máy
+    if (appBroadcastChannel) {
+      try {
+        appBroadcastChannel.postMessage({ type: 'SESSION_UPDATED', session: serializable });
+      } catch (err) {}
+    }
 
     // Đồng bộ phiên hoạt động đang diễn ra lên đám mây thời gian thực
     if (AppState) {
@@ -3305,77 +3346,29 @@ function renderActivityMemberChips() {
 }
 
 function toggleActivityMember(memberId) {
-  // 1. Quản lý có toàn quyền sửa đổi bất kỳ thành viên nào ở bất kỳ thời điểm nào
-  if (isAttendanceManager()) {
-    const existingSes = (AppState.activitySessions || []).find(s => s.date === activityState.date);
-    if (existingSes && !activityState.isEditingFinalizedSession) {
-      if (isMonthClosed(activityState.date)) {
-        showToast('🔒 Tháng này đã chốt sổ cuối tháng! Không thể chỉnh sửa buổi hoạt động này.', 'error');
-        return;
-      }
-      activityState.isEditingFinalizedSession = true;
-      activityState.editingSessionId = existingSes.id;
-      renderSessionFinalizedBanner();
-      showToast('✏️ Đã bật chế độ Chỉnh sửa cho Quản trị viên! Bạn có thể sửa điểm danh và bấm "Cập nhật & Chốt lại".', 'info');
-    }
-    if (activityState.selectedMemberIds.has(memberId)) {
-      activityState.selectedMemberIds.delete(memberId);
-    } else {
-      activityState.selectedMemberIds.add(memberId);
-    }
-    if (activityState.temporaryAttendanceSaved) {
-      activityState.isEditingAttendance = true;
-    }
-    saveActivitySessionState();
-    renderActivityMemberChips();
-    recalculateActivitySplit();
-    updateAttendanceSaveBarUI();
-    renderActivityMatches();
-    renderSelfAttendanceBanner();
-    return;
-  }
-
-  // 2. Chưa đăng nhập: yêu cầu đăng nhập
-  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) {
-    showToast('🔐 Vui lòng đăng nhập tài khoản thành viên để điểm danh tham gia hoạt động!', 'warning');
-    openLoginModal();
-    return;
-  }
-
-  const currentUserId = AppState.auth.user.id;
-
-  // 3. Thành viên chỉ được phép thao tác trên tài khoản của chính mình
-  if (memberId !== currentUserId) {
-    showToast('⚠️ Bạn chỉ có quyền điểm danh cho chính mình. Chỉ Ban Quản lý mới có quyền sửa đổi thông tin của thành viên khác!', 'warning');
-    return;
-  }
-
-  // 4. Thao tác trên chính mình: kiểm tra giờ chốt điểm danh
-  const isPast = isPastAttendanceCutoff(activityState.date);
-  const cutoffTime = getAttendanceCutoffTime();
-  const isSel = activityState.selectedMemberIds.has(memberId);
-
-  if (isSel) {
-    // Thành viên muốn HỦY điểm danh
-    if (isPast) {
-      showToast(`⚠️ Đã quá giờ chốt điểm danh (${cutoffTime})! Thành viên không thể tự hủy điểm danh. Chỉ Ban Quản lý mới có quyền sửa đổi.`, 'error');
+  const existingSes = (AppState.activitySessions || []).find(s => s.date === activityState.date);
+  if (existingSes && !activityState.isEditingFinalizedSession) {
+    if (isMonthClosed(activityState.date)) {
+      showToast('🔒 Tháng này đã chốt sổ cuối tháng! Không thể chỉnh sửa buổi hoạt động này.', 'error');
       return;
     }
+    activityState.isEditingFinalizedSession = true;
+    activityState.editingSessionId = existingSes.id;
+    renderSessionFinalizedBanner();
+    showToast('✏️ Đã mở chế độ chỉnh sửa buổi hoạt động! Chạm để chọn người và bấm "Cập nhật & Chốt lại".', 'info');
+  }
+
+  // Tự động chuyển đổi trạng thái chọn / bỏ chọn ngay lập tức
+  if (activityState.selectedMemberIds.has(memberId)) {
     activityState.selectedMemberIds.delete(memberId);
-    showToast('✓ Bạn đã hủy điểm danh hoạt động hôm nay.', 'info');
   } else {
-    // Thành viên muốn ĐIỂM DANH tham gia
-    if (isPast) {
-      showToast(`⚠️ Đã quá giờ đăng ký điểm danh (${cutoffTime})! Vui lòng liên hệ Ban Quản lý để được thêm vào buổi chơi.`, 'error');
-      return;
-    }
     activityState.selectedMemberIds.add(memberId);
-    showToast('✓ Bạn đã điểm danh tham gia hoạt động hôm nay thành công! 🏸', 'success');
   }
 
   if (activityState.temporaryAttendanceSaved) {
     activityState.isEditingAttendance = true;
   }
+
   saveActivitySessionState();
   renderActivityMemberChips();
   recalculateActivitySplit();
@@ -3484,10 +3477,6 @@ function renderActivityGuestChips() {
 }
 
 function toggleActivityGuest(guestId) {
-  if (!canPerformAttendance()) {
-    showToast('⚠️ Bạn không có quyền điểm danh! Vui lòng liên hệ Trưởng nhóm để được cấp quyền.', 'warning');
-    return;
-  }
   const existingSes = (AppState.activitySessions || []).find(s => s.date === activityState.date);
   if (existingSes && !activityState.isEditingFinalizedSession) {
     if (isMonthClosed(activityState.date)) {
@@ -3497,7 +3486,7 @@ function toggleActivityGuest(guestId) {
     activityState.isEditingFinalizedSession = true;
     activityState.editingSessionId = existingSes.id;
     renderSessionFinalizedBanner();
-    showToast('✏️ Đã bật chế độ Chỉnh sửa cho Quản trị viên! Bạn có thể sửa khách và bấm "Cập nhật & Chốt lại".', 'info');
+    showToast('✏️ Đã mở chế độ chỉnh sửa buổi hoạt động!', 'info');
   }
   if (activityState.selectedGuestIds.has(guestId)) {
     activityState.selectedGuestIds.delete(guestId);
@@ -4517,6 +4506,7 @@ function selectMatchPrizeType(matchId, typeName) {
     m.prizeQty = qty || 2;
     m.prize = `${m.prizeQty} ${typeName}`;
   }
+  saveActivitySessionState();
   renderActivityMatches();
 }
 
@@ -4529,6 +4519,7 @@ function changeMatchPrizeQty(matchId, delta) {
   if (type) {
     m.prize = `${newQty} ${type}`;
   }
+  saveActivitySessionState();
   renderActivityMatches();
 }
 
@@ -4543,6 +4534,7 @@ function setMatchPrizeQty(matchId, val) {
   if (type) {
     m.prize = `${newQty} ${type}`;
     updateMatchResultRealtime();
+    saveActivitySessionState();
   }
 }
 
@@ -4563,6 +4555,7 @@ function updateMatchCustomPrize(matchId, val) {
   m.prize = val ? val.trim() : '';
   m.prizeType = ''; // Tự do
   updateMatchResultRealtime();
+  saveActivitySessionState();
 }
 
 function clearMatchPrize(matchId) {
@@ -4570,6 +4563,7 @@ function clearMatchPrize(matchId) {
   if (!m) return;
   m.prize = '';
   m.prizeType = '';
+  saveActivitySessionState();
   renderActivityMatches();
 }
 
@@ -4587,6 +4581,7 @@ function setQuickMatchPrize(matchId, val) {
     } else {
       m.prizeType = val;
     }
+    saveActivitySessionState();
     renderActivityMatches();
   }
 }
@@ -4620,11 +4615,13 @@ function addActivityMatch() {
     prizeQty: 2,
     prizeType: ''
   });
+  saveActivitySessionState();
   renderActivityMatches();
 }
 
 function removeActivityMatch(id) {
   activityState.matches = activityState.matches.filter(m => m.id !== id);
+  saveActivitySessionState();
   renderActivityMatches();
 }
 
@@ -4633,6 +4630,7 @@ function updateMatchName(matchId, val) {
   if (m) {
     m.name = val;
     updateMatchResultRealtime();
+    saveActivitySessionState();
   }
 }
 
@@ -4661,6 +4659,7 @@ function updateMatchPlayer(matchId, teamIdx, playerIdx, val) {
     if (teamIdx === 0) m.team1[playerIdx] = '';
     else m.team2[playerIdx] = '';
   }
+  saveActivitySessionState();
   renderActivityMatches();
 }
 
@@ -4670,6 +4669,7 @@ function updateMatchScore(matchId, s1, s2) {
     if (s1 !== null && s1 !== undefined) m.score1 = Number(s1) || 0;
     if (s2 !== null && s2 !== undefined) m.score2 = Number(s2) || 0;
     updateMatchResultRealtime();
+    saveActivitySessionState();
   }
 }
 
@@ -4678,6 +4678,7 @@ function updateMatchPrize(matchId, val) {
   if (m) {
     m.prize = val;
     updateMatchResultRealtime();
+    saveActivitySessionState();
   }
 }
 
@@ -4718,6 +4719,7 @@ function randomActivityMatch() {
   };
 
   activityState.matches.push(newMatch);
+  saveActivitySessionState();
   renderActivityMatches();
 
   showToast(`🎲 Đã ghép Trận #${activityState.matches.length}: ${shuffled[0].chipName} ${shuffled[1].chipName} đấu với ${shuffled[2].chipName} ${shuffled[3].chipName}!`, 'success');

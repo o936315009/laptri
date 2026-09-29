@@ -13810,6 +13810,12 @@ function renderSettingsTab() {
   renderFeeTiersConfigTable();
   renderUserAccessTable();
   renderMultiClubSettingsSection();
+  
+  // Cập nhật huy hiệu trạng thái đám mây trong tab Cấu hình
+  if (typeof updateCloudSyncUI === 'function') {
+    updateCloudSyncUI(isCloudActuallyConnected ? 'CONNECTED' : (window._hasUnsyncedLocalChanges ? 'PERMISSION_DENIED' : 'LOCAL_READY'));
+  }
+
   lucide.createIcons();
 }
 

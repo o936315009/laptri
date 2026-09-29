@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ===================================================
-echo     DANG DAY CODE LEN GITHUB: o936315009/clb
+echo     DANG DAY CODE LEN GITHUB: o936315009/laptri
 echo ===================================================
 echo.
 cd /d "%~dp0"

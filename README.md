@@ -19,7 +19,7 @@ Bạn chỉ mất khoảng **3 - 5 phút** để đưa ứng dụng lên mạng 
 
 1. Trong thư mục dự án `d:\clblaptri`, nhấp đúp chuột vào file:
    👉 **`day-code-len-github.bat`**
-2. Cửa sổ dòng lệnh sẽ tự động tải tất cả code lên repository GitHub của bạn: `https://github.com/o936315009/clb`
+2. Cửa sổ dòng lệnh sẽ tự động tải tất cả code lên repository GitHub của bạn: `https://github.com/o936315009/laptri`
 3. *(Lưu ý: Nếu máy tính yêu cầu đăng nhập tài khoản GitHub, hãy bấm `Sign in with your browser` để xác thực).*
 
 ---
@@ -32,7 +32,7 @@ Bạn chỉ mất khoảng **3 - 5 phút** để đưa ứng dụng lên mạng 
 2. Chọn **"Continue with GitHub"** để đăng nhập bằng tài khoản GitHub của bạn.
 3. Tại trang bảng điều khiển (Dashboard) của Vercel:
    - Bấm nút **"Add New..."** ➔ Chọn **"Project"**.
-   - Tìm repository **`clb`** (hoặc `o936315009/clb`) trong danh sách ➔ Bấm **"Import"**.
+   - Tìm repository **`laptri`** (hoặc `o936315009/laptri`) trong danh sách ➔ Bấm **"Import"**.
 4. Tại màn hình cấu hình dự án:
    - **Project Name:** Đặt tên bạn muốn (ví dụ: `clblaptri` hoặc `clb-laptri`).
    - Các mục khác giữ nguyên mặc định.

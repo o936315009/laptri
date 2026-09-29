@@ -12,7 +12,7 @@ echo 2. Dang bat trinh xac thuc dang nhap GitHub...
 echo (Cua so trinh duyet se tu dong mo ra. Vui long chon 'Sign in with your browser' de dang nhap)
 echo.
 cd /d "%~dp0"
-git ls-remote https://github.com/o936315009/clb.git >nul
+git ls-remote https://github.com/o936315009/laptri.git >nul
 
 echo.
 if %ERRORLEVEL% EQU 0 (

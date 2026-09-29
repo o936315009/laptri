@@ -3332,7 +3332,7 @@ function renderActivityMemberChips() {
   const isPast = isPastAttendanceCutoff(activityState.date);
   const isMgr = isAttendanceManager();
 
-  // Render Thành viên chính thức (20 người - 6 trên 1 hàng)
+  // Render Thành viên chính thức (4 cột mobile, hiển thị trọn vẹn tên)
   officialGrid.innerHTML = officialMembers.map(m => {
     const isSel = activityState.selectedMemberIds.has(m.id);
     if (isSel) offSelectedCount++;
@@ -3349,17 +3349,17 @@ function renderActivityMemberChips() {
 
     return `
       <button type="button" onclick="toggleActivityMember('${m.id}')"
-        class="py-1 px-0.5 rounded-xl text-[10px] sm:text-[11px] font-bold transition shadow-2xs select-none min-h-[34px] flex items-center justify-center cursor-pointer leading-tight ${
+        class="py-1.5 px-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs select-none min-h-[38px] flex items-center justify-center cursor-pointer leading-tight ${
           isSel 
-            ? 'bg-emerald-700 hover:bg-emerald-800 text-white font-black shadow-emerald-900/15 ring-1 ring-emerald-600' 
-            : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200'
-        } ${isSelf ? 'ring-2 ring-amber-400 ring-offset-1' : ''}" title="${m.name}${titleExtra} (${formatMoney(m.balance || 0)})">
-        <span class="truncate max-w-full">${isSel ? '✓ ' : ''}${label}${isSelf ? ' ⭐' : ''}</span>
+            ? 'bg-emerald-700 hover:bg-emerald-800 text-white font-black shadow-emerald-900/15 ring-1 ring-emerald-600 active:scale-95' 
+            : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 active:scale-95'
+        } ${isSelf ? 'ring-2 ring-amber-400 ring-offset-1 font-black' : ''}" title="${m.name}${titleExtra} (${formatMoney(m.balance || 0)})">
+        <span class="whitespace-nowrap tracking-tight font-black">${isSel ? '✓ ' : ''}${label}${isSelf ? ' ⭐' : ''}</span>
       </button>
     `;
   }).join('');
 
-  // Render Thành viên danh dự (7 người - 6 trên 1 hàng)
+  // Render Thành viên danh dự (4 cột mobile, hiển thị trọn vẹn tên)
   honoraryGrid.innerHTML = honoraryMembers.map(m => {
     const isSel = activityState.selectedMemberIds.has(m.id);
     if (isSel) honSelectedCount++;
@@ -3376,12 +3376,12 @@ function renderActivityMemberChips() {
 
     return `
       <button type="button" onclick="toggleActivityMember('${m.id}')"
-        class="py-1 px-0.5 rounded-xl text-[10px] sm:text-[11px] font-bold transition shadow-2xs select-none min-h-[34px] flex items-center justify-center cursor-pointer leading-tight ${
+        class="py-1.5 px-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs select-none min-h-[38px] flex items-center justify-center cursor-pointer leading-tight ${
           isSel 
-            ? 'bg-emerald-700 hover:bg-emerald-800 text-white font-black shadow-emerald-900/15 ring-1 ring-emerald-600' 
-            : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200'
-        } ${isSelf ? 'ring-2 ring-amber-400 ring-offset-1' : ''}" title="${m.name}${titleExtra} (${formatMoney(m.balance || 0)})">
-        <span class="truncate max-w-full">${isSel ? '✓ ' : ''}${label}${isSelf ? ' ⭐' : ''}</span>
+            ? 'bg-emerald-700 hover:bg-emerald-800 text-white font-black shadow-emerald-900/15 ring-1 ring-emerald-600 active:scale-95' 
+            : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 active:scale-95'
+        } ${isSelf ? 'ring-2 ring-amber-400 ring-offset-1 font-black' : ''}" title="${m.name}${titleExtra} (${formatMoney(m.balance || 0)})">
+        <span class="whitespace-nowrap tracking-tight font-black">${isSel ? '✓ ' : ''}${label}${isSelf ? ' ⭐' : ''}</span>
       </button>
     `;
   }).join('');

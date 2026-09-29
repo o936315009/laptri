@@ -442,11 +442,6 @@
                 <span>📸</span>
                 <span class="hidden sm:inline">Xuất ảnh</span>
               </button>
-              <!-- Language switch toggle: VI | EN -->
-              <div class="flex items-center bg-slate-100 p-0.5 rounded-lg text-[11px] font-bold border border-slate-200">
-                <button type="button" onclick="setActivityLanguage('VI')" id="actBtnLangVI" class="px-1.5 py-0.5 rounded-md bg-slate-900 text-white shadow-sm transition">VI</button>
-                <button type="button" onclick="setActivityLanguage('EN')" id="actBtnLangEN" class="px-1.5 py-0.5 rounded-md text-slate-600 hover:text-slate-900 transition">EN</button>
-              </div>
             </div>
           </div>
 
@@ -501,20 +496,20 @@
                   <span>Thành viên chính thức</span>
                   <span id="actOfficialCountBadge" class="text-emerald-700 font-bold text-[11px]">0/20</span>
                 </div>
-                <!-- 6 cột dạng chip thu nhỏ gọn gàng -->
-                <div id="actOfficialMemberGrid" class="grid grid-cols-6 gap-1 text-center">
+                <!-- Cột dạng chip rộng rãi hiển thị trọn vẹn tên -->
+                <div id="actOfficialMemberGrid" class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-1.5 text-center">
                   <!-- Rendered dynamically -->
                 </div>
               </div>
 
-              <!-- Hàng 2: Thành viên danh dự (6 trên cùng 1 hàng) -->
-              <div class="mt-1.5 pt-1.5 border-t border-slate-100">
+              <!-- Hàng 2: Thành viên danh dự -->
+              <div class="mt-2 pt-2 border-t border-slate-100">
                 <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
                   <span>Thành viên danh dự</span>
                   <span id="actHonoraryCountBadge" class="text-purple-700 font-bold text-[11px]">0/7</span>
                 </div>
-                <!-- 6 cột dạng chip thu nhỏ gọn gàng -->
-                <div id="actHonoraryMemberGrid" class="grid grid-cols-6 gap-1 text-center">
+                <!-- Cột dạng chip rộng rãi hiển thị trọn vẹn tên -->
+                <div id="actHonoraryMemberGrid" class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-1.5 text-center">
                   <!-- Rendered dynamically -->
                 </div>
               </div>

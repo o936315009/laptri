@@ -1266,7 +1266,6 @@ function applyThemeColor(themeName) {
   root.style.setProperty('--brand-700', palette[700]);
   if (AppState.config) {
     AppState.config.themeColor = themeName;
-    saveData();
   }
 }
 
@@ -1276,6 +1275,16 @@ function applyThemeColor(themeName) {
 function showToast(message, type = 'success') {
   const container = document.getElementById('toastContainer');
   if (!container) return;
+
+  // Chống spam toast lặp lại nội dung giống nhau
+  const existingToasts = Array.from(container.children);
+  const isDuplicate = existingToasts.some(t => t.textContent.trim().includes(message.trim()));
+  if (isDuplicate) return;
+
+  // Giới hạn hiển thị tối đa 3 toast cùng lúc
+  while (container.children.length >= 3) {
+    container.removeChild(container.firstChild);
+  }
 
   const toast = document.createElement('div');
   toast.className = 'flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto';
@@ -15772,6 +15781,7 @@ let cloudSyncDebounceTimer = null;
 let currentCloudClubRef = null;
 let currentCloudSlug = null;
 let lastPushedCloudJson = null;
+let lastPushedTimestamp = 0;
 
 let isCloudActuallyConnected = false;
 
@@ -16028,10 +16038,8 @@ function updateCloudSyncUI(status, message = '') {
     pingColor = 'bg-amber-400';
   } else if (status === 'CONNECTING') {
     // 🔵 TRẠNG THÁI ĐANG KẾT NỐI: Chấm xanh dương nhấp nháy
-    if (!isCloudActuallyConnected) {
-      showRealtimeConnectingBlocker(message || 'Đang kết nối đám mây Google Firebase...');
-    }
-
+    // Không hiện modal chặn ngay lập tức để tránh chớp màn hình khi tải trang bình thường.
+    // Nếu quá thời gian chờ (4s) mà chưa kết nối, cloudInitTimeout sẽ chuyển sang DISCONNECTED và hiện modal.
     dotColor = 'bg-sky-500 animate-pulse';
     badgeText = 'Đang kết nối...';
     badgeClass = 'bg-sky-100 text-sky-800 border border-sky-300';
@@ -16146,13 +16154,13 @@ function initFirebaseCloudSync() {
   try {
     updateCloudSyncUI('CONNECTING');
 
-    // Hẹn giờ bảo vệ: Nếu sau 4 giây đám mây chưa phản hồi, chuyển sang trạng thái ngắt kết nối
+    // Hẹn giờ bảo vệ: Cho phép tối đa 8 giây để thiết bị hoàn tất bắt tay WebSocket với Google Firebase
     clearTimeout(cloudInitTimeout);
     cloudInitTimeout = setTimeout(() => {
       if (!isCloudActuallyConnected) {
         updateCloudSyncUI('DISCONNECTED');
       }
-    }, 4000);
+    }, 8000);
 
     if (!firebase.apps || firebase.apps.length === 0) {
       firebase.initializeApp(config);
@@ -16384,8 +16392,17 @@ function subscribeToCloudClub(clubSlug) {
       return;
     }
 
+    // Kiểm tra tự dội lại (Self-echo detection) qua timestamp để tránh ghi đè và toast lặp vô hạn
+    if (cloudData._lastModified && lastPushedTimestamp && cloudData._lastModified === lastPushedTimestamp) {
+      isSyncingToCloud = false;
+      updateCloudSyncUI('CONNECTED');
+      return;
+    }
+
     const incomingJson = JSON.stringify(cloudData);
     if (lastPushedCloudJson && incomingJson === lastPushedCloudJson) {
+      isSyncingToCloud = false;
+      updateCloudSyncUI('CONNECTED');
       return;
     }
 
@@ -16415,14 +16432,6 @@ function subscribeToCloudClub(clubSlug) {
     let incomingTransactions = cloudData.transactions || [];
     let incomingTournaments = cloudData.tournaments || cloudData.tournamentData || [];
     let incomingTopUpRequests = cloudData.wallets?.topUpRequests || cloudData.topUpRequests || [];
-
-    // Tự động dọn sạch các buổi demo mẫu cũ nếu có từ dữ liệu đám mây trước đây để giữ dữ liệu hoạt động sạch 100%
-    if (Array.isArray(incomingSessions)) {
-      incomingSessions = incomingSessions.filter(s => !s.id || !s.id.startsWith('SES_202609'));
-    }
-    if (Array.isArray(incomingTransactions)) {
-      incomingTransactions = incomingTransactions.filter(tx => !tx.id || (!tx.id.startsWith('TX_10') && !tx.id.startsWith('TX_20') && !tx.id.startsWith('TX_30')));
-    }
 
     // Bảo toàn mật khẩu lưu cục bộ của các thành viên hoặc cấp mặc định 123 (admin cho TNTOAN)
     incomingMembers.forEach(incMem => {
@@ -16512,7 +16521,15 @@ function subscribeToCloudClub(clubSlug) {
       renderSettingsTab();
     }
 
-    showToast(`☁️ Dữ liệu đã cập nhật theo thời gian thực (${AppState.members?.length || 0} thành viên)!`, 'info');
+    isCloudActuallyConnected = true;
+    clearTimeout(cloudInitTimeout);
+    updateCloudSyncUI('CONNECTED');
+
+    if (!window._hasReceivedFirstCloudSnapshot) {
+      window._hasReceivedFirstCloudSnapshot = true;
+    } else {
+      showToast(`☁️ Dữ liệu đã cập nhật theo thời gian thực (${AppState.members?.length || 0} thành viên)!`, 'info');
+    }
     setTimeout(() => { isReceivingFromCloud = false; }, 350);
   }, err => {
     console.warn('Lỗi lắng nghe Firebase, chuyển sang chế độ bộ nhớ máy:', err);
@@ -16545,7 +16562,9 @@ function pushDataToCloud() {
     isSyncingToCloud = true;
     updateCloudSyncUI('SYNCING');
 
-    AppState._lastModified = Date.now();
+    const now = Date.now();
+    lastPushedTimestamp = now;
+    AppState._lastModified = now;
 
     // Gắn phiên hoạt động trực tiếp đang diễn ra (nếu có)
     if (typeof activityState !== 'undefined' && activityState.date) {
@@ -16602,7 +16621,7 @@ function pushDataToCloud() {
       tournamentData: TournamentState.tournaments || AppState.tournamentData || [],
       currentSession: AppState.currentSession || null,
       closedMonths: AppState.closedMonths || [],
-      _lastModified: Date.now()
+      _lastModified: now
     };
 
     lastPushedCloudJson = JSON.stringify(cloudClubPayload);

@@ -15595,7 +15595,7 @@ function parseFirebaseConfigInput(rawInput) {
       const m = str.match(reg);
       return m ? m[1].trim() : '';
     };
-    const projectId = extractField('projectId') || 'clblaptri';
+    const projectId = extractField('projectId') || 'laptri-8e2b3';
     if (projectId || extractField('apiKey')) {
       obj = {
         apiKey: extractField('apiKey'),
@@ -15611,13 +15611,14 @@ function parseFirebaseConfigInput(rawInput) {
   }
 
   if (obj && typeof obj === 'object') {
-    const pId = obj.projectId || DEFAULT_FIREBASE_CONFIG.projectId;
+    let pId = obj.projectId || DEFAULT_FIREBASE_CONFIG.projectId;
+    if (pId === 'clblaptri') pId = 'laptri-8e2b3';
     return {
       apiKey: obj.apiKey || DEFAULT_FIREBASE_CONFIG.apiKey,
-      databaseURL: obj.databaseURL || `https://${pId}-default-rtdb.firebaseio.com`,
+      databaseURL: (obj.databaseURL && !obj.databaseURL.includes('clblaptri')) ? obj.databaseURL : `https://${pId}-default-rtdb.firebaseio.com`,
       projectId: pId,
-      authDomain: obj.authDomain || `${pId}.firebaseapp.com`,
-      storageBucket: obj.storageBucket || `${pId}.firebasestorage.app`,
+      authDomain: `${pId}.firebaseapp.com`,
+      storageBucket: `${pId}.firebasestorage.app`,
       messagingSenderId: obj.messagingSenderId || DEFAULT_FIREBASE_CONFIG.messagingSenderId,
       appId: obj.appId || DEFAULT_FIREBASE_CONFIG.appId,
       measurementId: obj.measurementId || DEFAULT_FIREBASE_CONFIG.measurementId
@@ -15627,13 +15628,13 @@ function parseFirebaseConfigInput(rawInput) {
   return null;
 }
 
-// Cấu hình Firebase mặc định của dự án clblaptri
+// Cấu hình Firebase mặc định của dự án laptri-8e2b3 (CLB CẦU LÔNG LẬP TRÍ)
 const DEFAULT_FIREBASE_CONFIG = {
   apiKey: "AIzaSyAQ08HDY7wi9jQnhTH7mHkoavdRzIas-lA",
-  authDomain: "clblaptri.firebaseapp.com",
-  databaseURL: "https://clblaptri-default-rtdb.firebaseio.com",
-  projectId: "clblaptri",
-  storageBucket: "clblaptri.firebasestorage.app",
+  authDomain: "laptri-8e2b3.firebaseapp.com",
+  databaseURL: "https://laptri-8e2b3-default-rtdb.firebaseio.com",
+  projectId: "laptri-8e2b3",
+  storageBucket: "laptri-8e2b3.firebasestorage.app",
   messagingSenderId: "324734150204",
   appId: "1:324734150204:web:6aa6524fa6cdabe8cfc539",
   measurementId: "G-6HK3TLY2HW"
@@ -15645,13 +15646,14 @@ function getStoredFirebaseConfig() {
     if (raw) {
       const cfg = JSON.parse(raw);
       if (cfg && typeof cfg === 'object') {
-        const pId = cfg.projectId || DEFAULT_FIREBASE_CONFIG.projectId;
+        let pId = cfg.projectId || DEFAULT_FIREBASE_CONFIG.projectId;
+        if (pId === 'clblaptri') pId = 'laptri-8e2b3';
         return {
           apiKey: cfg.apiKey || DEFAULT_FIREBASE_CONFIG.apiKey,
-          authDomain: cfg.authDomain || `${pId}.firebaseapp.com`,
-          databaseURL: cfg.databaseURL || `https://${pId}-default-rtdb.firebaseio.com`,
+          authDomain: `${pId}.firebaseapp.com`,
+          databaseURL: (cfg.databaseURL && !cfg.databaseURL.includes('clblaptri')) ? cfg.databaseURL : `https://${pId}-default-rtdb.firebaseio.com`,
           projectId: pId,
-          storageBucket: cfg.storageBucket || `${pId}.firebasestorage.app`,
+          storageBucket: `${pId}.firebasestorage.app`,
           messagingSenderId: cfg.messagingSenderId || DEFAULT_FIREBASE_CONFIG.messagingSenderId,
           appId: cfg.appId || DEFAULT_FIREBASE_CONFIG.appId,
           measurementId: cfg.measurementId || DEFAULT_FIREBASE_CONFIG.measurementId
@@ -15692,9 +15694,9 @@ function updateCloudSyncUI(status, message = '') {
     badgeText = 'Đã kết nối';
     badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300';
     icon = '🟢';
-    title = 'Đã kết nối Google Firebase (clblaptri)';
-    desc = 'Hệ thống đang kết nối trực tiếp đến Google Firebase clblaptri. Tất cả thay đổi sẽ đồng bộ tức thì.';
-    headerTitle = 'Đám mây: Đã kết nối (Dấu chấm xanh lá phát sáng): Hệ thống đang kết nối trực tiếp đến Google Firebase clblaptri';
+    title = 'Đã kết nối Google Firebase (laptri-8e2b3)';
+    desc = 'Hệ thống đang kết nối trực tiếp đến Google Firebase laptri-8e2b3. Tất cả thay đổi sẽ đồng bộ tức thì.';
+    headerTitle = 'Đám mây: Đã kết nối (Chấm xanh lá phát sáng): Trực tiếp Google Firebase laptri-8e2b3';
     headerBadgeClass = 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs';
     showPing = true;
     pingColor = 'bg-emerald-400';
@@ -15705,8 +15707,8 @@ function updateCloudSyncUI(status, message = '') {
     badgeClass = 'bg-amber-100 text-amber-800 border border-amber-300';
     icon = '🟡';
     title = 'Đang đẩy dữ liệu lên đám mây...';
-    desc = 'Đang cập nhật lên máy chủ Google Firebase clblaptri.';
-    headerTitle = 'Đang đẩy dữ liệu lên Google Firebase clblaptri...';
+    desc = 'Đang cập nhật lên máy chủ Google Firebase laptri-8e2b3.';
+    headerTitle = 'Đang đẩy dữ liệu lên Google Firebase laptri-8e2b3...';
     headerBadgeClass = 'bg-amber-50 text-amber-800 border-amber-300 shadow-2xs';
     showPing = true;
     pingColor = 'bg-amber-400';
@@ -15717,8 +15719,8 @@ function updateCloudSyncUI(status, message = '') {
     badgeClass = 'bg-sky-100 text-sky-800 border border-sky-300';
     icon = '🔵';
     title = 'Đang kiểm tra đám mây...';
-    desc = 'Đang kết nối Google Firebase clblaptri trong nền.';
-    headerTitle = 'Đang kiểm tra kết nối Google Firebase clblaptri...';
+    desc = 'Đang kết nối Google Firebase laptri-8e2b3 trong nền.';
+    headerTitle = 'Đang kiểm tra kết nối Google Firebase laptri-8e2b3...';
     headerBadgeClass = 'bg-sky-50 text-sky-800 border-sky-300 shadow-2xs';
     showPing = true;
     pingColor = 'bg-sky-400';

@@ -8212,7 +8212,8 @@ function renderMemberManagementList() {
 
   if (list.length === 0) {
     const emptyMsg = isMemberRoleMem ? 'Không tìm thấy thông tin tài khoản của bạn' : 'Không tìm thấy thành viên nào';
-    tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">${emptyMsg}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">${emptyMsg}</td></tr>`;
+    if (typeof updateSelectedMembersCount === 'function') updateSelectedMembersCount();
     return;
   }
 
@@ -8281,7 +8282,14 @@ function renderMemberManagementList() {
 
     return `
       <tr class="hover:bg-slate-50 transition">
-        <td class="py-3 px-4">
+        <td class="py-3 px-3 text-center">
+          ${isClubMasterAdmin(m) ? `
+            <span class="text-slate-300 text-xs" title="Tài khoản Quản trị viên tối cao không thể xóa">—</span>
+          ` : `
+            <input type="checkbox" class="member-select-checkbox w-4 h-4 rounded text-rose-600 focus:ring-rose-500 cursor-pointer" value="${m.id}" onchange="updateSelectedMembersCount()">
+          `}
+        </td>
+        <td class="py-3 px-3">
           <div class="flex items-center gap-1.5">
             <span class="font-bold text-slate-900 text-xs">${m.name}</span>
             ${isSelfRow ? `
@@ -8311,6 +8319,7 @@ function renderMemberManagementList() {
   }).join('');
 
   lucide.createIcons();
+  if (typeof updateSelectedMembersCount === 'function') updateSelectedMembersCount();
 }
 
 function openMemberModal(mode = 'official', memberId = null) {
@@ -8444,14 +8453,76 @@ function deleteMember(memberId) {
   const member = AppState.members.find(m => m.id === memberId);
   if (!member) return;
 
-  const confirmed = confirm(`Bạn có chắc chắn muốn xóa thành viên "${member.name}" khỏi danh sách?`);
+  if (isClubMasterAdmin(member)) {
+    showToast('⚠️ Không thể xóa tài khoản Quản trị viên tối cao đang hoạt động!', 'error');
+    return;
+  }
+
+  const confirmed = confirm(`Bạn có chắc chắn muốn xóa thành viên "${member.name}" khỏi danh sách CLB?`);
   if (!confirmed) return;
 
   AppState.members = AppState.members.filter(m => m.id !== memberId);
   saveData();
   renderDashboard();
   renderMemberManagementList();
-  showToast(`Đã xóa thành viên ${member.name}!`, 'info');
+  showToast(`🗑️ Đã xóa thành viên "${member.name}" thành công!`, 'info');
+}
+
+function toggleSelectAllMembers(isChecked) {
+  const checkboxes = document.querySelectorAll('.member-select-checkbox');
+  checkboxes.forEach(cb => {
+    if (!cb.disabled) cb.checked = isChecked;
+  });
+  updateSelectedMembersCount();
+}
+
+function updateSelectedMembersCount() {
+  const checkboxes = document.querySelectorAll('.member-select-checkbox:checked');
+  const count = checkboxes.length;
+  const btn = document.getElementById('btnDeleteSelectedMembers');
+  const badge = document.getElementById('selectedMembersCountBadge');
+  const selectAllCb = document.getElementById('selectAllMembersCheckbox');
+  const allCheckboxes = document.querySelectorAll('.member-select-checkbox:not(:disabled)');
+
+  if (badge) badge.textContent = count;
+  if (btn) {
+    if (count > 0) {
+      btn.classList.remove('hidden');
+      btn.classList.add('inline-flex');
+    } else {
+      btn.classList.add('hidden');
+      btn.classList.remove('inline-flex');
+    }
+  }
+  if (selectAllCb && allCheckboxes.length > 0) {
+    selectAllCb.checked = count === allCheckboxes.length;
+  }
+}
+
+function deleteSelectedMembers() {
+  const checkboxes = document.querySelectorAll('.member-select-checkbox:checked');
+  const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+  if (selectedIds.length === 0) {
+    showToast('⚠️ Vui lòng tích chọn ít nhất một thành viên để xóa!', 'warning');
+    return;
+  }
+
+  const membersToDelete = AppState.members.filter(m => selectedIds.includes(m.id) && !isClubMasterAdmin(m));
+  if (membersToDelete.length === 0) {
+    showToast('⚠️ Không có thành viên hợp lệ để xóa (Không thể xóa tài khoản Admin)!', 'warning');
+    return;
+  }
+
+  const namesPreview = membersToDelete.slice(0, 5).map(m => m.name).join(', ') + (membersToDelete.length > 5 ? ` và ${membersToDelete.length - 5} người khác` : '');
+  const confirmed = confirm(`Bạn có chắc chắn muốn xóa ${membersToDelete.length} thành viên đã chọn:\n[ ${namesPreview} ]\nkhỏi danh sách CLB?`);
+  if (!confirmed) return;
+
+  const deleteIdSet = new Set(membersToDelete.map(m => m.id));
+  AppState.members = AppState.members.filter(m => !deleteIdSet.has(m.id));
+  saveData();
+  renderDashboard();
+  renderMemberManagementList();
+  showToast(`🗑️ Đã xóa thành công ${membersToDelete.length} thành viên đã chọn!`, 'success');
 }
 
 // ==========================================
@@ -13717,6 +13788,33 @@ function onConfigClubNameChanged(val) {
     slugInput.value = slug;
     onConfigClubAccessSlugChanged(slug);
   }
+}
+
+function saveClubNameOnly() {
+  const nameInput = document.getElementById('configClubName');
+  const newName = nameInput ? nameInput.value.trim() : '';
+  if (!newName) {
+    showToast('⚠️ Tên CLB không được để trống!', 'warning');
+    return;
+  }
+
+  const oldName = AppState.config.clubName || 'CLB';
+  AppState.config.clubName = newName;
+  const activeClub = getActiveClub();
+  if (activeClub) {
+    activeClub.name = newName;
+    saveClubsRegistry();
+  }
+
+  // Cập nhật tên trên tiêu đề Header & title trình duyệt
+  const nameEl = document.getElementById('headerClubName');
+  if (nameEl) nameEl.textContent = newName;
+  document.title = `${newName} - Quản lý Sân & Quỹ CLB Cầu Lông`;
+
+  saveData();
+  renderDashboard();
+  renderClubSwitcher();
+  showToast(`🎉 Đã lưu tên CLB: "${newName}" thành công!`, 'success');
 }
 
 function onConfigClubAccessSlugChanged(val) {

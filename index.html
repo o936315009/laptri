@@ -1328,7 +1328,12 @@
                 + Thành viên danh dự
               </button>
               <button onclick="openAddGuestModal()" class="inline-flex items-center px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl border border-slate-200 transition cursor-pointer">
+                <i data-lucide="user-check" class="w-3.5 h-3.5 mr-1.5"></i>
                 + Khách A/B/C
+              </button>
+              <button id="btnDeleteSelectedMembers" type="button" onclick="deleteSelectedMembers()" class="hidden items-center px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1.5"></i>
+                <span>Xóa đã chọn (<span id="selectedMembersCountBadge">0</span>)</span>
               </button>
             </div>
           </div>
@@ -1354,7 +1359,10 @@
               <table class="w-full text-left text-xs">
                 <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                   <tr>
-                    <th class="py-3 px-4">Thành viên</th>
+                    <th class="py-3 px-3 text-center w-10">
+                      <input type="checkbox" id="selectAllMembersCheckbox" onchange="toggleSelectAllMembers(this.checked)" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 cursor-pointer" title="Chọn tất cả để xóa">
+                    </th>
+                    <th class="py-3 px-3">Thành viên</th>
                     <th class="py-3 px-2">Phân loại</th>
                     <th class="py-3 px-3">Tài khoản</th>
                     <th class="py-3 px-3 text-right">Số dư ví</th>
@@ -2484,7 +2492,13 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Tên CLB:</label>
-              <input type="text" id="configClubName" oninput="onConfigClubNameChanged(this.value)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-bold" value="CLB CẦU LÔNG SMASH" />
+              <div class="flex items-center gap-1.5">
+                <input type="text" id="configClubName" oninput="onConfigClubNameChanged(this.value)" class="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-bold" value="CLB CẦU LÔNG LẬP TRÍ" />
+                <button type="button" onclick="saveClubNameOnly()" class="px-3 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1 shrink-0" title="Bấm để lưu tên CLB">
+                  <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                  <span>Lưu thay đổi</span>
+                </button>
+              </div>
             </div>
 
             <div>

@@ -3332,7 +3332,7 @@ function renderActivityMemberChips() {
   const isPast = isPastAttendanceCutoff(activityState.date);
   const isMgr = isAttendanceManager();
 
-  // Render Thành viên chính thức (4 cột mobile, hiển thị trọn vẹn tên)
+  // Render Thành viên chính thức (5 cột gọn gàng, hiển thị trọn vẹn tên)
   officialGrid.innerHTML = officialMembers.map(m => {
     const isSel = activityState.selectedMemberIds.has(m.id);
     if (isSel) offSelectedCount++;
@@ -3349,7 +3349,7 @@ function renderActivityMemberChips() {
 
     return `
       <button type="button" onclick="toggleActivityMember('${m.id}')"
-        class="py-1.5 px-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs select-none min-h-[38px] flex items-center justify-center cursor-pointer leading-tight ${
+        class="py-1.5 px-0.5 sm:px-1 rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-2xs select-none min-h-[36px] flex items-center justify-center cursor-pointer leading-tight ${
           isSel 
             ? 'bg-emerald-700 hover:bg-emerald-800 text-white font-black shadow-emerald-900/15 ring-1 ring-emerald-600 active:scale-95' 
             : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 active:scale-95'
@@ -3359,7 +3359,7 @@ function renderActivityMemberChips() {
     `;
   }).join('');
 
-  // Render Thành viên danh dự (4 cột mobile, hiển thị trọn vẹn tên)
+  // Render Thành viên danh dự (5 cột gọn gàng, hiển thị trọn vẹn tên)
   honoraryGrid.innerHTML = honoraryMembers.map(m => {
     const isSel = activityState.selectedMemberIds.has(m.id);
     if (isSel) honSelectedCount++;
@@ -3376,7 +3376,7 @@ function renderActivityMemberChips() {
 
     return `
       <button type="button" onclick="toggleActivityMember('${m.id}')"
-        class="py-1.5 px-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs select-none min-h-[38px] flex items-center justify-center cursor-pointer leading-tight ${
+        class="py-1.5 px-0.5 sm:px-1 rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-2xs select-none min-h-[36px] flex items-center justify-center cursor-pointer leading-tight ${
           isSel 
             ? 'bg-emerald-700 hover:bg-emerald-800 text-white font-black shadow-emerald-900/15 ring-1 ring-emerald-600 active:scale-95' 
             : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 active:scale-95'

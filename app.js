@@ -887,11 +887,11 @@ const DEFAULT_INITIAL_DATA = {
   },
   members: [
     // --- DANH SÁCH THÀNH VIÊN BAN ĐẦU (ADMIN TNTOAN & 4 THÀNH VIÊN: CHÍNH, MẠNH, KIÊN, TƯƠI) ---
-    { id: 'M001', name: 'TNTOAN', chipName: 'TNTOAN', phone: '0942927368', type: 'OFFICIAL', username: 'TNTOAN', password: 'admin', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('ADMIN') },
-    { id: 'M002', name: 'CHÍNH', chipName: 'CHÍNH', phone: '0901000001', type: 'OFFICIAL', username: 'chinh', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'VICE_ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('VICE_ADMIN') },
-    { id: 'M003', name: 'MẠNH', chipName: 'MẠNH', phone: '0901000002', type: 'OFFICIAL', username: 'manh', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
-    { id: 'M004', name: 'KIÊN', chipName: 'KIÊN', phone: '0901000003', type: 'OFFICIAL', username: 'kien', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
-    { id: 'M005', name: 'TƯƠI', chipName: 'TƯƠI', phone: '0901000004', type: 'OFFICIAL', username: 'tuoi', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
+    { id: 'M001', name: 'TNTOAN', chipName: 'TNTOAN', phone: '0942927368', type: 'OFFICIAL', username: 'TNTOAN', password: 'admin', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('ADMIN') },
+    { id: 'M002', name: 'CHÍNH', chipName: 'CHÍNH', phone: '0901000001', type: 'OFFICIAL', username: 'chinh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'VICE_ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('VICE_ADMIN') },
+    { id: 'M003', name: 'MẠNH', chipName: 'MẠNH', phone: '0901000002', type: 'OFFICIAL', username: 'manh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M004', name: 'KIÊN', chipName: 'KIÊN', phone: '0901000003', type: 'OFFICIAL', username: 'kien', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M005', name: 'TƯƠI', chipName: 'TƯƠI', phone: '0901000004', type: 'OFFICIAL', username: 'tuoi', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
   ],
   attendanceRecords: [],
   activitySessions: [],
@@ -944,11 +944,11 @@ function loadData() {
       // Luôn đảm bảo tài khoản Quản trị viên TNTOAN và 4 thành viên (CHÍNH, MẠNH, KIÊN, TƯƠI) tồn tại hợp lệ
       if (isMainClub && AppState.members) {
         const requiredMembers = [
-          { id: 'M001', name: 'TNTOAN', chipName: 'TNTOAN', phone: '0942927368', type: 'OFFICIAL', username: 'TNTOAN', password: 'admin', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('ADMIN') },
-          { id: 'M002', name: 'CHÍNH', chipName: 'CHÍNH', phone: '0901000001', type: 'OFFICIAL', username: 'chinh', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'VICE_ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('VICE_ADMIN') },
-          { id: 'M003', name: 'MẠNH', chipName: 'MẠNH', phone: '0901000002', type: 'OFFICIAL', username: 'manh', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
-          { id: 'M004', name: 'KIÊN', chipName: 'KIÊN', phone: '0901000003', type: 'OFFICIAL', username: 'kien', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
-          { id: 'M005', name: 'TƯƠI', chipName: 'TƯƠI', phone: '0901000004', type: 'OFFICIAL', username: 'tuoi', password: '123', hasChangedPassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
+          { id: 'M001', name: 'TNTOAN', chipName: 'TNTOAN', phone: '0942927368', type: 'OFFICIAL', username: 'TNTOAN', password: 'admin', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('ADMIN') },
+          { id: 'M002', name: 'CHÍNH', chipName: 'CHÍNH', phone: '0901000001', type: 'OFFICIAL', username: 'chinh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'VICE_ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('VICE_ADMIN') },
+          { id: 'M003', name: 'MẠNH', chipName: 'MẠNH', phone: '0901000002', type: 'OFFICIAL', username: 'manh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+          { id: 'M004', name: 'KIÊN', chipName: 'KIÊN', phone: '0901000003', type: 'OFFICIAL', username: 'kien', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+          { id: 'M005', name: 'TƯƠI', chipName: 'TƯƠI', phone: '0901000004', type: 'OFFICIAL', username: 'tuoi', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
         ];
 
         requiredMembers.forEach(req => {
@@ -962,8 +962,11 @@ function loadData() {
             found.name = req.name;
             found.chipName = req.chipName;
             found.username = req.username;
-            found.password = req.password;
-            found.hasChangedPassword = true;
+            if (!found.password) {
+              found.password = req.password;
+              found.mustChangePassword = true;
+              found.hasChangedPassword = false;
+            }
             found.role = req.role;
             found.permissions = getRoleDefaultPermissions(req.role);
             if (!found.status) found.status = 'ACTIVE';
@@ -1018,8 +1021,9 @@ function loadData() {
           }
           if (!m.password) {
             m.password = (m.username?.toLowerCase() === 'tntoan' || m.id === 'M001') ? 'admin' : '123';
+            m.mustChangePassword = true;
+            m.hasChangedPassword = false;
           }
-          m.hasChangedPassword = true;
         });
       }
 
@@ -1327,10 +1331,25 @@ function showToast(message, type = 'success') {
 // ==========================================
 // 6. ĐIỀU HƯỚNG TABS
 // ==========================================
+function memberPasswordIsDefault(mem) {
+  if (!mem) return false;
+  return mem.password === '123' || mem.password === '123456' || (mem.password === 'admin' && !mem.passwordChangedAt);
+}
+
 let currentTab = 'dashboard';
 
 function switchTab(tabId) {
   if (tabId === 'matchmaker') tabId = 'tournament';
+
+  // Nếu người dùng chưa hoàn thành đổi mật khẩu lần đầu, giữ ở trang chủ và nhắc nhở
+  if (AppState.auth?.isLoggedIn && AppState.auth?.user?.id) {
+    const mem = (AppState.members || []).find(m => m.id === AppState.auth.user.id);
+    const isDefaultPass = mem && (mem.password === '123' || memberPasswordIsDefault(mem));
+    if (mem && (mem.mustChangePassword === true || !mem.hasChangedPassword || isDefaultPass)) {
+      tabId = 'dashboard';
+      setTimeout(() => openFirstLoginPasswordModal(mem), 100);
+    }
+  }
 
   currentTab = tabId;
   document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
@@ -8493,6 +8512,8 @@ function handleMemberSubmit(e) {
       monthlySessions: 0,
       role: 'MEMBER',
       status: 'ACTIVE',
+      hasChangedPassword: false,
+      mustChangePassword: true,
       permissions: getRoleDefaultPermissions('MEMBER')
     };
     AppState.members.push(newMember);
@@ -8760,6 +8781,8 @@ function handleBatchImportMembersSubmit() {
       monthlySessions: 0,
       role: 'MEMBER',
       status: 'ACTIVE',
+      hasChangedPassword: false,
+      mustChangePassword: true,
       permissions: getRoleDefaultPermissions('MEMBER')
     };
 
@@ -9349,8 +9372,13 @@ function handleSaveUserAccessSubmit(e) {
     else role = 'CUSTOM';
   }
 
+  const oldPassword = member.password;
   member.username = username;
   member.password = password;
+  if (oldPassword !== password || password === '123' || password === '123456') {
+    member.hasChangedPassword = false;
+    member.mustChangePassword = true;
+  }
   member.status = status;
   member.role = role;
   member.permissions = permissions;
@@ -14583,8 +14611,75 @@ function renderAuthBadge() {
   renderTopUpBadges();
 }
 
+const SAVED_LOGIN_KEY = 'CLB_SAVED_LOGIN_CREDENTIALS_V1';
+
+function getSavedLoginCredentials() {
+  try {
+    const raw = localStorage.getItem(SAVED_LOGIN_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveLoginCredentials(username, password) {
+  try {
+    localStorage.setItem(SAVED_LOGIN_KEY, JSON.stringify({
+      username: (username || '').trim(),
+      password: password || '',
+      savedAt: Date.now()
+    }));
+  } catch (e) {}
+}
+
+function clearSavedLoginCredentials() {
+  try {
+    localStorage.removeItem(SAVED_LOGIN_KEY);
+  } catch (e) {}
+  const uInput = document.getElementById('loginUsername');
+  const pInput = document.getElementById('loginPassword');
+  const chk = document.getElementById('loginRememberPassword');
+  const clearBtn = document.getElementById('btnClearSavedLogin');
+  const notice = document.getElementById('loginSavedAccountNotice');
+  if (uInput) uInput.value = '';
+  if (pInput) pInput.value = '';
+  if (chk) chk.checked = false;
+  if (clearBtn) clearBtn.classList.add('hidden');
+  if (notice) notice.classList.add('hidden');
+  showToast('Đã xóa thông tin đăng nhập đã lưu.', 'info');
+}
+
+function applySavedLoginToForm() {
+  const saved = getSavedLoginCredentials();
+  const uInput = document.getElementById('loginUsername');
+  const pInput = document.getElementById('loginPassword');
+  const chk = document.getElementById('loginRememberPassword');
+  const clearBtn = document.getElementById('btnClearSavedLogin');
+  const notice = document.getElementById('loginSavedAccountNotice');
+
+  if (saved && saved.username && saved.password) {
+    if (uInput) uInput.value = saved.username;
+    if (pInput) pInput.value = saved.password;
+    if (chk) chk.checked = true;
+    if (clearBtn) clearBtn.classList.remove('hidden');
+    if (notice) notice.classList.remove('hidden');
+  } else {
+    if (chk) chk.checked = true;
+    if (clearBtn) clearBtn.classList.add('hidden');
+    if (notice) notice.classList.add('hidden');
+  }
+}
+
 function openLoginModal() {
+  applySavedLoginToForm();
   openModal('loginModal');
+  const uInput = document.getElementById('loginUsername');
+  const pInput = document.getElementById('loginPassword');
+  if (uInput && !uInput.value) {
+    setTimeout(() => uInput.focus(), 150);
+  } else if (pInput && !pInput.value) {
+    setTimeout(() => pInput.focus(), 150);
+  }
 }
 
 async function handleLogin(e) {
@@ -14597,6 +14692,14 @@ async function handleLogin(e) {
     const sessionToken = 'SES_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
     localStorage.setItem(CLB_CURRENT_SESSION_KEY, sessionToken);
     loginAsDeveloperAdmin(u, p);
+
+    // Xử lý lưu thông tin đăng nhập tùy chọn
+    const rememberMe = document.getElementById('loginRememberPassword')?.checked;
+    if (rememberMe) {
+      saveLoginCredentials(u, p);
+    } else {
+      try { localStorage.removeItem(SAVED_LOGIN_KEY); } catch (err) {}
+    }
 
     // Ghi nhận trạng thái Developer lên Firebase nếu có kết nối
     if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser && firebaseDb) {
@@ -14707,6 +14810,14 @@ async function handleLogin(e) {
     member.activeSessionToken = sessionToken;
     member.lastLoginTime = getNowTimestampString();
 
+    // Xử lý lưu thông tin đăng nhập tùy chọn
+    const rememberMe = document.getElementById('loginRememberPassword')?.checked;
+    if (rememberMe) {
+      saveLoginCredentials(u, p);
+    } else {
+      try { localStorage.removeItem(SAVED_LOGIN_KEY); } catch (err) {}
+    }
+
     AppState.auth = {
       isLoggedIn: true,
       user: {
@@ -14720,9 +14831,11 @@ async function handleLogin(e) {
     saveData();
     closeModal('loginModal');
 
-    // Dọn trống ô nhập mật khẩu để đảm bảo bảo mật
-    const passInput = document.getElementById('loginPassword');
-    if (passInput) passInput.value = '';
+    // Dọn trống ô nhập mật khẩu nếu không chọn ghi nhớ
+    if (!rememberMe) {
+      const passInput = document.getElementById('loginPassword');
+      if (passInput) passInput.value = '';
+    }
 
     updateDevAdminUI();
     renderAuthBadge();
@@ -14739,9 +14852,9 @@ async function handleLogin(e) {
     renderFinanceTab();
     renderMemberManagementList();
 
-    // Bắt buộc đổi mật khẩu trong lần đăng nhập đầu tiên
-    const requiresFirstLoginChange = member.mustChangePassword === true || 
-      (!member.hasChangedPassword && (member.password === '123' || member.password === '123456'));
+    // Bắt buộc đổi mật khẩu trong lần đăng nhập đầu tiên cho tất cả tài khoản
+    const isDefaultPass = member.password === '123' || member.password === '123456' || (member.password === 'admin' && !member.passwordChangedAt);
+    const requiresFirstLoginChange = member.mustChangePassword === true || !member.hasChangedPassword || isDefaultPass;
     if (requiresFirstLoginChange) {
       member.mustChangePassword = true;
       saveData();
@@ -14800,12 +14913,23 @@ function openModal(modalId) {
 }
 
 function closeModal(modalId) {
+  if (modalId === 'modalFirstLoginChangePassword') {
+    const mem = AppState.auth?.user?.id ? (AppState.members || []).find(m => m.id === AppState.auth.user.id) : null;
+    const isDefaultPass = mem && (mem.password === '123' || mem.password === '123456' || (mem.password === 'admin' && !mem.passwordChangedAt));
+    if (mem && (mem.mustChangePassword === true || !mem.hasChangedPassword || isDefaultPass)) {
+      showToast('⚠️ Vui lòng đổi mật khẩu mới để bảo vệ tài khoản trước khi tiếp tục!', 'warning');
+      return;
+    }
+  }
   const modal = document.getElementById(modalId);
   if (modal) modal.classList.add('hidden');
 }
 
 window.addEventListener('click', (e) => {
-  if (e.target.classList.contains('backdrop-blur-sm')) {
+  if (e.target.id === 'modalFirstLoginChangePassword') {
+    return;
+  }
+  if (e.target.classList.contains('backdrop-blur-sm') || e.target.classList.contains('backdrop-blur-xs')) {
     e.target.classList.add('hidden');
   }
 });
@@ -15719,10 +15843,12 @@ function initApp() {
     // Kiểm tra đường link truy cập Nhà Phát Triển (/dev, ?dev=true, #/dev)
     checkDeveloperRouteOnStartup();
 
-    // Kiểm tra tài khoản cần đổi mật khẩu lần đầu
+    // Kiểm tra tài khoản cần đổi mật khẩu lần đầu cho mọi tài khoản
     if (AppState.auth?.isLoggedIn && AppState.auth?.user?.id) {
       const currentMember = (AppState.members || []).find(m => m.id === AppState.auth.user.id);
-      if (currentMember && currentMember.mustChangePassword) {
+      const isDefaultPass = currentMember && (currentMember.password === '123' || currentMember.password === '123456' || (currentMember.password === 'admin' && !currentMember.passwordChangedAt));
+      if (currentMember && (currentMember.mustChangePassword === true || !currentMember.hasChangedPassword || isDefaultPass)) {
+        currentMember.mustChangePassword = true;
         setTimeout(() => openFirstLoginPasswordModal(currentMember), 400);
       }
     }
@@ -16473,20 +16599,22 @@ function subscribeToCloudClub(clubSlug) {
 
     // Bảo toàn mật khẩu lưu cục bộ của các thành viên hoặc cấp mặc định 123 (admin cho TNTOAN)
     incomingMembers.forEach(incMem => {
+      const localMem = AppState.members && AppState.members.find(m => m.id === incMem.id || (m.username && incMem.username && m.username.toLowerCase() === incMem.username.toLowerCase()));
+      if (localMem) {
+        if (localMem.password) incMem.password = localMem.password;
+        if (localMem.hasChangedPassword !== undefined) incMem.hasChangedPassword = localMem.hasChangedPassword;
+        if (localMem.mustChangePassword !== undefined) incMem.mustChangePassword = localMem.mustChangePassword;
+        if (localMem.passwordChangedAt) incMem.passwordChangedAt = localMem.passwordChangedAt;
+      }
       if (!incMem.password) {
-        const localMem = AppState.members && AppState.members.find(m => m.id === incMem.id || (m.username && incMem.username && m.username.toLowerCase() === incMem.username.toLowerCase()));
-        if (localMem && localMem.password) {
-          incMem.password = localMem.password;
-        } else if (incMem.username?.toLowerCase() === 'tntoan' || incMem.id === 'M001') {
+        if (incMem.username?.toLowerCase() === 'tntoan' || incMem.id === 'M001') {
           incMem.password = 'admin';
         } else {
           incMem.password = '123';
         }
+        incMem.mustChangePassword = true;
+        incMem.hasChangedPassword = false;
       }
-      if (incMem.username?.toLowerCase() === 'tntoan' || incMem.id === 'M001') {
-        incMem.password = 'admin';
-      }
-      incMem.hasChangedPassword = true;
     });
 
     const localAuth = AppState.auth;
@@ -16934,8 +17062,8 @@ function handleFirstLoginChangePasswordSubmit(e) {
     showToast('⚠️ Mật khẩu xác nhận không trùng khớp. Vui lòng nhập lại!', 'error');
     return;
   }
-  if (p1 === '123' || p1 === '123456') {
-    showToast('⚠️ Vui lòng không đặt lại mật khẩu mặc định (123 hoặc 123456)!', 'warning');
+  if (p1 === '123' || p1 === '123456' || p1 === 'admin') {
+    showToast('⚠️ Vui lòng không đặt lại mật khẩu mặc định (123, 123456 hoặc admin)!', 'warning');
     return;
   }
 
@@ -16949,10 +17077,30 @@ function handleFirstLoginChangePasswordSubmit(e) {
   member.password = p1;
   member.mustChangePassword = false;
   member.hasChangedPassword = true;
+  member.passwordChangedAt = new Date().toISOString();
   saveData();
-  closeModal('modalFirstLoginChangePassword');
+
+  // Đồng thời cập nhật mật khẩu mới vào tài khoản lưu tự động nếu đang bật ghi nhớ
+  const saved = getSavedLoginCredentials();
+  if (saved && (saved.username?.toLowerCase() === member.username?.toLowerCase() || saved.username?.toLowerCase() === member.name?.toLowerCase())) {
+    saveLoginCredentials(member.username || saved.username, p1);
+  }
+
+  // Cập nhật mật khẩu lên Firebase Authentication nếu đang kết nối
+  if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+    try {
+      firebase.auth().currentUser.updatePassword(p1).catch(() => {});
+    } catch (err) {}
+  }
+
+  const modal = document.getElementById('modalFirstLoginChangePassword');
+  if (modal) modal.classList.add('hidden');
+
   switchTab('dashboard');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderDashboard();
+  renderFinanceTab();
+  renderMemberManagementList();
   showToast('✓ Cập nhật mật khẩu thành công! Tài khoản của bạn đã được bảo vệ an toàn.', 'success');
 }
 

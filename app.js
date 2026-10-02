@@ -16746,12 +16746,8 @@ function pushDataToCloud() {
       AppState.tournamentData = TournamentState.tournaments;
     }
 
-    // Bảo mật: Loại bỏ mật khẩu plaintext khỏi payload đám mây
-    const safeMembers = (AppState.members || []).map(m => {
-      const copy = { ...m };
-      delete copy.password;
-      return copy;
-    });
+    // Đồng bộ toàn bộ thông tin thành viên (bao gồm thông tin đăng nhập, ví và phân quyền) lên cơ sở dữ liệu chính
+    const cloudMembers = (AppState.members || []).map(m => ({ ...m }));
 
     // Cấu trúc phân nhánh chuẩn theo kiến trúc Multi-Tenant
     const cloudClubPayload = {
@@ -16766,7 +16762,7 @@ function pushDataToCloud() {
         createdAt: club?.createdAt || getFormattedCurrentDate()
       },
       config: AppState.config || {},
-      members: safeMembers,
+      members: cloudMembers,
       attendance: {
         activitySessions: AppState.activitySessions || [],
         attendanceRecords: AppState.attendanceRecords || [],

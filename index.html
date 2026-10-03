@@ -2914,7 +2914,7 @@
 
             <div class="flex items-center gap-2">
               <label class="text-xs font-bold text-slate-700 shrink-0">Số quả mặc định/buổi:</label>
-              <input type="number" id="configDefaultShuttlesPerSession" min="1" max="50" value="6" class="w-16 px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl text-center font-bold text-slate-900 bg-white" />
+              <input type="number" id="configDefaultShuttlesPerSession" min="0" max="50" value="6" class="w-16 px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl text-center font-bold text-slate-900 bg-white" />
               <span class="text-xs text-slate-500 font-semibold">quả</span>
             </div>
           </div>
@@ -3095,12 +3095,30 @@
                 </div>
               </div>
             </div>
+
+            <!-- 4. Tiền Quỹ CLB Hàng Tháng Mặc Định -->
+            <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <label class="block text-xs font-black text-emerald-950">💰 Mức Quỹ CLB hàng tháng / thành viên (Mặc định: 50.000 VNĐ):</label>
+                  <span class="text-[11px] text-emerald-800">Số tiền quỹ CLB đóng hàng tháng của mỗi hội viên chính thức khi tất toán cuối tháng.</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="number" id="configMonthlyClubFund" min="0" step="5000" value="50000" class="w-32 px-3 py-2 text-xs border border-emerald-300 rounded-xl text-right font-black text-emerald-900 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  <span class="text-xs font-bold text-emerald-900 shrink-0">VNĐ/tháng</span>
+                </div>
+              </div>
+              <div class="text-[11px] text-slate-600 bg-white/80 p-2 rounded-lg border border-emerald-100 flex items-center gap-2">
+                <span>📌</span>
+                <span><b>Quy tắc tất toán:</b> Khi tất toán cuối tháng (thủ công hoặc tự động lúc 22h ngày cuối tháng), tiền Quỹ CLB sẽ được <b>cộng dồn lũy kế</b> cho tháng tiếp theo, số dư ví hội viên sẽ bắt đầu chu kỳ mới với số dư <b>0đ</b>.</span>
+              </div>
+            </div>
           </div>
 
           <div class="pt-2 flex justify-end">
             <button type="button" onclick="saveWalletSettlementConfig()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer">
               <i data-lucide="check" class="w-4 h-4"></i>
-              Lưu cấu hình ví âm & tất toán
+              Lưu cấu hình ví âm & Quỹ CLB
             </button>
           </div>
         </div>
@@ -3694,8 +3712,8 @@
             <p id="sessionDetailModalSub" class="text-[11px] text-slate-500">Thông tin chi tiết chi phí và thành viên tham gia</p>
           </div>
         </div>
-        <button type="button" onclick="closeModal('activitySessionDetailModal')" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition cursor-pointer">
-          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        <button type="button" onclick="closeModal('activitySessionDetailModal'); switchTab('dashboard');" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-700 font-black text-base flex items-center justify-center transition cursor-pointer" title="Đóng và trở về Trang chủ">
+          ✕
         </button>
       </div>
 
@@ -3740,8 +3758,8 @@
             <span>Xuất File Ảnh (PNG)</span>
           </button>
 
-          <button type="button" onclick="closeModal('settlementReportModal')" class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition cursor-pointer" title="Đóng">
-            <i data-lucide="x" class="w-5 h-5"></i>
+          <button type="button" onclick="closeModal('settlementReportModal'); switchTab('dashboard');" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-700 font-black text-base flex items-center justify-center transition cursor-pointer shadow-xs border border-slate-200" title="Đóng và trở về Trang chủ">
+            ✕
           </button>
         </div>
       </div>
@@ -6100,6 +6118,6 @@ const firebaseConfig = {
   <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- Application Logic - Thực thi tức thì khi HTML đã dựng xong -->
-  <script defer src="app.js?v=4.3"></script>
+  <script defer src="app.js?v=4.6"></script>
 </body>
 </html>

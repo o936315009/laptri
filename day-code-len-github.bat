@@ -11,7 +11,7 @@ git add .
 
 echo.
 echo 2. Dang tao ban commit moi ...
-git commit -m "feat: cap nhat CLB hoat dong voi du lieu nhap moi va dong bo thoi gian thuc"
+git commit -m "feat: dong bo 26 thanh vien thuc te va ket noi 2 chieu thoi gian thuc"
 
 echo.
 echo 3. Dang day code len GitHub (git push) ...

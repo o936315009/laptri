@@ -138,7 +138,8 @@ function initSecondClubDataIfMissing() {
           ],
           allowNegativeWallet: true,
           settlementMode: 'MONTHLY',
-          defaultSettlementDay: 'END_OF_MONTH'
+          defaultSettlementDay: 'END_OF_MONTH',
+          monthlyClubFund: 50000
         },
         funds: {
           clubFund: 3500000,
@@ -546,7 +547,8 @@ function getBlankClubInitialData(club) {
       ],
       allowNegativeWallet: true,
       settlementMode: 'MONTHLY',
-      defaultSettlementDay: 'END_OF_MONTH'
+      defaultSettlementDay: 'END_OF_MONTH',
+      monthlyClubFund: 50000
     },
     funds: {
       clubFund: initFund,
@@ -874,6 +876,7 @@ const DEFAULT_INITIAL_DATA = {
     allowNegativeWallet: true,          // Cho phép ví thành viên dư nợ / âm số dư (không chặn giao dịch)
     settlementMode: 'MONTHLY',          // 'DAILY' (Cuối ngày) hoặc 'MONTHLY' (Cuối tháng)
     defaultSettlementDay: 'END_OF_MONTH', // Ngày tất toán mặc định: cuối tháng
+    monthlyClubFund: 50000,             // Mức Quỹ CLB hàng tháng mặc định: 50.000 VNĐ / TV
     attendanceCutoffTime: '17:00'       // Giờ chốt tự điểm danh thành viên (mặc định 17:00)
   },
   funds: {
@@ -886,12 +889,35 @@ const DEFAULT_INITIAL_DATA = {
     courtPaidTotal: 0             // 0 đ
   },
   members: [
-    // --- DANH SÁCH THÀNH VIÊN BAN ĐẦU (ADMIN TNTOAN & 4 THÀNH VIÊN: CHÍNH, MẠNH, KIÊN, TƯƠI) ---
+    // --- DANH SÁCH 22 THÀNH VIÊN CHÍNH THỨC CỦA CLB CẦU LÔNG LẬP TRÍ ---
     { id: 'M001', name: 'TNTOAN', chipName: 'TNTOAN', phone: '0942927368', type: 'OFFICIAL', username: 'TNTOAN', password: 'admin', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('ADMIN') },
     { id: 'M002', name: 'CHÍNH', chipName: 'CHÍNH', phone: '0901000001', type: 'OFFICIAL', username: 'chinh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'VICE_ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('VICE_ADMIN') },
     { id: 'M003', name: 'MẠNH', chipName: 'MẠNH', phone: '0901000002', type: 'OFFICIAL', username: 'manh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
     { id: 'M004', name: 'KIÊN', chipName: 'KIÊN', phone: '0901000003', type: 'OFFICIAL', username: 'kien', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
-    { id: 'M005', name: 'TƯƠI', chipName: 'TƯƠI', phone: '0901000004', type: 'OFFICIAL', username: 'tuoi', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
+    { id: 'M005', name: 'TƯƠI', chipName: 'TƯƠI', phone: '0901000004', type: 'OFFICIAL', username: 'tuoi', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M006', name: 'THẮNG', chipName: 'THẮNG', phone: '0901000005', type: 'OFFICIAL', username: 'thang', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M007', name: 'QUẢNG', chipName: 'QUẢNG', phone: '0901000006', type: 'OFFICIAL', username: 'quang', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M008', name: 'HẢI', chipName: 'HẢI', phone: '0901000007', type: 'OFFICIAL', username: 'hai', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M009', name: 'PHÁP', chipName: 'PHÁP', phone: '0901000008', type: 'OFFICIAL', username: 'phap', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M010', name: 'HỒNG', chipName: 'HỒNG', phone: '0901000009', type: 'OFFICIAL', username: 'hong', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M011', name: 'HẠNH', chipName: 'HẠNH', phone: '0901000010', type: 'OFFICIAL', username: 'hanh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M012', name: 'CÔNG', chipName: 'CÔNG', phone: '0901000011', type: 'OFFICIAL', username: 'cong', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M013', name: 'THUỘC', chipName: 'THUỘC', phone: '0901000012', type: 'OFFICIAL', username: 'thuoc', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M014', name: 'THÀNH', chipName: 'THÀNH', phone: '0901000013', type: 'OFFICIAL', username: 'thanh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M015', name: 'TÂN', chipName: 'TÂN', phone: '0901000014', type: 'OFFICIAL', username: 'tan', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M016', name: 'LƯỢNG', chipName: 'LƯỢNG', phone: '0901000015', type: 'OFFICIAL', username: 'luong', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M017', name: 'T.ANH', chipName: 'T.ANH', phone: '0901000016', type: 'OFFICIAL', username: 'tanh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M018', name: 'TRƯỜNG', chipName: 'TRƯỜNG', phone: '0901000017', type: 'OFFICIAL', username: 'truong', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M019', name: 'ĐÊ', chipName: 'ĐÊ', phone: '0901000018', type: 'OFFICIAL', username: 'de', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M020', name: 'DUY', chipName: 'DUY', phone: '0901000019', type: 'OFFICIAL', username: 'duy', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M021', name: 'KHƯƠNG', chipName: 'KHƯƠNG', phone: '0901000020', type: 'OFFICIAL', username: 'khuong', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'M022', name: 'MINH', chipName: 'MINH', phone: '0901000021', type: 'OFFICIAL', username: 'minh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+
+    // --- DANH SÁCH 4 THÀNH VIÊN DANH DỰ CỦA CLB CẦU LÔNG LẬP TRÍ ---
+    { id: 'H001', name: 'HIẾU', chipName: 'HIẾU', phone: '0902000001', type: 'HONORARY', username: 'hieu', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'H002', name: 'NGUYÊN', chipName: 'NGUYÊN', phone: '0902000002', type: 'HONORARY', username: 'nguyen', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'H003', name: 'ĐẠT', chipName: 'ĐẠT', phone: '0902000003', type: 'HONORARY', username: 'dat', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'H004', name: 'DŨNG', chipName: 'DŨNG', phone: '0902000004', type: 'HONORARY', username: 'dung', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
   ],
   attendanceRecords: [],
   activitySessions: [],
@@ -941,15 +967,9 @@ function loadData() {
       if (!AppState.attendanceRecords) AppState.attendanceRecords = [];
       if (!AppState.auth) AppState.auth = DEFAULT_INITIAL_DATA.auth;
 
-      // Luôn đảm bảo tài khoản Quản trị viên TNTOAN và 4 thành viên (CHÍNH, MẠNH, KIÊN, TƯƠI) tồn tại hợp lệ
+      // Luôn đảm bảo tài khoản Quản trị viên TNTOAN và toàn bộ 26 thành viên thực tế (22 chính thức + 4 danh dự) CLB Lập Trí tồn tại hợp lệ
       if (isMainClub && AppState.members) {
-        const requiredMembers = [
-          { id: 'M001', name: 'TNTOAN', chipName: 'TNTOAN', phone: '0942927368', type: 'OFFICIAL', username: 'TNTOAN', password: 'admin', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('ADMIN') },
-          { id: 'M002', name: 'CHÍNH', chipName: 'CHÍNH', phone: '0901000001', type: 'OFFICIAL', username: 'chinh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'VICE_ADMIN', status: 'ACTIVE', permissions: getRoleDefaultPermissions('VICE_ADMIN') },
-          { id: 'M003', name: 'MẠNH', chipName: 'MẠNH', phone: '0901000002', type: 'OFFICIAL', username: 'manh', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
-          { id: 'M004', name: 'KIÊN', chipName: 'KIÊN', phone: '0901000003', type: 'OFFICIAL', username: 'kien', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
-          { id: 'M005', name: 'TƯƠI', chipName: 'TƯƠI', phone: '0901000004', type: 'OFFICIAL', username: 'tuoi', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
-        ];
+        const requiredMembers = DEFAULT_INITIAL_DATA.members;
 
         requiredMembers.forEach(req => {
           let found = AppState.members.find(m => 
@@ -962,6 +982,7 @@ function loadData() {
             found.name = req.name;
             found.chipName = req.chipName;
             found.username = req.username;
+            found.type = req.type;
             if (!found.password) {
               found.password = req.password;
               found.mustChangePassword = true;
@@ -1060,7 +1081,8 @@ function loadData() {
           const sc = AppState.config.shuttlecocksPerBox || 12;
           AppState.config.shuttleUnitPrice = Math.round(bp / sc) || 28333;
         }
-        if (!AppState.config.defaultShuttlesPerSession) AppState.config.defaultShuttlesPerSession = 6;
+        if (AppState.config.defaultShuttlesPerSession === undefined || AppState.config.defaultShuttlesPerSession === null) AppState.config.defaultShuttlesPerSession = 6;
+        if (AppState.config.monthlyClubFund === undefined || AppState.config.monthlyClubFund === null) AppState.config.monthlyClubFund = 50000;
         if (!AppState.config.viceLeaderId) AppState.config.viceLeaderId = isMainClub ? 'M002' : '';
         if (!AppState.config.permissions) {
           AppState.config.permissions = {
@@ -2321,6 +2343,13 @@ function saveActivitySessionState() {
     if (AppState) {
       AppState.currentSession = serializable;
       saveData();
+      if (firebaseDb && !isReceivingFromCloud) {
+        const club = getActiveClub();
+        const cleanSlug = getCanonicalClubSlug(club?.accessSlug || club?.id || 'lap-tri');
+        try {
+          firebaseDb.ref(`clubs/${cleanSlug}/attendance/currentSession`).set(serializable).catch(() => {});
+        } catch (e) {}
+      }
     }
   } catch (e) {}
 }
@@ -2358,6 +2387,14 @@ function applyLiveSessionFromCloud(data) {
 
     const clubId = getActiveClubId();
     localStorage.setItem('CLB_SESSION_' + clubId, JSON.stringify(data));
+
+    // Cập nhật tức thì các chip điểm danh và thanh tính tiền trên màn hình nếu đang mở
+    if (document.getElementById('actOfficialMemberGrid')) {
+      renderActivityMemberChips();
+      renderActivityGuestChips();
+      recalculateActivitySplit();
+      updateAttendanceSaveBarUI();
+    }
     return true;
   } catch (e) {
     return false;
@@ -2407,7 +2444,9 @@ function initActivitySessionData(forceReset = false) {
   const count = AppState.config?.shuttlecocksPerBox || 12;
   const unitPrice = count > 0 ? Math.round(boxPrice / count) : 28333;
   const mode = AppState.config?.shuttleBillingMode || 'BY_SHUTTLE';
-  const defaultShuttleCount = AppState.config?.defaultShuttlesPerSession || 12;
+  const defaultShuttleCount = (AppState.config?.defaultShuttlesPerSession !== undefined && AppState.config?.defaultShuttlesPerSession !== null && !isNaN(Number(AppState.config.defaultShuttlesPerSession))) 
+    ? Number(AppState.config.defaultShuttlesPerSession) 
+    : 6;
 
   activityState.dailyBoxPrice = boxPrice;
   activityState.shuttleBillingMode = mode;
@@ -2457,6 +2496,81 @@ function isMonthClosed(dateOrMonth) {
   return AppState.closedMonths.includes(monthKey);
 }
 
+function executeMonthSettlement(monthKey, isAuto = false) {
+  if (!monthKey) {
+    const d = new Date();
+    monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+  if (!AppState.settlementSnapshots) AppState.settlementSnapshots = {};
+  if (!AppState.closedMonths) AppState.closedMonths = [];
+
+  const parts = monthKey.split('-');
+  const monthStr = parts.length === 2 ? `${parts[1]}/${parts[0]}` : monthKey;
+
+  // 1. Sinh dữ liệu báo cáo đối soát thực tế trước khi reset
+  const reportData = generateLiveSettlementReportData(monthStr, true);
+
+  // 2. Lưu snapshot báo cáo tất toán vào lịch sử
+  AppState.settlementSnapshots[monthKey] = {
+    monthKey,
+    monthStr,
+    reportData,
+    settledAt: getNowTimestampString(),
+    isAuto: !!isAuto,
+    clubFundCarriedForward: AppState.funds?.clubFund || 0
+  };
+
+  // 3. Đánh dấu chốt sổ tháng này
+  if (!AppState.closedMonths.includes(monthKey)) {
+    AppState.closedMonths.push(monthKey);
+  }
+
+  // 4. QUY TẮC TẤT TOÁN:
+  // - Quỹ CLB (AppState.funds.clubFund) ĐƯỢC CỘNG DỒN cho tháng tiếp theo (giữ nguyên không xóa)
+  // - Sang tháng tiếp theo, tài khoản ví của các thành viên bắt đầu chu kỳ mới với số dư bằng 0
+  (AppState.members || []).forEach(m => {
+    m.balance = 0;
+    m.initialBalance = 0;
+    m.monthlySessions = 0;
+  });
+
+  saveData();
+  updateMonthLockBtnUI();
+  renderSessionFinalizedBanner();
+  renderDashboard();
+  renderMemberManagementList();
+  renderFinanceTab();
+  if (typeof renderSettlementReport === 'function') {
+    renderSettlementReport();
+  }
+
+  const currentClubFundText = formatMoney(AppState.funds?.clubFund || 0);
+  const msg = isAuto
+    ? `⏰ TỰ ĐỘNG TẤT TOÁN 22H: Đã chốt sổ tháng ${monthStr}! Quỹ CLB (${currentClubFundText}) được cộng dồn tích lũy, ví thành viên bắt đầu chu kỳ mới với số dư 0đ.`
+    : `🔒 ĐÃ TẤT TOÁN & CHỐT SỔ THÁNG ${monthStr}! Quỹ CLB (${currentClubFundText}) được cộng dồn sang tháng sau, ví tất cả thành viên đã bắt đầu chu kỳ mới với số dư 0đ.`;
+  showToast(msg, 'success');
+}
+
+function isLastDayOfMonth(d = new Date()) {
+  const tomorrow = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+  return tomorrow.getDate() === 1;
+}
+
+function checkAndRunMonthEndAutoSettlement() {
+  try {
+    const now = new Date();
+    if (isLastDayOfMonth(now) && now.getHours() >= 22) {
+      const mKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      if (!isMonthClosed(mKey)) {
+        console.log(`[AutoSettlement] Tự động tất toán chu kỳ tháng ${mKey} lúc 22h ngày cuối tháng.`);
+        executeMonthSettlement(mKey, true);
+      }
+    }
+  } catch (e) {
+    console.error('Lỗi kiểm tra tự động tất toán 22h cuối tháng:', e);
+  }
+}
+
 function toggleMonthCloseStatus(monthKey) {
   if (!monthKey) return;
   if (!AppState.closedMonths) AppState.closedMonths = [];
@@ -2474,14 +2588,17 @@ function toggleMonthCloseStatus(monthKey) {
     renderSessionFinalizedBanner();
     showToast(`✓ Đã MỞ KHÓA sổ hoạt động tháng ${monthFormatted}! Quản trị viên có thể chỉnh sửa lại.`, 'info');
   } else {
-    if (!confirm(`XÁC NHẬN CHỐT SỔ CUỐI THÁNG ${monthFormatted}?\n\nSau khi chốt sổ cuối tháng:\n• Toàn bộ các buổi hoạt động trong tháng ${monthFormatted} sẽ ĐƯỢC KHÓA hoàn toàn.\n• Không thể tạo thêm buổi hoạt động mới hoặc chỉnh sửa các buổi cũ trong tháng này.`)) {
+    const clubFundStr = formatMoney(AppState.funds?.clubFund || 0);
+    const confirmMsg = `XÁC NHẬN TẤT TOÁN & CHỐT SỔ THÁNG ${monthFormatted}?\n\n` +
+      `Theo quy tắc tất toán của CLB:\n` +
+      `• Quỹ CLB (${clubFundStr}) sẽ được CỘNG DỒN tích lũy cho tháng tiếp theo.\n` +
+      `• Tài khoản ví của các thành viên sẽ bắt đầu chu kỳ mới với số dư bằng 0đ.\n` +
+      `• Toàn bộ các buổi hoạt động trong tháng ${monthFormatted} sẽ ĐƯỢC KHÓA an toàn.\n\n` +
+      `Bạn có chắc chắn muốn thực hiện tất toán?`;
+    if (!confirm(confirmMsg)) {
       return;
     }
-    AppState.closedMonths.push(monthKey);
-    saveData();
-    updateMonthLockBtnUI();
-    renderSessionFinalizedBanner();
-    showToast(`🔒 Đã CHỐT SỔ CUỐI THÁNG ${monthFormatted}! Các buổi hoạt động trong tháng đã được khóa an toàn.`, 'success');
+    executeMonthSettlement(monthKey, false);
   }
 }
 
@@ -2801,6 +2918,13 @@ function openTodayActivitySession(askResetIfToday = false) {
     return;
   }
 
+  // Nếu trên đám mây đã có phiên hoạt động hôm nay (đang điểm danh trực tiếp giữa các máy)
+  if (AppState && AppState.currentSession && AppState.currentSession.date === today) {
+    applyLiveSessionFromCloud(AppState.currentSession);
+    renderAttendanceTab();
+    return;
+  }
+
   const isAlreadyToday = (activityState.date === today);
 
   if (!isAlreadyToday) {
@@ -2809,7 +2933,23 @@ function openTodayActivitySession(askResetIfToday = false) {
     activityState.editingSessionId = null;
     const dateInput = document.getElementById('actDateInput');
     if (dateInput) dateInput.value = today;
-    saveActivitySessionState();
+
+    // Kiểm tra xem trong localStorage hoặc AppState có session không trước khi lưu đè
+    const clubId = getActiveClubId();
+    const raw = localStorage.getItem('CLB_SESSION_' + clubId);
+    let loaded = false;
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.date === today) {
+          applyLiveSessionFromCloud(parsed);
+          loaded = true;
+        }
+      } catch (e) {}
+    }
+    if (!loaded) {
+      saveActivitySessionState();
+    }
     renderAttendanceTab();
     showToast(`🏸 Đã chuyển sang hoạt động hôm nay (${getFormattedCurrentDate()})!`, 'success');
   } else if (askResetIfToday && isAttendanceManager()) {
@@ -3360,8 +3500,32 @@ function renderActivityMemberChips() {
 
   if (!officialGrid || !honoraryGrid) return;
 
+  const OFFICIAL_ORDER = ['TNTOAN', 'CHÍNH', 'MẠNH', 'KIÊN', 'TƯƠI', 'THẮNG', 'QUẢNG', 'HẢI', 'PHÁP', 'HỒNG', 'HẠNH', 'CÔNG', 'THUỘC', 'THÀNH', 'TÂN', 'LƯỢNG', 'T.ANH', 'TRƯỜNG', 'ĐÊ', 'DUY', 'KHƯƠNG', 'MINH'];
+  const HONORARY_ORDER = ['HIẾU', 'NGUYÊN', 'ĐẠT', 'DŨNG'];
+
   let officialMembers = AppState.members.filter(m => m.type === 'OFFICIAL');
+  officialMembers.sort((a, b) => {
+    const aName = (a.chipName || a.name || '').toUpperCase();
+    const bName = (b.chipName || b.name || '').toUpperCase();
+    const idxA = OFFICIAL_ORDER.indexOf(aName);
+    const idxB = OFFICIAL_ORDER.indexOf(bName);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return aName.localeCompare(bName, 'vi');
+  });
+
   let honoraryMembers = AppState.members.filter(m => m.type === 'HONORARY' || m.type === 'UNOFFICIAL');
+  honoraryMembers.sort((a, b) => {
+    const aName = (a.chipName || a.name || '').toUpperCase();
+    const bName = (b.chipName || b.name || '').toUpperCase();
+    const idxA = HONORARY_ORDER.indexOf(aName);
+    const idxB = HONORARY_ORDER.indexOf(bName);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return aName.localeCompare(bName, 'vi');
+  });
 
   // Các thành viên quản lý tham gia sinh hoạt và điểm danh bình thường giống mọi thành viên
 
@@ -3785,15 +3949,15 @@ function renderActivityExpenseRows() {
         <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="block text-[10px] text-slate-400 font-bold mb-1 text-center">Số lượng (quả)</label>
-            <input type="number" min="1" value="${exp.qty}" oninput="updateExpenseQty(${exp.id}, this.value)" class="w-full text-xs font-black border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center text-slate-900" />
+            <input type="number" min="0" value="${exp.qty}" oninput="updateExpenseQty(${exp.id}, this.value)" class="w-full text-xs font-black border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center text-slate-900" />
           </div>
           <div>
             <label class="block text-[10px] text-slate-400 font-bold mb-1 text-right">Đơn giá</label>
-            <input type="number" min="0" step="any" value="${exp.unitPrice}" oninput="updateExpenseUnitPrice(${exp.id}, this.value)" class="w-full text-xs font-black border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right text-slate-900" />
+            <input type="number" id="expUnitPrice_${exp.id}" min="0" step="any" value="${exp.unitPrice}" oninput="updateExpenseUnitPrice(${exp.id}, this.value)" class="w-full text-xs font-black border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right text-slate-900" />
           </div>
           <div>
             <label class="block text-[10px] text-slate-400 font-bold mb-1 text-right">Số tiền</label>
-            <input type="number" min="0" step="any" value="${exp.amount}" oninput="updateExpenseAmountDirect(${exp.id}, this.value)" class="w-full text-xs font-black text-emerald-800 border border-slate-200 rounded-xl px-2.5 py-2 bg-emerald-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right" />
+            <input type="number" id="expAmount_${exp.id}" min="0" step="any" value="${exp.amount}" oninput="updateExpenseAmountDirect(${exp.id}, this.value)" class="w-full text-xs font-black text-emerald-800 border border-slate-200 rounded-xl px-2.5 py-2 bg-emerald-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right" />
           </div>
         </div>
       </div>
@@ -3838,7 +4002,8 @@ function updateExpenseTitle(id, val) {
 function updateExpenseQty(id, val) {
   const exp = activityState.expenses.find(e => e.id === id);
   if (exp) {
-    exp.qty = Math.max(1, Number(val) || 1);
+    const parsed = (val !== '' && !isNaN(Number(val))) ? Math.max(0, parseInt(val, 10)) : 0;
+    exp.qty = parsed;
     if (exp.isShuttleRow && (AppState.config?.shuttleBillingMode !== 'BY_BOX')) {
       const boxPrice = activityState.dailyBoxPrice || AppState.config?.dailyBoxPrice || 340000;
       const countPerBox = AppState.config?.shuttlecocksPerBox || 12;
@@ -3853,7 +4018,10 @@ function updateExpenseQty(id, val) {
       exp.amount = exp.qty * exp.unitPrice;
     }
     saveActivitySessionState();
-    renderActivityExpenseRows();
+    const amtInput = document.getElementById(`expAmount_${id}`);
+    if (amtInput) amtInput.value = exp.amount;
+    const unitInput = document.getElementById(`expUnitPrice_${id}`);
+    if (unitInput) unitInput.value = exp.unitPrice;
     recalculateActivitySplit();
   }
 }
@@ -5301,6 +5469,21 @@ function saveAndSplitActivitySession() {
   // Dọn sạch trạng thái chỉnh sửa
   activityState.isEditingFinalizedSession = false;
   activityState.editingSessionId = null;
+
+  // Tự động xuất và tải file ảnh của buổi hoạt động đó về máy
+  try {
+    const reportCanvas = generateActivityReportCanvas(sessionData);
+    window.__lastReportCanvas = reportCanvas;
+    const downloadLink = document.createElement('a');
+    downloadLink.download = `Bao_Cao_Buoi_Cau_${sessionData.date || getTodayInputFormat()}.png`;
+    downloadLink.href = reportCanvas.toDataURL('image/png');
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+  } catch (canvasErr) {
+    console.warn('Lỗi tự động xuất ảnh buổi cầu:', canvasErr);
+  }
+
   clearActivitySessionState();
   initActivitySessionData(true);
 
@@ -5318,9 +5501,9 @@ function saveAndSplitActivitySession() {
     recalculateActivitySplit();
   }
 
-  // Tự động mở modal xem và tải ảnh báo cáo khi kết thúc hoạt động
+  // Tự động mở modal xem và chia sẻ ảnh báo cáo khi kết thúc hoạt động
   setTimeout(() => {
-    openActivityReportModal();
+    openActivityReportModal(sessionData);
   }, 400);
 }
 
@@ -5356,55 +5539,75 @@ function drawReportRoundedRect(ctx, x, y, w, h, r, fillStyle, strokeStyle, lineW
   ctx.restore();
 }
 
-function generateActivityReportCanvas() {
-  const dateStr = activityState.date || getTodayInputFormat();
+function generateActivityReportCanvas(targetSession = null) {
+  const session = targetSession;
+  const dateStr = session ? (session.date || getTodayInputFormat()) : (activityState.date || getTodayInputFormat());
   const dateFormatted = dateStr.split('-').reverse().join('/');
-  const nowTime = getNowTimestampString();
-  const clubName = (AppState.config && AppState.config.clubName) || 'CLB CẦU LÔNG SMASH';
-  const actType = activityState.type || 'Buổi cầu';
+  const nowTime = session ? (session.timestamp || getNowTimestampString()) : getNowTimestampString();
+  const clubName = (AppState.config && AppState.config.clubName) || 'CLB CẦU LÔNG LẬP TRÍ';
+  const actType = session ? (session.title || 'Buổi cầu') : (activityState.type || 'Buổi cầu');
 
   // Chi phí
   let totalCost = 0;
   let shuttleExpense = null;
-  (activityState.expenses || []).forEach(e => {
+  const expensesList = session ? (session.expenses || []) : (activityState.expenses || []);
+  expensesList.forEach(e => {
     totalCost += (e.amount || 0);
     if (e.isShuttleRow) shuttleExpense = e;
   });
-  if (!shuttleExpense && (activityState.expenses || []).length > 0) {
-    shuttleExpense = activityState.expenses[0];
+  if (!shuttleExpense && expensesList.length > 0) {
+    shuttleExpense = expensesList[0];
+  }
+  if (session && session.shuttleTotal) {
+    totalCost = session.shuttleTotal;
   }
 
   // Khách
   let guestPaid = 0;
   const guestList = [];
-  (activityState.selectedGuestIds || new Set()).forEach(id => {
-    const guest = AppState.members.find(m => m.id === id);
-    if (guest) {
-      const gFee = guest.fee || (guest.type === 'GUEST_A' ? 90000 : (guest.type === 'GUEST_B' ? 70000 : 50000));
+  if (session && session.guests) {
+    session.guests.forEach(g => {
+      const gFee = g.fee || 50000;
       guestPaid += gFee;
-      guestList.push({ name: guest.name, type: guest.type, fee: gFee });
-    }
-  });
+      guestList.push({ name: g.name, type: 'GUEST', fee: gFee });
+    });
+    if (session.guestPaid !== undefined) guestPaid = session.guestPaid;
+  } else {
+    (activityState.selectedGuestIds || new Set()).forEach(id => {
+      const guest = AppState.members.find(m => m.id === id);
+      if (guest) {
+        const gFee = guest.fee || (guest.type === 'GUEST_A' ? 90000 : (guest.type === 'GUEST_B' ? 70000 : 50000));
+        guestPaid += gFee;
+        guestList.push({ name: guest.name, type: guest.type, fee: gFee });
+      }
+    });
+  }
 
   // Thành viên
   const memberList = [];
-  (activityState.selectedMemberIds || new Set()).forEach(id => {
-    const m = AppState.members.find(x => x.id === id);
-    if (m) memberList.push(m.chipName || m.name);
-  });
+  if (session && session.members) {
+    session.members.forEach(m => {
+      memberList.push(m.chipName || m.name);
+    });
+  } else {
+    (activityState.selectedMemberIds || new Set()).forEach(id => {
+      const m = AppState.members.find(x => x.id === id);
+      if (m) memberList.push(m.chipName || m.name);
+    });
+  }
   const memberCount = memberList.length;
-  const needSplit = Math.max(0, totalCost - guestPaid);
-  const perPerson = memberCount > 0 ? Math.round(needSplit / memberCount) : 0;
+  const needSplit = session ? (session.needSplit !== undefined ? session.needSplit : Math.max(0, totalCost - guestPaid)) : Math.max(0, totalCost - guestPaid);
+  const perPerson = session ? (session.shuttleFeePerMember !== undefined ? session.shuttleFeePerMember : (memberCount > 0 ? Math.round(needSplit / memberCount) : 0)) : (memberCount > 0 ? Math.round(needSplit / memberCount) : 0);
 
   // Người ứng tiền
   let frontText = null;
-  if (activityState.frontPersonId && activityState.frontPersonId !== 'NONE' && activityState.frontAmount > 0) {
+  if (!session && activityState.frontPersonId && activityState.frontPersonId !== 'NONE' && activityState.frontAmount > 0) {
     const frontPerson = AppState.members.find(m => m.id === activityState.frontPersonId);
     frontText = `${frontPerson ? frontPerson.name : 'Thành viên'} đã ứng trước: ${formatMoney(activityState.frontAmount)}`;
   }
 
   // Trận đấu
-  const matches = activityState.matches || [];
+  const matches = session ? (session.matches || []) : (activityState.matches || []);
 
   // STK ngân hàng
   const bankInfo = (AppState.config && AppState.config.bankInfo) || '';
@@ -5711,7 +5914,7 @@ function generateActivityReportCanvas() {
   return canvas;
 }
 
-function openActivityReportModal() {
+function openActivityReportModal(targetSession = null) {
   const modal = document.getElementById('actReportModal');
   const loading = document.getElementById('actReportLoadingState');
   const previewImg = document.getElementById('actReportPreviewImg');
@@ -5721,9 +5924,11 @@ function openActivityReportModal() {
   if (loading) loading.classList.remove('hidden');
   if (previewImg) previewImg.classList.add('hidden');
 
+  const sessionToRender = targetSession || (AppState.activitySessions && AppState.activitySessions.length > 0 ? AppState.activitySessions[0] : null);
+
   setTimeout(() => {
     try {
-      const canvas = generateActivityReportCanvas();
+      const canvas = generateActivityReportCanvas(sessionToRender);
       window.__lastReportCanvas = canvas;
       const dataUrl = canvas.toDataURL('image/png');
       if (previewImg) {
@@ -14022,7 +14227,11 @@ function renderSettingsTab() {
   }
 
   const defaultShuttlesInput = document.getElementById('configDefaultShuttlesPerSession');
-  if (defaultShuttlesInput) defaultShuttlesInput.value = config.defaultShuttlesPerSession || 6;
+  if (defaultShuttlesInput) defaultShuttlesInput.value = (config.defaultShuttlesPerSession !== undefined && config.defaultShuttlesPerSession !== null) ? config.defaultShuttlesPerSession : 6;
+
+  // Cấu hình mức Quỹ CLB hàng tháng (mặc định 50.000 VNĐ)
+  const monthlyFundInput = document.getElementById('configMonthlyClubFund');
+  if (monthlyFundInput) monthlyFundInput.value = (config.monthlyClubFund !== undefined && config.monthlyClubFund !== null) ? config.monthlyClubFund : 50000;
 
   // Cấu hình giờ chốt điểm danh hoạt động hôm nay (mặc định 17:00)
   const cutoffInput = document.getElementById('configAttendanceCutoffTime');
@@ -14489,7 +14698,10 @@ function saveDailyRateConfig() {
   const count = Number(document.getElementById('configShuttlecocksPerBox')?.value) || 12;
   const title = document.getElementById('configDailyRateTitle')?.value.trim() || `ĐƠN GIÁ THEO NGÀY ${count}`;
   const billingMode = document.getElementById('configModeByBox')?.checked ? 'BY_BOX' : 'BY_SHUTTLE';
-  const defaultShuttles = Number(document.getElementById('configDefaultShuttlesPerSession')?.value) || 6;
+  const defaultShuttlesVal = document.getElementById('configDefaultShuttlesPerSession')?.value;
+  const defaultShuttles = (defaultShuttlesVal !== '' && !isNaN(Number(defaultShuttlesVal))) 
+    ? Math.max(0, parseInt(defaultShuttlesVal, 10)) 
+    : 6;
   const shuttleUnitPrice = count > 0 ? Math.round(boxPrice / count) : 28333;
 
   AppState.config.dailyBoxPrice = boxPrice;
@@ -14508,6 +14720,31 @@ function saveDailyRateConfig() {
   updateShuttleBillingUI();
   updateDailyRateCalculatedPreview();
   showToast(`✓ Đã lưu cấu hình: 1 hộp = ${count} quả (${formatMoney(boxPrice)}), đơn giá 1 quả = ${formatMoney(shuttleUnitPrice)} (làm tròn đơn vị đồng)!`, 'success');
+}
+
+function saveWalletSettlementConfig() {
+  const currentRole = getCurrentUserRole();
+  if (currentRole !== 'ADMIN') {
+    showToast('⚠️ Chỉ Trưởng nhóm mới có toàn quyền sửa cấu hình ví & tất toán!', 'error');
+    return;
+  }
+
+  const allowNegative = document.getElementById('configAllowNegativeWallet')?.checked ?? true;
+  const settlementMode = document.getElementById('configModeDaily')?.checked ? 'DAILY' : 'MONTHLY';
+  const defaultDay = document.getElementById('configDefaultSettlementDay')?.value || 'END_OF_MONTH';
+  const monthlyFundInput = document.getElementById('configMonthlyClubFund');
+  const monthlyClubFund = (monthlyFundInput && monthlyFundInput.value !== '' && !isNaN(Number(monthlyFundInput.value)))
+    ? Math.max(0, parseInt(monthlyFundInput.value, 10))
+    : 50000;
+
+  AppState.config.allowNegativeWallet = allowNegative;
+  AppState.config.settlementMode = settlementMode;
+  AppState.config.defaultSettlementDay = defaultDay;
+  AppState.config.monthlyClubFund = monthlyClubFund;
+
+  saveData();
+  if (typeof renderSettlementReport === 'function') renderSettlementReport();
+  showToast(`✓ Đã lưu cấu hình ví âm & Quỹ CLB (${formatMoney(monthlyClubFund)}/tháng/TV) thành công!`, 'success');
 }
 
 // Sao lưu và khôi phục
@@ -15584,9 +15821,27 @@ function setElText(id, text) {
 /**
  * Sinh dữ liệu báo cáo tất toán từ danh sách thành viên thực tế trong AppState
  */
-function generateLiveSettlementReportData(monthStr) {
-  let members = AppState.members || [];
+function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
+  let monthKey = '';
+  if (monthStr && monthStr.includes('/')) {
+    const parts = monthStr.split('/');
+    if (parts.length === 2) {
+      monthKey = `${parts[1]}-${parts[0].padStart(2, '0')}`;
+    }
+  } else if (monthStr && monthStr.includes('-')) {
+    monthKey = monthStr;
+    const parts = monthStr.split('-');
+    if (parts.length === 2) {
+      monthStr = `${parts[1]}/${parts[0]}`;
+    }
+  }
 
+  // 1. Kiểm tra snapshot chốt sổ đã lưu trong lịch sử (nếu có và không yêu cầu tính lại)
+  if (!skipSnapshotCheck && monthKey && AppState.settlementSnapshots && AppState.settlementSnapshots[monthKey] && AppState.settlementSnapshots[monthKey].reportData) {
+    return AppState.settlementSnapshots[monthKey].reportData;
+  }
+
+  let members = AppState.members || [];
   if (!members || members.length === 0) {
     return SETTLEMENT_REPORT_PRESET;
   }
@@ -15599,34 +15854,54 @@ function generateLiveSettlementReportData(monthStr) {
   let sttHon = 1;
   let sttG = 1;
 
-  // Lấy các buổi trong tháng để tính chính xác số buổi thực tế
-  let monthPrefix = '';
-  if (monthStr && monthStr.includes('/')) {
-    const parts = monthStr.split('/');
-    if (parts.length === 2) {
-      monthPrefix = `${parts[1]}-${parts[0].padStart(2, '0')}`;
-    }
-  }
+  let monthPrefix = monthKey || '';
 
+  // Danh sách các buổi trong tháng được chọn
+  const sessionsInMonth = monthPrefix 
+    ? (AppState.activitySessions || []).filter(ses => ses.date && ses.date.startsWith(monthPrefix))
+    : (AppState.activitySessions || []);
+
+  const hasSessionsInMonth = sessionsInMonth.length > 0;
+
+  // Cấu hình mức Quỹ CLB hàng tháng (mặc định 50.000 VNĐ)
+  const monthlyFundFee = (AppState.config?.monthlyClubFund !== undefined && !isNaN(Number(AppState.config.monthlyClubFund)))
+    ? Number(AppState.config.monthlyClubFund)
+    : 50000;
+
+  // Hàm tính tiền sân theo bậc lũy kế số buổi
+  const calculateCourtFeeForMember = (member, countSessions) => {
+    if (!countSessions || countSessions <= 0) return 0;
+    const tiers = AppState.config?.feeTiers || [
+      { id: 1, name: 'Bậc 1 (0–4 buổi)', minSessions: 0, maxSessions: 4, price: 50000 },
+      { id: 2, name: 'Bậc 2 (5–9 buổi)', minSessions: 5, maxSessions: 9, price: 100000 },
+      { id: 3, name: 'Bậc 3 (10–15 buổi)', minSessions: 10, maxSessions: 15, price: 150000 },
+      { id: 4, name: 'Bậc 4 (16–30+ buổi)', minSessions: 16, maxSessions: 999, price: 200000 }
+    ];
+    const matched = tiers.find(t => countSessions >= t.minSessions && countSessions <= t.maxSessions);
+    return matched ? matched.price : 50000;
+  };
+
+  // Tính toán thành viên chính thức và danh dự
   members.forEach(m => {
     let realSessions = 0;
-    if (monthPrefix) {
-      (AppState.activitySessions || []).forEach(ses => {
-        if (ses.date && ses.date.startsWith(monthPrefix)) {
-          const attended = (ses.members || []).some(att => att.id === m.id || (att.name && att.name.toLowerCase() === (m.name || '').toLowerCase()));
-          if (attended) realSessions++;
-        }
-      });
-    }
-    const sessions = realSessions > 0 ? realSessions : (m.monthlySessions || 1);
-    const rate = 100000;
+    sessionsInMonth.forEach(ses => {
+      const attended = (ses.members || []).some(att => att.id === m.id || (att.name && att.name.trim().toLowerCase() === (m.name || '').trim().toLowerCase()));
+      if (attended) realSessions++;
+    });
+
+    const sessions = hasSessionsInMonth ? realSessions : (m.monthlySessions || 0);
+
     if (!m.type || m.type === 'OFFICIAL') {
-      const court = getMemberTotalCourtFee(m, sessions);
-      const fund = 200000;
+      const court = calculateCourtFeeForMember(m, sessions);
+      const fund = monthlyFundFee;
       const fine = (AppState.transactions || [])
-        .filter(t => (t.subType === 'FINE' || t.categoryGroup === 'FINE') && ((t.memberId && t.memberId === m.id) || (t.targetName && t.targetName.includes(m.name))))
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .filter(t => (t.subType === 'FINE' || t.categoryGroup === 'FINE' || t.type === 'FINE') &&
+                     (t.date && (t.date.startsWith(monthPrefix) || (monthStr && t.date.includes(monthStr)))) &&
+                     ((t.memberId && t.memberId === m.id) || (t.targetName && t.targetName.toLowerCase().includes(m.name.toLowerCase()))))
+        .reduce((sum, t) => sum + (Math.abs(t.amount) || 0), 0);
       const total = court + fund + fine;
+      const rate = sessions > 0 ? Math.round(total / sessions) : (court + fund);
+
       official.push({
         stt: sttOff++,
         name: m.name,
@@ -15638,9 +15913,16 @@ function generateLiveSettlementReportData(monthStr) {
         fine
       });
     } else if (m.type === 'HONORARY' || m.type === 'UNOFFICIAL') {
-      const court = getMemberTotalCourtFee(m, sessions);
-      const fund = Math.round(sessions * 25000);
-      const total = court + fund;
+      const court = calculateCourtFeeForMember(m, sessions);
+      const fund = 0;
+      const fine = (AppState.transactions || [])
+        .filter(t => (t.subType === 'FINE' || t.categoryGroup === 'FINE' || t.type === 'FINE') &&
+                     (t.date && (t.date.startsWith(monthPrefix) || (monthStr && t.date.includes(monthStr)))) &&
+                     ((t.memberId && t.memberId === m.id) || (t.targetName && t.targetName.toLowerCase().includes(m.name.toLowerCase()))))
+        .reduce((sum, t) => sum + (Math.abs(t.amount) || 0), 0);
+      const total = court + fund + fine;
+      const rate = sessions > 0 ? Math.round(total / sessions) : court;
+
       honorary.push({
         stt: sttHon++,
         name: m.name,
@@ -15649,21 +15931,55 @@ function generateLiveSettlementReportData(monthStr) {
         rate,
         court,
         fund,
-        fine: 0
-      });
-    } else if (m.type && m.type.startsWith('GUEST')) {
-      const court = getMemberTotalCourtFee(m, sessions);
-      guests.push({
-        stt: sttG++,
-        name: m.name || m.chipName || `Khách ${sttG}`,
-        sessions,
-        total: court,
-        rate,
-        court,
-        fund: 0,
-        fine: 0
+        fine
       });
     }
+  });
+
+  // Tập hợp danh sách khách tham gia thực tế từ các buổi sinh hoạt trong tháng
+  const guestMap = new Map();
+  sessionsInMonth.forEach(ses => {
+    (ses.guests || []).forEach(g => {
+      const gName = (g.name || 'Khách giao lưu').trim();
+      const gKey = gName.toLowerCase();
+      const prev = guestMap.get(gKey) || { name: gName, sessions: 0, court: 0 };
+      prev.sessions += 1;
+      prev.court += (g.fee || 70000);
+      guestMap.set(gKey, prev);
+    });
+  });
+
+  // Bổ sung các tài khoản khách cố định trong members nếu có
+  members.filter(m => m.type && m.type.startsWith('GUEST')).forEach(m => {
+    const gKey = (m.name || '').trim().toLowerCase();
+    if (!guestMap.has(gKey)) {
+      let guestSessions = 0;
+      sessionsInMonth.forEach(ses => {
+        if ((ses.members || []).some(att => att.id === m.id) || (ses.guests || []).some(att => att.id === m.id)) {
+          guestSessions++;
+        }
+      });
+      const sCount = hasSessionsInMonth ? guestSessions : (m.monthlySessions || 0);
+      if (sCount > 0) {
+        const fee = m.fee || 70000;
+        guestMap.set(gKey, { name: m.name, sessions: sCount, court: sCount * fee });
+      }
+    }
+  });
+
+  guestMap.forEach(gItem => {
+    const total = gItem.court;
+    const rate = gItem.sessions > 0 ? Math.round(total / gItem.sessions) : 70000;
+    guests.push({
+      stt: sttG++,
+      name: gItem.name,
+      sessions: gItem.sessions,
+      total: total,
+      rate: rate,
+      court: gItem.court,
+      fund: 0,
+      fine: 0
+    });
   });
 
   if (official.length === 0 && honorary.length === 0 && guests.length === 0) {
@@ -15675,6 +15991,8 @@ function generateLiveSettlementReportData(monthStr) {
   const grandTotalCourt = official.concat(honorary, guests).reduce((s, r) => s + r.court, 0);
   const grandTotalFund = official.concat(honorary).reduce((s, r) => s + r.fund, 0);
   const grandTotalFine = official.reduce((s, r) => s + r.fine, 0);
+
+  const totalCurrentWalletBal = (AppState.members || []).reduce((sum, m) => sum + (m.balance || 0), 0);
 
   return {
     monthText: `Tháng ${monthStr}`,
@@ -15689,9 +16007,9 @@ function generateLiveSettlementReportData(monthStr) {
       totalCourt: grandTotalCourt,
       totalFund: grandTotalFund,
       totalFine: grandTotalFine,
-      walletDeducted: 1800000,
-      walletRemaining: Math.max(0, grandTotalCollected - 1800000),
-      walletEndMonthBal: 0
+      walletDeducted: grandTotalCourt,
+      walletRemaining: Math.max(0, grandTotalCollected - grandTotalCourt),
+      walletEndMonthBal: totalCurrentWalletBal
     }
   };
 }
@@ -15839,6 +16157,10 @@ function initApp() {
     setupInactivityAutoBackup();
     updateAutoBackupUI();
     setInterval(checkConcurrentSession, 8000);
+
+    // Kiểm tra và chạy tự động tất toán chu kỳ tháng vào lúc 22h ngày cuối tháng
+    checkAndRunMonthEndAutoSettlement();
+    setInterval(checkAndRunMonthEndAutoSettlement, 60000);
 
     // Kiểm tra đường link truy cập Nhà Phát Triển (/dev, ?dev=true, #/dev)
     checkDeveloperRouteOnStartup();
@@ -16046,44 +16368,12 @@ let cloudInitTimeout = null;
 // CÁC HÀM QUẢN LÝ KHÓA TRUY CẬP KHI MẤT KẾT NỐI THỜI GIAN THỰC 2 CHIỀU
 // (CHỈ LƯU TRỮ & ĐỒNG BỘ ONLINE - NGĂN CHẶN NHẬP LIỆU TRÊN TẤT CẢ TÀI KHOẢN)
 // ==========================================
-function showRealtimeConnectingBlocker(statusText = 'Đang kết nối đám mây Google Firebase...') {
-  const modal = document.getElementById('realtimeOfflineBlockerModal');
-  if (!modal) return;
-  const icon = document.getElementById('realtimeBlockerIcon');
-  const title = document.getElementById('realtimeBlockerTitle');
-  const dot = document.getElementById('realtimeBlockerStatusDot');
-  const text = document.getElementById('realtimeBlockerStatusText');
-
-  if (icon) icon.textContent = '⏳';
-  if (title) title.textContent = 'Đang Kết Nối Máy Chủ Thời Gian Thực...';
-  if (dot) dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse';
-  if (text) text.textContent = statusText;
-  modal.classList.remove('hidden');
+function showRealtimeConnectingBlocker(statusText = 'Đang kết nối...') {
+  // Không chặn màn hình người dùng
 }
 
 function showRealtimeOfflineBlocker(reason = '', statusText = '') {
-  const modal = document.getElementById('realtimeOfflineBlockerModal');
-  if (!modal) return;
-
-  const icon = document.getElementById('realtimeBlockerIcon');
-  const title = document.getElementById('realtimeBlockerTitle');
-  const msg = document.getElementById('realtimeBlockerMessage');
-  const dot = document.getElementById('realtimeBlockerStatusDot');
-  const text = document.getElementById('realtimeBlockerStatusText');
-
-  if (icon) icon.textContent = '📡';
-  if (title) title.textContent = 'Mất Kết Nối Thời Gian Thực 2 Chiều';
-  if (msg) {
-    msg.innerHTML = `Hệ thống được thiết lập chế độ <strong>CHỈ LƯU TRỮ VÀ ĐỒNG BỘ ONLINE</strong>. Để bảo đảm dữ liệu điểm danh, ví và quỹ không bị sai lệch, <strong>tất cả các tài khoản tạm thời không thể truy cập hoặc nhập dữ liệu</strong> khi chưa có kết nối thời gian thực 2 chiều với máy chủ Google Firebase.`;
-  }
-  if (dot) {
-    dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse';
-  }
-  if (text) {
-    text.textContent = statusText || (reason ? `Trạng thái: ${reason}` : 'Trạng thái: Đã ngắt kết nối với máy chủ Google Firebase');
-  }
-
-  modal.classList.remove('hidden');
+  // Không chặn màn hình người dùng, dữ liệu tự lưu local và sync khi có mạng
 }
 
 function hideRealtimeOfflineBlocker() {
@@ -16094,13 +16384,7 @@ function hideRealtimeOfflineBlocker() {
 }
 
 function retryRealtimeConnection() {
-  const text = document.getElementById('realtimeBlockerStatusText');
-  const dot = document.getElementById('realtimeBlockerStatusDot');
-  const icon = document.getElementById('realtimeBlockerIcon');
-  if (text) text.textContent = 'Đang tiến hành kết nối lại...';
-  if (dot) dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-sky-500 animate-spin';
-  if (icon) icon.textContent = '🔄';
-
+  hideRealtimeOfflineBlocker();
   updateCloudSyncUI('CONNECTING', 'Đang kết nối lại Google Firebase...');
   showToast('🔄 Đang kết nối lại máy chủ Google Firebase...', 'info', 3000);
 
@@ -16115,9 +16399,6 @@ function retryRealtimeConnection() {
     const activeSlug = activeClub?.accessSlug || activeClub?.id || 'lap-tri';
     subscribeToCloudClub(activeSlug);
   }
-  setTimeout(() => {
-    hideRealtimeOfflineBlocker();
-  }, 1000);
 }
 
 function openCloudSyncModalFromBlocker() {
@@ -16134,14 +16415,10 @@ function openCloudSyncModalFromBlocker() {
 }
 
 function assertRealtimeOnlineConnected(actionDesc = 'thao tác') {
-  if (!isCloudActuallyConnected) {
-    showToast(`⚠️ Không có kết nối thời gian thực 2 chiều! Bạn không thể ${actionDesc} khi đang ngoại tuyến.`, 'warning', 4000);
-    if (!navigator.onLine) {
-      showRealtimeOfflineBlocker('Không có kết nối thời gian thực 2 chiều');
-    }
-    return false;
+  if (!isCloudActuallyConnected && typeof navigator !== 'undefined' && !navigator.onLine) {
+    showToast(`📶 Đang offline: Thao tác ${actionDesc} đã lưu tạm và sẽ tự đồng bộ khi có mạng.`, 'info', 3000);
   }
-  return true;
+  return true; // Luôn cho phép thao tác thông suốt!
 }
 
 function updateCloudSyncUI(status, message = '') {
@@ -16538,9 +16815,22 @@ function subscribeToCloudClub(clubSlug) {
   if (currentCloudClubRef) {
     try { currentCloudClubRef.off(); } catch (e) {}
   }
+  if (window._currentLiveSessionRef) {
+    try { window._currentLiveSessionRef.off(); } catch (e) {}
+  }
 
   currentCloudSlug = cleanSlug;
   currentCloudClubRef = firebaseDb.ref('clubs/' + cleanSlug);
+
+  // Lắng nghe trực tiếp phiên điểm danh thời gian thực để phản hồi dưới 100ms trên mọi thiết bị
+  window._currentLiveSessionRef = firebaseDb.ref('clubs/' + cleanSlug + '/attendance/currentSession');
+  window._currentLiveSessionRef.on('value', liveSnap => {
+    const liveSes = liveSnap.val();
+    if (liveSes && !isSyncingToCloud) {
+      AppState.currentSession = liveSes;
+      applyLiveSessionFromCloud(liveSes);
+    }
+  });
 
   currentCloudClubRef.on('value', snapshot => {
     isCloudActuallyConnected = true;
@@ -16596,6 +16886,36 @@ function subscribeToCloudClub(clubSlug) {
     let incomingTransactions = cloudData.transactions || [];
     let incomingTournaments = cloudData.tournaments || cloudData.tournamentData || [];
     let incomingTopUpRequests = cloudData.wallets?.topUpRequests || cloudData.topUpRequests || [];
+
+    // Luôn đảm bảo đầy đủ 26 thành viên thực tế (22 chính thức + 4 danh dự) cho CLB Lập Trí trên mọi thiết bị
+    const isMainClub = (!cleanSlug || cleanSlug === 'lap-tri' || cleanSlug === 'club_laptri');
+    if (isMainClub && DEFAULT_INITIAL_DATA.members) {
+      let needsPushUpdate = false;
+      DEFAULT_INITIAL_DATA.members.forEach(req => {
+        let found = incomingMembers.find(m => 
+          (m.id && m.id === req.id) ||
+          (m.username && m.username.toLowerCase() === req.username.toLowerCase()) ||
+          (m.chipName && m.chipName.toUpperCase() === req.chipName.toUpperCase()) ||
+          (m.name && m.name.toUpperCase() === req.name.toUpperCase())
+        );
+        if (!found) {
+          incomingMembers.push(JSON.parse(JSON.stringify(req)));
+          needsPushUpdate = true;
+        } else {
+          if (found.type !== req.type) {
+            found.type = req.type;
+            needsPushUpdate = true;
+          }
+          if (found.chipName !== req.chipName) {
+            found.chipName = req.chipName;
+            needsPushUpdate = true;
+          }
+        }
+      });
+      if (needsPushUpdate && !isSyncingToCloud) {
+        setTimeout(() => { pushDataToCloud(); }, 600);
+      }
+    }
 
     // Bảo toàn mật khẩu lưu cục bộ của các thành viên hoặc cấp mặc định 123 (admin cho TNTOAN)
     incomingMembers.forEach(incMem => {
@@ -16691,11 +17011,13 @@ function subscribeToCloudClub(clubSlug) {
     clearTimeout(cloudInitTimeout);
     updateCloudSyncUI('CONNECTED');
 
-    if (!window._hasReceivedFirstCloudSnapshot) {
-      window._hasReceivedFirstCloudSnapshot = true;
-    } else {
+    const now = Date.now();
+    if (!window._lastCloudToastTime) window._lastCloudToastTime = 0;
+    if (window._hasReceivedFirstCloudSnapshot && (now - window._lastCloudToastTime > 10000)) {
+      window._lastCloudToastTime = now;
       showToast(`☁️ Dữ liệu đã cập nhật theo thời gian thực (${AppState.members?.length || 0} thành viên)!`, 'info');
     }
+    window._hasReceivedFirstCloudSnapshot = true;
     setTimeout(() => { isReceivingFromCloud = false; }, 350);
   }, err => {
     console.warn('Lỗi lắng nghe Firebase, chuyển sang chế độ bộ nhớ máy:', err);
@@ -17106,24 +17428,8 @@ function handleFirstLoginChangePasswordSubmit(e) {
 const CLB_CURRENT_SESSION_KEY = 'CLB_CURRENT_SESSION_TOKEN_V1';
 
 function checkConcurrentSession() {
-  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) return;
-  if (AppState.auth.user.role === 'DEV_ADMIN') return;
-
-  const currentUserId = AppState.auth.user.id;
-  const member = (AppState.members || []).find(m => m.id === currentUserId);
-  if (!member || !member.activeSessionToken) return;
-
-  const localToken = localStorage.getItem(CLB_CURRENT_SESSION_KEY);
-  if (!localToken) {
-    localStorage.setItem(CLB_CURRENT_SESSION_KEY, member.activeSessionToken);
-    return;
-  }
-
-  if (member.activeSessionToken !== localToken) {
-    console.warn('Phát hiện phiên làm việc đã được mở trên thiết bị khác!');
-    handleLogout();
-    alert('⚠️ Tài khoản của bạn đã được đăng nhập từ một thiết bị hoặc trình duyệt khác.\n\nPhiên làm việc này đã kết thúc để bảo đảm an toàn dữ liệu.');
-  }
+  // Cho phép đa thiết bị (Điện thoại Admin, Điện thoại TV, PC) cùng xem và đồng bộ dữ liệu thời gian thực
+  return;
 }
 
 /**
@@ -17211,7 +17517,8 @@ function checkInactivityBackup() {
       hasBackedUpCurrentIdle = true;
       updateAutoBackupUI();
 
-      if (typeof pushDataToCloud === 'function') {
+      // Chỉ đẩy lên đám mây nếu máy có thay đổi chưa đẩy thành công (tránh spam vòng lặp)
+      if (window._hasUnsyncedLocalChanges && typeof pushDataToCloud === 'function') {
         pushDataToCloud();
       }
       // Tự động sao lưu chạy nền tĩnh lặng không gây gián đoạn người dùng

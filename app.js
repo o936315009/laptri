@@ -924,14 +924,8 @@ const DEFAULT_INITIAL_DATA = {
   transactions: [],
   topUpRequests: [],
   auth: {
-    isLoggedIn: true,
-    user: {
-      id: 'M001',
-      username: 'TNTOAN',
-      role: 'ADMIN',
-      name: 'TNTOAN (Chủ nhiệm / Admin)',
-      permissions: getRoleDefaultPermissions('ADMIN')
-    }
+    isLoggedIn: false,
+    user: null
   }
 };
 
@@ -998,7 +992,7 @@ function loadData() {
           }
         });
 
-        if (AppState.auth && (!AppState.auth.user || AppState.auth.user.username === 'chinh')) {
+        if (AppState.auth && AppState.auth.isLoggedIn && (!AppState.auth.user || AppState.auth.user.username === 'chinh')) {
           AppState.auth.user = {
             id: 'M001',
             username: 'TNTOAN',
@@ -2847,10 +2841,7 @@ function getCurrentUserRole() {
   if (AppState.auth && AppState.auth.isLoggedIn && AppState.auth.user && AppState.auth.user.role) {
     return AppState.auth.user.role;
   }
-  if (AppState.auth && AppState.auth.isLoggedIn === false) {
-    return 'GUEST';
-  }
-  return 'ADMIN'; // Mặc định là Quản lý toàn quyền
+  return 'GUEST';
 }
 
 function isAttendanceManager() {
@@ -3135,30 +3126,37 @@ function hasUserPermission(permKey) {
 }
 
 function canPerformAttendance() {
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) return false;
   return hasUserPermission('attendance');
 }
 
 function canPerformFinance() {
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) return false;
   return hasUserPermission('finance');
 }
 
 function canManageMembers() {
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) return false;
   return hasUserPermission('member');
 }
 
 function canManageTournaments() {
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) return false;
   return hasUserPermission('tournament');
 }
 
 function canScoreMatch() {
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) return false;
   return hasUserPermission('referee');
 }
 
 function canConfigSystem() {
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) return false;
   return hasUserPermission('config');
 }
 
 function canSyncTournament() {
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) return false;
   return hasUserPermission('tournament');
 }
 
@@ -3601,6 +3599,22 @@ function toggleActivityMember(memberId) {
   if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('điểm danh thành viên')) {
     return;
   }
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) {
+    showToast('🔐 Vui lòng đăng nhập để thực hiện điểm danh!', 'warning');
+    openLoginModal();
+    return;
+  }
+  const currentUserId = AppState.auth.user.id;
+  if (!isAttendanceManager() && memberId !== currentUserId) {
+    showToast('⚠️ Bạn chỉ có quyền tự điểm danh cho chính mình!', 'warning');
+    return;
+  }
+  if (!isAttendanceManager() && isPastAttendanceCutoff(activityState.date)) {
+    const cutoff = getAttendanceCutoffTime();
+    showToast(`⚠️ Đã quá giờ chốt điểm danh (${cutoff})! Vui lòng liên hệ Ban Quản lý để được bổ sung.`, 'error');
+    return;
+  }
+
   const existingSes = (AppState.activitySessions || []).find(s => s.date === activityState.date);
   if (existingSes && !activityState.isEditingFinalizedSession) {
     if (isMonthClosed(activityState.date)) {
@@ -3738,6 +3752,11 @@ function renderActivityGuestChips() {
 }
 
 function toggleActivityGuest(guestId) {
+  if (!isAttendanceManager()) {
+    showToast('⚠️ Chỉ Ban Quản lý mới có quyền điểm danh khách giao lưu!', 'warning');
+    if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) openLoginModal();
+    return;
+  }
   const existingSes = (AppState.activitySessions || []).find(s => s.date === activityState.date);
   if (existingSes && !activityState.isEditingFinalizedSession) {
     if (isMonthClosed(activityState.date)) {
@@ -6627,6 +6646,12 @@ function renderFullTransactionTable() {
 // A.1 THU QUỸ THÀNH VIÊN THEO THÁNG (NHIỀU THÀNH VIÊN)
 // ==========================================
 function openMonthlyFundModal() {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý hoặc Thủ quỹ để thu Quỹ CLB từ các thành viên!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   const monthInput = document.getElementById('monthlyFundMonth');
   if (monthInput) {
     const now = new Date();
@@ -6704,6 +6729,11 @@ function updateMonthlyFundSummary() {
 
 function handleMonthlyFundSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thu Quỹ CLB! Vui lòng đăng nhập tài khoản Quản lý hoặc Thủ quỹ.', 'error');
+    openLoginModal();
+    return;
+  }
   const monthVal = document.getElementById('monthlyFundMonth').value;
   const amount = Number(document.getElementById('monthlyFundAmount').value);
   const checkboxes = document.querySelectorAll('input[name="monthlyFundMemberCheckbox"]:checked');
@@ -6769,6 +6799,12 @@ function handleMonthlyFundSubmit(e) {
 let quickFineRowCounter = 0;
 
 function openQuickFineModal() {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản có quyền Quản lý hoặc Ban điều hành để xử phạt!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   const dateInput = document.getElementById('quickFineGlobalDate');
   if (dateInput) dateInput.value = getTodayInputFormat();
 
@@ -6853,6 +6889,11 @@ function updateQuickFineSummary() {
 
 function handleQuickFineSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền xử phạt vi phạm! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const dateVal = document.getElementById('quickFineGlobalDate').value || getTodayInputFormat();
   const [y, m, d] = dateVal.split('-');
   const dateFormatted = `${d}/${m}/${y}`;
@@ -6930,6 +6971,12 @@ function handleQuickFineSubmit(e) {
 // A.3 THU GIẢI THƯỞNG CLB
 // ==========================================
 function openPrizeIncomeModal() {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý hoặc Thủ quỹ để ghi nhận giải thưởng!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   const dateInput = document.getElementById('prizeDate');
   if (dateInput) dateInput.value = getTodayInputFormat();
 
@@ -6944,6 +6991,11 @@ function openPrizeIncomeModal() {
 
 function handlePrizeIncomeSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thao tác! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const name = document.getElementById('prizeTournamentName').value.trim();
   const amount = Number(document.getElementById('prizeAmount').value);
   const dateVal = document.getElementById('prizeDate').value || getTodayInputFormat();
@@ -6987,6 +7039,12 @@ function handlePrizeIncomeSubmit(e) {
 // A.4 THU TÀI TRỢ
 // ==========================================
 function openSponsorIncomeModal() {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý hoặc Thủ quỹ để ghi nhận tài trợ!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   const dateInput = document.getElementById('sponsorDate');
   if (dateInput) dateInput.value = getTodayInputFormat();
 
@@ -7001,6 +7059,11 @@ function openSponsorIncomeModal() {
 
 function handleSponsorIncomeSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thao tác! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const name = document.getElementById('sponsorName').value.trim();
   const amount = Number(document.getElementById('sponsorAmount').value);
   const dateVal = document.getElementById('sponsorDate').value || getTodayInputFormat();
@@ -7041,6 +7104,12 @@ function handleSponsorIncomeSubmit(e) {
 // A.5 KHOẢN THU KHÁC
 // ==========================================
 function openOtherIncomeModal() {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý hoặc Thủ quỹ để ghi nhận khoản thu!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   const dateInput = document.getElementById('otherIncomeDate');
   if (dateInput) dateInput.value = getTodayInputFormat();
 
@@ -7055,6 +7124,11 @@ function openOtherIncomeModal() {
 
 function handleOtherIncomeSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thao tác! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const content = document.getElementById('otherIncomeContent').value.trim();
   const amount = Number(document.getElementById('otherIncomeAmount').value);
   const dateVal = document.getElementById('otherIncomeDate').value || getTodayInputFormat();
@@ -7095,6 +7169,12 @@ function handleOtherIncomeSubmit(e) {
 // B.1 CHI HOẠT ĐỘNG CHUNG CLB (LIÊN HOAN / GIAO LƯU / KHÁC)
 // ==========================================
 function openGeneralExpenseModal(defaultCat = 'EXP_PARTY') {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý hoặc Thủ quỹ để ghi nhận khoản chi!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   const dateInput = document.getElementById('generalExpenseDate');
   if (dateInput) dateInput.value = getTodayInputFormat();
 
@@ -7112,6 +7192,11 @@ function openGeneralExpenseModal(defaultCat = 'EXP_PARTY') {
 
 function handleGeneralExpenseSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thao tác! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const cat = document.querySelector('input[name="generalExpenseCategory"]:checked').value;
   const amount = Number(document.getElementById('generalExpenseAmount').value);
   const dateVal = document.getElementById('generalExpenseDate').value || getTodayInputFormat();
@@ -7158,6 +7243,12 @@ function handleGeneralExpenseSubmit(e) {
 // B.2 CHI PHÍ CHO THÀNH VIÊN (HIẾU / HỶ / ỐM / KHÁC)
 // ==========================================
 function openMemberExpenseModal(preselectMemberId = null, defaultCat = 'EXP_HY') {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý hoặc Thủ quỹ để chi phí cho thành viên!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   populateMemberExpenseSelect(preselectMemberId);
 
   const dateInput = document.getElementById('memberExpenseDate');
@@ -7193,6 +7284,11 @@ function setMemberExpenseAmountQuick(amount) {
 
 function handleMemberExpenseSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thao tác! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const memberId = document.getElementById('memberExpenseMemberSelect').value;
   const cat = document.querySelector('input[name="memberExpenseCategory"]:checked').value;
   const amount = Number(document.getElementById('memberExpenseAmount').value);
@@ -7269,6 +7365,12 @@ function populateTopUpMemberSelect(preselectId = null) {
 }
 
 function openTopUpModal() {
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) {
+    showToast('⚠️ Vui lòng đăng nhập để nạp tiền vào ví hoặc gửi yêu cầu!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   const curRole = getCurrentUserRole();
   const isMemberRole = curRole === 'MEMBER' || !canPerformFinance();
   const currentUserId = AppState.auth?.user?.id;
@@ -7293,6 +7395,12 @@ function openTopUpModal() {
 }
 
 function openTopUpModalForMember(memberId) {
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) {
+    showToast('⚠️ Vui lòng đăng nhập để nạp tiền vào ví hoặc gửi yêu cầu!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   const curRole = getCurrentUserRole();
   const isMemberRole = curRole === 'MEMBER' || !canPerformFinance();
   const currentUserId = AppState.auth?.user?.id;
@@ -7324,6 +7432,12 @@ function setTopUpAmount(amount) {
 
 function handleTopUpSubmit(e) {
   if (e) e.preventDefault();
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) {
+    showToast('⚠️ Vui lòng đăng nhập để thực hiện nạp tiền!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   const curRole = getCurrentUserRole();
   const isMemberRole = curRole === 'MEMBER' || !canPerformFinance();
   const currentUserId = AppState.auth?.user?.id;
@@ -7517,6 +7631,11 @@ function filterPendingTopUpModalList(filterType) {
 }
 
 function openPendingTopUpRequestsModal() {
+  if (!AppState.auth || !AppState.auth.isLoggedIn || !AppState.auth.user) {
+    showToast('⚠️ Vui lòng đăng nhập để xem danh sách yêu cầu nạp tiền!', 'warning');
+    openLoginModal();
+    return;
+  }
   currentTopUpModalFilter = 'PENDING';
   filterPendingTopUpModalList('PENDING');
   openModal('modalPendingTopUpRequests');
@@ -7880,6 +7999,11 @@ function setFundCategoryQuick(val) {
 
 function handleFundTransactionSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thao tác! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const type = document.getElementById('fundTransactionType').value;
   const amount = Number(document.getElementById('fundAmount').value);
   const category = document.getElementById('fundCategory').value.trim();
@@ -7932,11 +8056,21 @@ function handleFundTransactionSubmit(e) {
 // 13. QUỸ THÀNH VIÊN TẠM ỨNG & TẤT TOÁN DƯ NỢ
 // ==========================================
 function openAdvanceFundModal() {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý hoặc Thủ quỹ để điều chỉnh quỹ tạm ứng!', 'warning');
+    openLoginModal();
+    return;
+  }
   openModal('advanceFundModal');
 }
 
 function handleAdvanceFundSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thao tác! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const type = document.getElementById('advanceType').value;
   const amount = Number(document.getElementById('advanceAmount').value);
   const description = document.getElementById('advanceDescription').value.trim();
@@ -7985,6 +8119,11 @@ function handleAdvanceFundSubmit(e) {
 
 // 13.1 CHI TRẢ TIỀN CẦU (RÚT QUỸ TẠM ỨNG CẦU)
 function openPayShuttleExpenseModal() {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý hoặc Thủ quỹ để chi trả tiền cầu!', 'warning');
+    openLoginModal();
+    return;
+  }
   const dateInput = document.getElementById('payShuttleDate');
   if (dateInput) dateInput.value = getTodayInputFormat();
   const amtInput = document.getElementById('payShuttleAmount');
@@ -7994,6 +8133,11 @@ function openPayShuttleExpenseModal() {
 
 function handlePayShuttleExpenseSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thao tác! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const dateStr = document.getElementById('payShuttleDate')?.value || getTodayInputFormat();
   const dateFormatted = dateStr.split('-').reverse().join('/');
   const supplier = document.getElementById('payShuttleSupplier')?.value.trim() || 'Đại lý Cầu Lông';
@@ -8030,6 +8174,11 @@ function handlePayShuttleExpenseSubmit(e) {
 
 // 13.2 CHI TRẢ TIỀN SÂN (RÚT QUỸ TẠM ỨNG SÂN)
 function openPayCourtExpenseModal() {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý hoặc Thủ quỹ để chi trả tiền sân!', 'warning');
+    openLoginModal();
+    return;
+  }
   const dateInput = document.getElementById('payCourtDate');
   if (dateInput) dateInput.value = getTodayInputFormat();
   const amtInput = document.getElementById('payCourtAmount');
@@ -8039,6 +8188,11 @@ function openPayCourtExpenseModal() {
 
 function handlePayCourtExpenseSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thao tác! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const dateStr = document.getElementById('payCourtDate')?.value || getTodayInputFormat();
   const dateFormatted = dateStr.split('-').reverse().join('/');
   const owner = document.getElementById('payCourtOwner')?.value.trim() || 'Chủ sân Cầu Lông';
@@ -8077,6 +8231,11 @@ function handlePayCourtExpenseSubmit(e) {
 let currentSettlementFilterMode = 'ALL'; // 'ALL', 'DAILY', 'MONTHLY'
 
 function openSettlementDebtModal(targetMemberId = null) {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý hoặc Thủ quỹ để thực hiện tất toán!', 'warning');
+    openLoginModal();
+    return;
+  }
   const dateInput = document.getElementById('settlementDate');
   if (dateInput) dateInput.value = getTodayInputFormat();
 
@@ -8230,6 +8389,11 @@ function selectMemberForSettlement(memberId) {
 
 function handleSettlementDebtSubmit(e) {
   e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thao tác! Vui lòng đăng nhập tài khoản có thẩm quyền.', 'error');
+    openLoginModal();
+    return;
+  }
   const select = document.getElementById('settlementMemberSelect');
   const memberId = select ? select.value : null;
   const member = (AppState.members || []).find(m => m.id === memberId);
@@ -8617,6 +8781,12 @@ function renderMemberManagementList() {
 }
 
 function openMemberModal(mode = 'official', memberId = null) {
+  if (!canManageMembers()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý để quản lý thông tin thành viên!', 'warning');
+    openLoginModal();
+    return;
+  }
+
   const modalTitle = document.getElementById('memberModalTitle');
   const editIdInput = document.getElementById('memberEditId');
   const nameInput = document.getElementById('memberFullName');
@@ -8663,6 +8833,11 @@ function openMemberModal(mode = 'official', memberId = null) {
 
 function handleMemberSubmit(e) {
   e.preventDefault();
+  if (!canManageMembers()) {
+    showToast('⚠️ Bạn không có quyền thực hiện thao tác này! Vui lòng đăng nhập tài khoản Quản lý.', 'error');
+    openLoginModal();
+    return;
+  }
   const editId = document.getElementById('memberEditId').value;
   const name = document.getElementById('memberFullName').value.trim();
   const phone = document.getElementById('memberPhone').value.trim();
@@ -8746,6 +8921,11 @@ function handleMemberSubmit(e) {
 }
 
 function deleteMember(memberId) {
+  if (!canManageMembers()) {
+    showToast('⚠️ Bạn không có quyền xóa thành viên! Vui lòng đăng nhập tài khoản Quản lý.', 'warning');
+    openLoginModal();
+    return;
+  }
   if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('xóa thành viên')) {
     return;
   }
@@ -8799,6 +8979,11 @@ function updateSelectedMembersCount() {
 }
 
 function deleteSelectedMembers() {
+  if (!canManageMembers()) {
+    showToast('⚠️ Bạn không có quyền xóa thành viên! Vui lòng đăng nhập tài khoản Quản lý.', 'warning');
+    openLoginModal();
+    return;
+  }
   if (typeof assertRealtimeOnlineConnected === 'function' && !assertRealtimeOnlineConnected('xóa các thành viên đã chọn')) {
     return;
   }
@@ -8831,6 +9016,11 @@ function deleteSelectedMembers() {
 // 15.1 NHẬP NHANH DANH SÁCH THÀNH VIÊN TỪ ZALO / EXCEL (BATCH IMPORT)
 // ==========================================
 function openBatchImportMemberModal() {
+  if (!canManageMembers()) {
+    showToast('⚠️ Bạn cần đăng nhập tài khoản Quản lý để nhập danh sách thành viên!', 'warning');
+    openLoginModal();
+    return;
+  }
   const textarea = document.getElementById('batchMemberTextarea');
   const previewArea = document.getElementById('batchMemberPreviewArea');
   const previewList = document.getElementById('batchMemberPreviewList');
@@ -8957,6 +9147,11 @@ function previewBatchImportMembers() {
 }
 
 function handleBatchImportMembersSubmit() {
+  if (!canManageMembers()) {
+    showToast('⚠️ Bạn không có quyền thực hiện thao tác này! Vui lòng đăng nhập tài khoản Quản lý.', 'error');
+    openLoginModal();
+    return;
+  }
   if (!currentParsedBatchMembers || currentParsedBatchMembers.length === 0) {
     showToast('Chưa có danh sách thành viên để thêm!', 'warning');
     return;

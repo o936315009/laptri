@@ -552,6 +552,8 @@ function getBlankClubInitialData(club) {
     },
     funds: {
       clubFund: initFund,
+      carriedForwardFund: 0,
+      carriedForwardFromMonth: null,
       advanceFund: 0,
       shuttleAdvanceFund: 0,
       courtAdvanceFund: 0,
@@ -881,6 +883,8 @@ const DEFAULT_INITIAL_DATA = {
   },
   funds: {
     clubFund: 0,                  // 0 đ - Quỹ CLB sạch bắt đầu từ đầu
+    carriedForwardFund: 0,        // Quỹ tồn từ chu kỳ trước chuyển sang
+    carriedForwardFromMonth: null,// Tháng được chuyển tiếp (ví dụ '09/2026')
     advanceFund: 0,               // 0 đ - Quỹ tạm ứng sạch
     shuttleAdvanceFund: 0,        // 0 đ
     courtAdvanceFund: 0,          // 0 đ
@@ -1119,12 +1123,16 @@ function loadData() {
       }
 
       if (AppState.funds) {
+        if (AppState.funds.carriedForwardFund === undefined) AppState.funds.carriedForwardFund = 0;
+        if (AppState.funds.carriedForwardFromMonth === undefined) AppState.funds.carriedForwardFromMonth = null;
         if (AppState.funds.shuttleAdvanceFund === undefined) AppState.funds.shuttleAdvanceFund = 0;
         if (AppState.funds.courtAdvanceFund === undefined) AppState.funds.courtAdvanceFund = 0;
         if (AppState.funds.guestAdvanceIncome === undefined) AppState.funds.guestAdvanceIncome = 0;
         if (AppState.funds.shuttlePaidTotal === undefined) AppState.funds.shuttlePaidTotal = 0;
         if (AppState.funds.courtPaidTotal === undefined) AppState.funds.courtPaidTotal = 0;
       }
+      if (!AppState.closedMonths) AppState.closedMonths = [];
+      if (!AppState.settlementSnapshots) AppState.settlementSnapshots = {};
 
       if (!AppState.personalExpenses) {
         AppState.personalExpenses = [];
@@ -1599,11 +1607,14 @@ function calculateMemberWalletBreakdown(memberOrId) {
   const memberId = member.id;
   const memberName = (member.name || '').trim().toLowerCase();
 
-  // 1. Số buổi tham gia & Chi phí cầu hàng ngày (dailyShuttleCost)
+  // 1. Số buổi tham gia & Chi phí cầu hàng ngày (dailyShuttleCost) trong chu kỳ hiện tại
   let sessionsCount = 0;
   let dailyShuttleCost = 0;
 
   (AppState.activitySessions || []).forEach(ses => {
+    // Bỏ qua các buổi thuộc chu kỳ tháng đã chốt sổ / tất toán
+    if (isDateOrMonthInClosedCycle(ses.date)) return;
+
     const attended = (ses.members || []).find(m => m.id === memberId || (m.name && (m.name.toLowerCase().includes(memberName) || memberName.includes(m.name.toLowerCase()))));
     if (attended) {
       sessionsCount++;
@@ -1612,13 +1623,14 @@ function calculateMemberWalletBreakdown(memberOrId) {
     }
   });
 
-  if (sessionsCount === 0 && (member.monthlySessions || 0) > 0) {
+  if (sessionsCount === 0 && (member.monthlySessions || 0) > 0 && (!AppState.closedMonths || AppState.closedMonths.length === 0)) {
     sessionsCount = member.monthlySessions;
   }
 
-  // 2. Tiền phạt vi phạm (fine)
+  // 2. Tiền phạt vi phạm (fine) trong chu kỳ hiện tại
   let fine = 0;
   (AppState.transactions || []).forEach(tx => {
+    if (isDateOrMonthInClosedCycle(tx.date)) return;
     if (tx.subType === 'FINE' || tx.type === 'FINE') {
       if (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase()))) || (tx.description && tx.description.toLowerCase().includes(memberName))) {
         fine += Math.abs(tx.amount || tx.walletImpact || 0);
@@ -1626,9 +1638,10 @@ function calculateMemberWalletBreakdown(memberOrId) {
     }
   });
 
-  // 3. Quỹ thành viên (clubFund)
+  // 3. Quỹ thành viên (clubFund) trong chu kỳ hiện tại
   let clubFund = 0;
   (AppState.transactions || []).forEach(tx => {
+    if (isDateOrMonthInClosedCycle(tx.date)) return;
     if (tx.subType === 'MEM_FUND') {
       if (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase())))) {
         clubFund += Math.abs(tx.walletImpact || tx.amount || 0);
@@ -1636,9 +1649,10 @@ function calculateMemberWalletBreakdown(memberOrId) {
     }
   });
 
-  // 4. Tiền sân theo bậc quy định (courtFee) - Tự động trừ vào ví thành viên
+  // 4. Tiền sân theo bậc quy định (courtFee) trong chu kỳ hiện tại - Tự động trừ vào ví thành viên
   let courtFee = 0;
   (AppState.transactions || []).forEach(tx => {
+    if (isDateOrMonthInClosedCycle(tx.date)) return;
     if ((tx.type === 'COURT_FEE' || tx.subType === 'COURT_ADV_IN') && (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase()))))) {
       if (tx.walletImpact && tx.walletImpact < 0) {
         courtFee += Math.abs(tx.walletImpact);
@@ -1647,13 +1661,15 @@ function calculateMemberWalletBreakdown(memberOrId) {
       }
     }
   });
-  if (courtFee === 0) {
+  // CHỈ tính bậc tiền sân khi có buổi tham gia (sessionsCount > 0)
+  if (courtFee === 0 && sessionsCount > 0) {
     courtFee = getMemberTotalCourtFee(member, sessionsCount);
   }
 
-  // 5. Tiền nạp vào ví (topUp)
+  // 5. Tiền nạp vào ví (topUp) trong chu kỳ hiện tại
   let topUpTransactions = 0;
   (AppState.transactions || []).forEach(tx => {
+    if (isDateOrMonthInClosedCycle(tx.date)) return;
     if (tx.type === 'TOPUP' || tx.subType === 'TOPUP' || tx.categoryGroup === 'WALLET_TOPUP' || tx.type === 'SETTLEMENT') {
       if (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase())))) {
         topUpTransactions += Math.abs(tx.amount || tx.walletImpact || 0);
@@ -1663,6 +1679,7 @@ function calculateMemberWalletBreakdown(memberOrId) {
 
   // Đồng bộ số tiền nạp ví đã được Kế toán duyệt từ danh sách yêu cầu nạp tiền (không phụ thuộc vào sổ quỹ CLB)
   (AppState.topUpRequests || []).forEach(req => {
+    if (isDateOrMonthInClosedCycle(req.createdAt || req.date)) return;
     if (req.status === 'APPROVED' && (req.memberId === memberId || (req.memberName && (req.memberName.toLowerCase().includes(memberName) || memberName.includes(req.memberName.toLowerCase()))))) {
       const alreadyInTx = (AppState.transactions || []).some(tx => tx.requestId === req.id || tx.id === req.id);
       if (!alreadyInTx) {
@@ -1672,8 +1689,7 @@ function calculateMemberWalletBreakdown(memberOrId) {
   });
 
   if (member.initialBalance === undefined) {
-    const curBal = Number(member.balance) || 0;
-    member.initialBalance = curBal + dailyShuttleCost + fine + clubFund + courtFee - topUpTransactions;
+    member.initialBalance = 0;
   }
 
   const topUp = (Number(member.initialBalance) || 0) + topUpTransactions;
@@ -1683,6 +1699,7 @@ function calculateMemberWalletBreakdown(memberOrId) {
   const balance = topUp - dailyShuttleCost - fine - clubFund - courtFee;
 
   member.balance = balance;
+  member.monthlySessions = sessionsCount;
 
   const tierName = getTierNameForSession(sessionsCount);
 
@@ -1725,11 +1742,30 @@ function renderDashboard() {
 
   // 3. KPI 1: Quỹ CLB
   const clubFundEl = document.getElementById('kpiClubFund');
-  if (clubFundEl) clubFundEl.textContent = formatMoney(AppState.funds.clubFund);
+  if (clubFundEl) clubFundEl.textContent = formatMoney(AppState.funds?.clubFund || 0);
+
+  const clubFundDescEl = document.getElementById('kpiClubFundDesc');
+  const carried = Number(AppState.funds?.carriedForwardFund) || 0;
+  const carriedFrom = AppState.funds?.carriedForwardFromMonth;
+  if (clubFundDescEl) {
+    if (carried > 0) {
+      const fromText = carriedFrom ? `Tồn T${carriedFrom}` : 'Tồn tháng trước';
+      clubFundDescEl.textContent = `${fromText}: ${formatMoney(carried)}`;
+      clubFundDescEl.className = 'text-[9px] sm:text-[11px] text-emerald-600 font-bold mt-0.5 truncate block';
+    } else {
+      clubFundDescEl.textContent = 'Số dư chi tiêu chung';
+      clubFundDescEl.className = 'text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate block';
+    }
+  }
 
   // 4. KPI 2: Quỹ tạm ứng
   const advFundEl = document.getElementById('kpiAdvanceFund');
-  if (advFundEl) advFundEl.textContent = formatMoney(AppState.funds.advanceFund);
+  if (advFundEl) advFundEl.textContent = formatMoney(AppState.funds?.advanceFund || 0);
+
+  const advFundDescEl = document.getElementById('kpiAdvanceFundDesc');
+  if (advFundDescEl) {
+    advFundDescEl.className = 'text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate block';
+  }
 
   // 5. KPI 3: Số dư ví cá nhân (Đối với tất cả tài khoản đăng nhập: Quản lý, Phó nhóm, Thủ quỹ hay Hội viên đều hiển thị ví cá nhân của chính mình)
   const currentUser = AppState.auth?.user;
@@ -2484,13 +2520,46 @@ function initActivitySessionData(forceReset = false) {
 // ==========================================
 // 2.3B KHÓA CHỐT SỔ CUỐI THÁNG & QUYỀN SỬA ĐỔI HOẠT ĐỘNG
 // ==========================================
+function extractMonthKeyFromDateString(dateStr) {
+  if (!dateStr) return null;
+  const s = String(dateStr).trim();
+  // 1. Dạng YYYY-MM hoặc YYYY-MM-DD (e.g. 2026-09-25 hoặc 2026-09)
+  const isoMatch = s.match(/^(\d{4})[-/.](\d{1,2})/);
+  if (isoMatch) {
+    return `${isoMatch[1]}-${String(isoMatch[2]).padStart(2, '0')}`;
+  }
+  // 2. Dạng DD/MM/YYYY hoặc D/M/YYYY (e.g. 25/09/2026 18:30 hoặc 25/09/2026)
+  const dmyMatch = s.match(/^\d{1,2}[/-](\d{1,2})[/-](\d{4})/);
+  if (dmyMatch) {
+    return `${dmyMatch[2]}-${String(dmyMatch[1]).padStart(2, '0')}`;
+  }
+  // 3. Dạng MM/YYYY hoặc M/YYYY (e.g. 09/2026)
+  const myMatch = s.match(/^(\d{1,2})[/-](\d{4})$/);
+  if (myMatch) {
+    return `${myMatch[2]}-${String(myMatch[1]).padStart(2, '0')}`;
+  }
+  // 4. Thử qua Date.parse
+  try {
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+  } catch (e) {}
+  return null;
+}
+
 function isMonthClosed(dateOrMonth) {
   if (!dateOrMonth) return false;
-  const monthKey = String(dateOrMonth).slice(0, 7); // 'YYYY-MM'
   if (!AppState.closedMonths || !Array.isArray(AppState.closedMonths)) {
     return false;
   }
+  const monthKey = extractMonthKeyFromDateString(dateOrMonth);
+  if (!monthKey) return false;
   return AppState.closedMonths.includes(monthKey);
+}
+
+function isDateOrMonthInClosedCycle(dateOrMonth) {
+  return isMonthClosed(dateOrMonth);
 }
 
 function executeMonthSettlement(monthKey, isAuto = false) {
@@ -2505,26 +2574,47 @@ function executeMonthSettlement(monthKey, isAuto = false) {
   const monthStr = parts.length === 2 ? `${parts[1]}/${parts[0]}` : monthKey;
 
   // 1. Sinh dữ liệu báo cáo đối soát thực tế trước khi reset
-  const reportData = generateLiveSettlementReportData(monthStr, true);
+  const reportData = (typeof generateLiveSettlementReportData === 'function')
+    ? generateLiveSettlementReportData(monthStr, true)
+    : null;
 
-  // 2. Lưu snapshot báo cáo tất toán vào lịch sử
-  AppState.settlementSnapshots[monthKey] = {
-    monthKey,
-    monthStr,
-    reportData,
-    settledAt: getNowTimestampString(),
-    isAuto: !!isAuto,
-    clubFundCarriedForward: AppState.funds?.clubFund || 0
-  };
+  // 2. Tính số dư Quỹ CLB thực có cuối chu kỳ để kết chuyển sang chu kỳ mới
+  const closingStats = calculateClubFundStats();
+  const closingClubFund = (reportData && reportData.kpi && reportData.kpi.closingClubFund !== undefined)
+    ? reportData.kpi.closingClubFund
+    : (closingStats.clubFund !== undefined ? closingStats.clubFund : (AppState.funds?.clubFund || 0));
 
   // 3. Đánh dấu chốt sổ tháng này
   if (!AppState.closedMonths.includes(monthKey)) {
     AppState.closedMonths.push(monthKey);
   }
 
-  // 4. QUY TẮC TẤT TOÁN:
-  // - Quỹ CLB (AppState.funds.clubFund) ĐƯỢC CỘNG DỒN cho tháng tiếp theo (giữ nguyên không xóa)
-  // - Sang tháng tiếp theo, tài khoản ví của các thành viên bắt đầu chu kỳ mới với số dư bằng 0
+  // 4. Lưu snapshot báo cáo tất toán vào lịch sử
+  AppState.settlementSnapshots[monthKey] = {
+    monthKey,
+    monthStr,
+    reportData,
+    settledAt: getNowTimestampString(),
+    isAuto: !!isAuto,
+    clubFundCarriedForward: closingClubFund
+  };
+
+  // 5. KẾT CHUYỂN SANG CHU KỲ MỚI:
+  // - Số dư Quỹ CLB được chuyển sang chu kỳ tiếp theo làm "Quỹ tồn từ tháng trước chuyển sang"
+  // - Quỹ tạm ứng được reset mặc định về 0 đ
+  // - Số dư ví của toàn bộ thành viên reset mặc định về 0 đ
+  // - Số buổi của toàn bộ thành viên reset về 0 buổi
+  if (!AppState.funds) AppState.funds = {};
+  AppState.funds.carriedForwardFund = closingClubFund;
+  AppState.funds.carriedForwardFromMonth = monthStr;
+  AppState.funds.clubFund = closingClubFund;
+  AppState.funds.advanceFund = 0;
+  AppState.funds.shuttleAdvanceFund = 0;
+  AppState.funds.courtAdvanceFund = 0;
+  AppState.funds.guestAdvanceIncome = 0;
+  AppState.funds.shuttlePaidTotal = 0;
+  AppState.funds.courtPaidTotal = 0;
+
   (AppState.members || []).forEach(m => {
     m.balance = 0;
     m.initialBalance = 0;
@@ -2541,10 +2631,10 @@ function executeMonthSettlement(monthKey, isAuto = false) {
     renderSettlementReport();
   }
 
-  const currentClubFundText = formatMoney(AppState.funds?.clubFund || 0);
+  const currentClubFundText = formatMoney(closingClubFund);
   const msg = isAuto
-    ? `⏰ TỰ ĐỘNG TẤT TOÁN 22H: Đã chốt sổ tháng ${monthStr}! Quỹ CLB (${currentClubFundText}) được cộng dồn tích lũy, ví thành viên bắt đầu chu kỳ mới với số dư 0đ.`
-    : `🔒 ĐÃ TẤT TOÁN & CHỐT SỔ THÁNG ${monthStr}! Quỹ CLB (${currentClubFundText}) được cộng dồn sang tháng sau, ví tất cả thành viên đã bắt đầu chu kỳ mới với số dư 0đ.`;
+    ? `⏰ TỰ ĐỘNG TẤT TOÁN 22H: Đã chốt sổ tháng ${monthStr}! Quỹ tồn (${currentClubFundText}) từ tháng trước đã chuyển sang chu kỳ mới, ví và quỹ ứng tiền đã reset về 0đ.`
+    : `🔒 ĐÃ TẤT TOÁN & CHỐT SỔ THÁNG ${monthStr}! Quỹ tồn (${currentClubFundText}) từ tháng trước đã chuyển sang chu kỳ mới, ví và quỹ ứng tiền đã reset về 0đ.`;
   showToast(msg, 'success');
 }
 
@@ -2580,9 +2670,16 @@ function toggleMonthCloseStatus(monthKey) {
       return;
     }
     AppState.closedMonths.splice(idx, 1);
+    if (AppState.closedMonths.length === 0) {
+      AppState.funds.carriedForwardFund = 0;
+      AppState.funds.carriedForwardFromMonth = null;
+    }
     saveData();
     updateMonthLockBtnUI();
     renderSessionFinalizedBanner();
+    renderDashboard();
+    renderMemberManagementList();
+    renderFinanceTab();
     showToast(`✓ Đã MỞ KHÓA sổ hoạt động tháng ${monthFormatted}! Quản trị viên có thể chỉnh sửa lại.`, 'info');
   } else {
     const clubFundStr = formatMoney(AppState.funds?.clubFund || 0);
@@ -6036,6 +6133,7 @@ async function copyActivityReportImage() {
  *   2. Chi phí cho TV (B.2):  Hiếu (2.1), Hỷ (2.2), Ốm (2.3), Khác (2.4)     -> Quỹ CLB (−)
  */
 function calculateClubFundStats() {
+  const carried = Number(AppState.funds?.carriedForwardFund) || 0;
   const stats = {
     // Khoản Thu (A)
     incomeA: {
@@ -6063,7 +6161,8 @@ function calculateClubFundStats() {
       },
       total: 0
     },
-    clubFund: 0, // Tổng Thu A - Tổng Chi B
+    carriedForward: carried,
+    clubFund: 0, // Số dư quỹ tồn kỳ trước + Tổng Thu A - Tổng Chi B
     wallet: {
       total: 0,
       negativeCount: 0,
@@ -6072,6 +6171,9 @@ function calculateClubFundStats() {
   };
 
   (AppState.transactions || []).forEach(tx => {
+    // Bỏ qua các giao dịch thuộc các chu kỳ tháng đã chốt sổ
+    if (isDateOrMonthInClosedCycle(tx.date)) return;
+
     const amt = Math.abs(tx.amount || 0);
 
     // Xử lý nhóm Thu (A)
@@ -6109,7 +6211,7 @@ function calculateClubFundStats() {
   stats.expenseB.member.total = stats.expenseB.member.hieu + stats.expenseB.member.hy + stats.expenseB.member.om + stats.expenseB.member.other;
   stats.expenseB.total = stats.expenseB.general.total + stats.expenseB.member.total;
 
-  stats.clubFund = stats.incomeA.total - stats.expenseB.total;
+  stats.clubFund = stats.carriedForward + stats.incomeA.total - stats.expenseB.total;
 
   // Tính ví thành viên
   (AppState.members || []).forEach(m => {
@@ -6158,6 +6260,9 @@ function calculateAdvanceFundStats() {
   };
 
   (AppState.transactions || []).forEach(tx => {
+    // Bỏ qua các giao dịch thuộc các chu kỳ tháng đã chốt sổ
+    if (isDateOrMonthInClosedCycle(tx.date)) return;
+
     const amt = Math.abs(tx.amount || 0);
 
     // 1. Tiền cầu thu từ TV
@@ -6210,6 +6315,18 @@ function renderFinanceTab() {
   // 1. Thẻ Quỹ CLB Hiện Tại
   const clubFundEl = document.getElementById('kpiFinanceClubFund');
   if (clubFundEl) clubFundEl.textContent = formatMoney(stats.clubFund);
+
+  const formulaEl = document.getElementById('kpiFinanceClubFundFormula');
+  const carried = Number(AppState.funds?.carriedForwardFund) || 0;
+  const carriedFrom = AppState.funds?.carriedForwardFromMonth;
+  if (formulaEl) {
+    if (carried > 0) {
+      const fromText = carriedFrom ? `Tồn T${carriedFrom}` : 'Tồn kỳ trước';
+      formulaEl.innerHTML = `${fromText}: <b class="text-amber-300">${formatMoney(carried)}</b> | Thu: <b class="text-emerald-300">+${formatMoney(stats.incomeA.total)}</b> | Chi: <b class="text-rose-300">-${formatMoney(stats.expenseB.total)}</b>`;
+    } else {
+      formulaEl.innerHTML = `Công thức: <b class="text-white">Tổng Thu (A) − Tổng Chi (B)</b>`;
+    }
+  }
 
   const miniInc = document.getElementById('kpiMiniTotalIncome');
   if (miniInc) miniInc.textContent = `+${formatMoney(stats.incomeA.total)}`;

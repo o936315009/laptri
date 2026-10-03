@@ -3032,9 +3032,9 @@
             <div>
               <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
                 <i data-lucide="wallet-cards" class="w-5 h-5 text-brand-600"></i>
-                Cấu Hình Ví Thành Viên Cho Phép Âm & Tất Toán Dư Nợ
+                Cấu hình Ví & Tất Toán
               </h2>
-              <p class="text-xs text-slate-500 mt-0.5">Quy định cơ chế dư nợ ví thành viên và chu kỳ tất toán công nợ CLB</p>
+              <p class="text-xs text-slate-500 mt-0.5">Quy định mức thu quỹ CLB hàng tháng, cơ chế dư nợ ví thành viên và chu kỳ tất toán công nợ</p>
             </div>
             <span class="px-2.5 py-1 bg-purple-50 text-purple-900 border border-purple-200 rounded-full text-xs font-black flex items-center gap-1">
               <span>💳</span>
@@ -3100,12 +3100,12 @@
             <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2">
               <div class="flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <label class="block text-xs font-black text-emerald-950">💰 Mức Quỹ CLB hàng tháng / thành viên (Mặc định: 50.000 VNĐ):</label>
-                  <span class="text-[11px] text-emerald-800">Số tiền quỹ CLB đóng hàng tháng của mỗi hội viên chính thức khi tất toán cuối tháng.</span>
+                  <label class="block text-xs font-black text-emerald-950">Mức thu Quỹ CLB hàng tháng (VNĐ/tháng/TV):</label>
+                  <span class="text-[11px] text-emerald-800">Mặc định: <b>50.000 VNĐ</b>. Số tiền quỹ CLB đóng hàng tháng của mỗi hội viên chính thức khi tất toán cuối tháng.</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <input type="number" id="configMonthlyClubFund" min="0" step="5000" value="50000" class="w-32 px-3 py-2 text-xs border border-emerald-300 rounded-xl text-right font-black text-emerald-900 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-                  <span class="text-xs font-bold text-emerald-900 shrink-0">VNĐ/tháng</span>
+                  <input type="number" id="configMonthlyClubFund" min="0" step="5000" value="50000" class="w-36 px-3 py-2 text-xs border border-emerald-300 rounded-xl text-right font-black text-emerald-900 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="50000" />
+                  <span class="text-xs font-bold text-emerald-900 shrink-0">VNĐ/tháng/TV</span>
                 </div>
               </div>
               <div class="text-[11px] text-slate-600 bg-white/80 p-2 rounded-lg border border-emerald-100 flex items-center gap-2">
@@ -3117,8 +3117,8 @@
 
           <div class="pt-2 flex justify-end">
             <button type="button" onclick="saveWalletSettlementConfig()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer">
-              <i data-lucide="check" class="w-4 h-4"></i>
-              Lưu cấu hình ví âm & Quỹ CLB
+              <span>💾</span>
+              <span>Lưu Cấu Hình Ví & Tất Toán</span>
             </button>
           </div>
         </div>
@@ -6118,6 +6118,6 @@ const firebaseConfig = {
   <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- Application Logic - Thực thi tức thì khi HTML đã dựng xong -->
-  <script defer src="app.js?v=4.6"></script>
+  <script defer src="app.js?v=4.7"></script>
 </body>
 </html>

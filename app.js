@@ -6632,7 +6632,7 @@ function openMonthlyFundModal() {
   }
 
   const amtInput = document.getElementById('monthlyFundAmount');
-  if (amtInput) amtInput.value = 200000;
+  if (amtInput) amtInput.value = (AppState.config?.monthlyClubFund !== undefined && AppState.config?.monthlyClubFund !== null) ? AppState.config.monthlyClubFund : 50000;
 
   renderMonthlyFundMemberList();
   updateMonthlyFundSummary();
@@ -8272,20 +8272,7 @@ function handleSettlementDebtSubmit(e) {
   showToast(`💰 Tất toán thành công cho ${member.name}! Số dư ví mới: ${formatMoney(newBal)}.`, 'success');
 }
 
-// 13.4 LƯU CẤU HÌNH VÍ THÀNH VIÊN & TẤT TOÁN
-function saveWalletSettlementConfig() {
-  const allowNegative = document.getElementById('configAllowNegativeWallet')?.checked ?? true;
-  const settlementMode = document.querySelector('input[name="configSettlementModeRadio"]:checked')?.value || 'MONTHLY';
-  const defaultDay = document.getElementById('configDefaultSettlementDay')?.value || 'END_OF_MONTH';
-
-  if (!AppState.config) AppState.config = {};
-  AppState.config.allowNegativeWallet = allowNegative;
-  AppState.config.settlementMode = settlementMode;
-  AppState.config.defaultSettlementDay = defaultDay;
-
-  saveData();
-  showToast('Đã lưu cấu hình ví âm & chu kỳ tất toán thành công!', 'success');
-}
+// 13.4 LƯU CẤU HÌNH VÍ THÀNH VIÊN & TẤT TOÁN (Quản lý tập trung tại hàm saveWalletSettlementConfig bên dưới)
 
 // ==========================================
 // 14. XỬ PHẠT VI PHẠM (LEGACY ROUTER -> QUICK FINE)
@@ -14730,21 +14717,27 @@ function saveWalletSettlementConfig() {
   }
 
   const allowNegative = document.getElementById('configAllowNegativeWallet')?.checked ?? true;
-  const settlementMode = document.getElementById('configModeDaily')?.checked ? 'DAILY' : 'MONTHLY';
+  const settlementMode = document.querySelector('input[name="configSettlementModeRadio"]:checked')?.value || (document.getElementById('configModeDaily')?.checked ? 'DAILY' : 'MONTHLY');
   const defaultDay = document.getElementById('configDefaultSettlementDay')?.value || 'END_OF_MONTH';
   const monthlyFundInput = document.getElementById('configMonthlyClubFund');
   const monthlyClubFund = (monthlyFundInput && monthlyFundInput.value !== '' && !isNaN(Number(monthlyFundInput.value)))
     ? Math.max(0, parseInt(monthlyFundInput.value, 10))
     : 50000;
 
+  if (!AppState.config) AppState.config = {};
   AppState.config.allowNegativeWallet = allowNegative;
   AppState.config.settlementMode = settlementMode;
   AppState.config.defaultSettlementDay = defaultDay;
   AppState.config.monthlyClubFund = monthlyClubFund;
 
   saveData();
-  if (typeof renderSettlementReport === 'function') renderSettlementReport();
-  showToast(`✓ Đã lưu cấu hình ví âm & Quỹ CLB (${formatMoney(monthlyClubFund)}/tháng/TV) thành công!`, 'success');
+  refreshAllMembersWalletBreakdown();
+  renderDashboard();
+  renderFinanceTab();
+  if (typeof renderSettlementReport === 'function') {
+    renderSettlementReport();
+  }
+  showToast(`✓ Đã lưu Cấu hình Ví & Tất toán thành công! Mức thu Quỹ CLB: ${formatMoney(monthlyClubFund)}/tháng/TV`, 'success');
 }
 
 // Sao lưu và khôi phục

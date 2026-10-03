@@ -15646,9 +15646,9 @@ const SETTLEMENT_REPORT_PRESET = {
     totalCourt: 5425000,
     totalFund: 1325000,
     totalFine: 100000,
-    walletDeducted: 1800000,
-    walletRemaining: 4950000,
-    walletEndMonthBal: 0
+    closingClubFund: 1325000,
+    closingAdvanceFund: 1250000,
+    closingTotalFund: 2575000
   }
 };
 
@@ -15820,14 +15820,23 @@ function renderSettlementReport() {
   setElText('repKpiTotalClubFund', formatNumberDot(data.kpi ? data.kpi.totalFund : grandTotalFund));
   setElText('repKpiTotalFine', formatNumberDot(data.kpi ? data.kpi.totalFine : grandTotalFine));
 
-  // Đối chiếu ví thành viên
-  const totalWalletDeducted = data.kpi ? data.kpi.walletDeducted : (totalOffSessionCost + totalHonSessionCost);
-  const totalWalletRemaining = data.kpi ? data.kpi.walletRemaining : Math.max(0, grandTotalCollected - totalWalletDeducted);
-  const totalWalletEndMonthBal = data.kpi ? data.kpi.walletEndMonthBal : ((AppState.members || []).reduce((sum, m) => sum + (m.balance || 0), 0));
+  // 5. Tổng Quỹ chốt cuối tháng
+  const clubStats = (typeof calculateClubFundStats === 'function') ? calculateClubFundStats() : { clubFund: (AppState.funds?.clubFund || 0) };
+  const advanceStats = (typeof calculateAdvanceFundStats === 'function') ? calculateAdvanceFundStats() : { totalAdvanceFund: (AppState.funds?.advanceFund || 0) };
 
-  setElText('repWalletDeducted', formatNumberDot(totalWalletDeducted));
-  setElText('repWalletRemaining', formatNumberDot(totalWalletRemaining));
-  setElText('repWalletEndMonthBal', formatNumberDot(totalWalletEndMonthBal));
+  const closingClubFund = (data.kpi && data.kpi.closingClubFund !== undefined)
+    ? data.kpi.closingClubFund
+    : (clubStats.clubFund !== undefined ? clubStats.clubFund : (AppState.funds?.clubFund || 0));
+
+  const closingAdvanceFund = (data.kpi && data.kpi.closingAdvanceFund !== undefined)
+    ? data.kpi.closingAdvanceFund
+    : (advanceStats.totalAdvanceFund !== undefined ? advanceStats.totalAdvanceFund : (AppState.funds?.advanceFund || 0));
+
+  const closingTotalFund = (data.kpi && data.kpi.closingTotalFund !== undefined)
+    ? data.kpi.closingTotalFund
+    : (closingClubFund + closingAdvanceFund);
+
+  setElText('repClosingTotalFund', formatNumberDot(closingTotalFund));
 
   // Cập nhật trạng thái nút Khóa / Mở khóa Chốt sổ cuối tháng
   updateMonthLockBtnUI();
@@ -16092,7 +16101,10 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
   const grandTotalFine = official.concat(honorary).reduce((s, r) => s + r.fine, 0);
   const grandTotalSessionCost = official.concat(honorary).reduce((s, r) => s + (r.totalSessionCost || 0), 0);
 
-  const totalCurrentWalletBal = (AppState.members || []).reduce((sum, m) => sum + (m.balance || 0), 0);
+  if (typeof calculateClubFundStats === 'function') calculateClubFundStats();
+  if (typeof calculateAdvanceFundStats === 'function') calculateAdvanceFundStats();
+  const currentClubFund = AppState.funds?.clubFund || 0;
+  const currentAdvanceFund = AppState.funds?.advanceFund || 0;
 
   return {
     monthText: `Tháng ${monthStr}`,
@@ -16107,9 +16119,9 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
       totalCourt: grandTotalCourt,
       totalFund: grandTotalFund,
       totalFine: grandTotalFine,
-      walletDeducted: grandTotalSessionCost,
-      walletRemaining: Math.max(0, grandTotalCollected - grandTotalSessionCost),
-      walletEndMonthBal: totalCurrentWalletBal
+      closingClubFund: currentClubFund,
+      closingAdvanceFund: currentAdvanceFund,
+      closingTotalFund: currentClubFund + currentAdvanceFund
     }
   };
 }

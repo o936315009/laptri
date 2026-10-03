@@ -3964,23 +3964,24 @@
                 </div>
               </div>
 
-              <!-- Right Box: Đối chiếu ví TV -->
-              <div class="bg-purple-50/70 p-2 rounded-lg border border-purple-200 text-xs space-y-0.5 shadow-2xs flex flex-col justify-center">
-                <div class="flex items-center gap-1 text-purple-900 font-black text-[9.5px] pb-0.5 border-b border-purple-200">
-                  <span>💳</span>
-                  <span>ĐỐI CHIẾU VÍ THÀNH VIÊN</span>
+              <!-- Right Box: Tổng quỹ chốt cuối tháng -->
+              <div class="bg-gradient-to-br from-emerald-50/90 to-teal-50/90 p-2 rounded-lg border border-emerald-200 text-xs shadow-2xs flex flex-col justify-center space-y-1">
+                <div class="flex items-center justify-between pb-0.5 border-b border-emerald-200 text-emerald-950 font-black text-[9.5px]">
+                  <div class="flex items-center gap-1">
+                    <span>💰</span>
+                    <span>TỔNG QUỸ CHỐT CUỐI THÁNG</span>
+                  </div>
+                  <span class="text-[8px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold">Thực có</span>
                 </div>
-                <div class="flex justify-between items-center text-slate-700 text-[10.5px]">
-                  <span>Tổng đã trừ từ Ví:</span>
-                  <b id="repWalletDeducted" class="font-black text-slate-900">1.800.000</b>
+                <div class="flex justify-between items-baseline py-1">
+                  <span class="text-emerald-950 font-black text-xs">Tổng Quỹ CLB:</span>
+                  <div class="text-right">
+                    <b id="repClosingTotalFund" class="font-black text-emerald-700 text-sm sm:text-base">0</b>
+                    <span class="text-[9px] text-emerald-800 font-bold ml-0.5">đ</span>
+                  </div>
                 </div>
-                <div class="flex justify-between items-center text-slate-700 text-[10.5px]">
-                  <span>Tổng còn phải thu:</span>
-                  <b id="repWalletRemaining" class="font-black text-purple-700">4.950.000</b>
-                </div>
-                <div class="flex justify-between items-center text-slate-700 text-[10.5px] pt-0.5 border-t border-purple-200/60">
-                  <span>Dư Ví cuối tháng:</span>
-                  <b id="repWalletEndMonthBal" class="font-black text-emerald-700">0</b>
+                <div class="text-[9px] text-slate-500 font-medium italic pt-0.5 border-t border-emerald-200/70 leading-tight">
+                  Tổng số quỹ thực có cuối tháng của CLB
                 </div>
               </div>
             </div>
@@ -6127,6 +6128,6 @@ const firebaseConfig = {
   <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- Application Logic - Thực thi tức thì khi HTML đã dựng xong -->
-  <script defer src="app.js?v=5.1"></script>
+  <script defer src="app.js?v=5.3"></script>
 </body>
 </html>

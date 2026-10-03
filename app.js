@@ -6773,23 +6773,22 @@ function openQuickFineModal() {
   if (tbody) {
     tbody.innerHTML = '';
     quickFineRowCounter = 0;
-    // Mặc định tạo sẵn 2 dòng
-    addQuickFineRow();
-    addQuickFineRow();
+    // Mặc định chỉ hiển thị 1 dòng với mức phạt 10.000đ
+    addQuickFineRow('', 'Đi muộn', 10000);
   }
 
   updateQuickFineSummary();
   openModal('quickFineModal');
 }
 
-function addQuickFineRow(preMemberId = '', preReason = '', preAmount = 50000) {
+function addQuickFineRow(preMemberId = '', preReason = 'Đi muộn', preAmount = 10000) {
   const tbody = document.getElementById('quickFineTableBody');
   if (!tbody) return;
 
   quickFineRowCounter++;
   const rowId = `fineRow_${quickFineRowCounter}`;
 
-  const allMembers = AppState.members;
+  const allMembers = (AppState.members || []).slice().sort((a, b) => (a.name || '').localeCompare(b.name || '', 'vi'));
 
   const memberOptions = allMembers.map(m => `
     <option value="${m.id}" ${m.id === preMemberId ? 'selected' : ''}>
@@ -6799,22 +6798,22 @@ function addQuickFineRow(preMemberId = '', preReason = '', preAmount = 50000) {
 
   const tr = document.createElement('tr');
   tr.id = rowId;
-  tr.className = 'hover:bg-slate-50 transition';
+  tr.className = 'hover:bg-amber-50/40 transition border-b border-slate-100 last:border-b-0';
   tr.innerHTML = `
-    <td class="py-2 px-3 min-w-[145px]">
-      <select class="quick-fine-member w-full text-xs font-bold border border-slate-200 rounded-lg p-1.5 bg-white focus:ring-1 focus:ring-amber-500">
+    <td class="py-1.5 px-2">
+      <select class="quick-fine-member w-full text-xs font-semibold border border-slate-200 rounded-lg p-1.5 bg-white focus:ring-1 focus:ring-amber-500">
         <option value="">-- Chọn thành viên --</option>
         ${memberOptions}
       </select>
     </td>
-    <td class="py-2 px-3 min-w-[165px]">
-      <input type="text" value="${preReason}" placeholder="Đi muộn >15p, vắng không phép, lỗi trang phục..." class="quick-fine-reason w-full text-xs border border-slate-200 rounded-lg p-1.5 focus:ring-1 focus:ring-amber-500" list="fineCommonReasons" />
+    <td class="py-1.5 px-2">
+      <input type="text" value="${preReason}" placeholder="Đi muộn, vắng k phép..." class="quick-fine-reason w-full text-xs border border-slate-200 rounded-lg p-1.5 focus:ring-1 focus:ring-amber-500" list="fineCommonReasons" />
     </td>
-    <td class="py-2 px-3 min-w-[110px]">
-      <input type="number" value="${preAmount}" min="0" step="any" oninput="updateQuickFineSummary()" class="quick-fine-amount w-full text-xs font-black text-amber-900 border border-slate-200 rounded-lg p-1.5 text-right focus:ring-1 focus:ring-amber-500" />
+    <td class="py-1.5 px-2">
+      <input type="number" value="${preAmount}" min="1000" step="5000" oninput="updateQuickFineSummary()" class="quick-fine-amount w-full text-xs font-black text-amber-900 border border-slate-200 rounded-lg p-1.5 text-right focus:ring-1 focus:ring-amber-500" />
     </td>
-    <td class="py-2 px-2 text-center w-10">
-      <button type="button" onclick="removeQuickFineRow('${rowId}')" class="text-slate-400 hover:text-rose-600 font-black p-1 text-sm cursor-pointer" title="Xóa dòng này">✕</button>
+    <td class="py-1.5 px-1 text-center">
+      <button type="button" onclick="removeQuickFineRow('${rowId}')" class="text-slate-400 hover:text-rose-600 font-black p-1 text-xs rounded hover:bg-rose-50 transition cursor-pointer" title="Xóa dòng này">✕</button>
     </td>
   `;
 
@@ -6827,7 +6826,12 @@ function removeQuickFineRow(rowId) {
   if (row && row.parentNode) {
     row.parentNode.removeChild(row);
   }
-  updateQuickFineSummary();
+  const remainingRows = document.querySelectorAll('#quickFineTableBody tr');
+  if (remainingRows.length === 0) {
+    addQuickFineRow('', 'Đi muộn', 10000);
+  } else {
+    updateQuickFineSummary();
+  }
 }
 
 function updateQuickFineSummary() {
@@ -6914,7 +6918,9 @@ function handleQuickFineSubmit(e) {
   closeModal('quickFineModal');
   renderDashboard();
   renderFinanceTab();
-  showToast(`⚡ Đã xử phạt ${finesToApply.length} trường hợp, trừ ${formatMoney(totalFineApplied)} vào ví thành viên và nộp Quỹ CLB!`, 'success');
+  if (typeof renderMembersTab === 'function') renderMembersTab();
+  if (typeof renderSettlementReport === 'function') renderSettlementReport();
+  showToast(`⚡ Đã xử phạt ${finesToApply.length} thành viên, trừ ví thành công và nộp cộng dồn +${formatMoney(totalFineApplied)} vào Quỹ CLB!`, 'success');
 }
 
 // ==========================================

@@ -1537,40 +1537,43 @@ function getMemberRoleTypeText(type) {
  */
 /**
  * Tính tổng tiền sân của thành viên dựa trên loại hội viên và số buổi tham gia
- * Áp dụng chuẩn theo Bậc tiền sân đã cấu hình:
- * 0 buổi: 0đ
- * 1–4 buổi: Bậc 1 (mặc định 50k)
- * 5–9 buổi: Bậc 2 (mặc định 100k)
- * 10–15 buổi: Bậc 3 (mặc định 150k)
- * 16–30+ buổi: Bậc 4 (mặc định 200k)
+ * Áp dụng chuẩn theo Bậc tiền sân đã cấu hình (Thành viên chính thức và danh dự):
+ * 0–4 buổi: Bậc 1 (50.000đ, 0 buổi tính theo mức 0-4 buổi là 50.000đ)
+ * 5–9 buổi: Bậc 2 (100.000đ)
+ * 10–15 buổi: Bậc 3 (150.000đ)
+ * ≥16 buổi: Bậc 4 (200.000đ)
  */
 function getMemberTotalCourtFee(member, sessionsCount) {
-  if (!member) return 0;
-  const count = sessionsCount !== undefined ? sessionsCount : (member.monthlySessions || 0);
-  if (count <= 0) return 0; // Nếu chưa tham gia buổi nào thì tiền sân = 0đ
+  if (!member) return 50000;
+  const count = Math.max(0, Number(sessionsCount !== undefined ? sessionsCount : (member.monthlySessions || 0)) || 0);
   
   if (member.type === 'GUEST_A') {
     const pA = (AppState.config && AppState.config.guestPrices && AppState.config.guestPrices.GUEST_A) || 90000;
-    return (count || 1) * pA;
+    return count * pA;
   }
   if (member.type === 'GUEST_B') {
     const pB = (AppState.config && AppState.config.guestPrices && AppState.config.guestPrices.GUEST_B) || 70000;
-    return (count || 1) * pB;
+    return count * pB;
   }
   if (member.type === 'GUEST_C') {
     const pC = (AppState.config && AppState.config.guestPrices && AppState.config.guestPrices.GUEST_C) || 50000;
-    return (count || 1) * pC;
+    return count * pC;
   }
 
-  // Đối với thành viên chính thức & danh dự: áp dụng bậc tiền sân theo số buổi
-  const tiers = (AppState.config && AppState.config.feeTiers) || [];
+  // Đối với thành viên chính thức & danh dự: áp dụng bậc tiền sân theo số buổi (0 buổi theo mức 0-4 buổi là 50.000đ)
+  const tiers = (AppState.config && AppState.config.feeTiers) || [
+    { id: 1, name: 'Bậc 1 (0–4 buổi)', minSessions: 0, maxSessions: 4, price: 50000 },
+    { id: 2, name: 'Bậc 2 (5–9 buổi)', minSessions: 5, maxSessions: 9, price: 100000 },
+    { id: 3, name: 'Bậc 3 (10–15 buổi)', minSessions: 10, maxSessions: 15, price: 150000 },
+    { id: 4, name: 'Bậc 4 (16–30+ buổi)', minSessions: 16, maxSessions: 999, price: 200000 }
+  ];
   for (const tier of tiers) {
     if (count >= tier.minSessions && count <= tier.maxSessions) {
       return tier.price;
     }
   }
   if (tiers.length > 0) return tiers[tiers.length - 1].price;
-  return 100000;
+  return 50000;
 }
 
 /**
@@ -15696,30 +15699,37 @@ function renderSettlementReport() {
   // 1. Render Table I: Thành viên chính thức
   const tbodyOfficial = document.getElementById('repTableOfficialBody');
   if (tbodyOfficial) {
-    tbodyOfficial.innerHTML = data.official.map(row => `
+    tbodyOfficial.innerHTML = data.official.map(row => {
+      const sesCost = row.totalSessionCost !== undefined ? row.totalSessionCost : (row.sessions * (row.rate || 0));
+      return `
       <tr class="hover:bg-emerald-50/40 transition divide-x divide-slate-100 text-xs text-slate-800">
         <td class="py-1 px-1 text-center font-bold text-slate-600">${row.stt}</td>
         <td class="py-1 px-2.5 font-bold text-slate-900 truncate" title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</td>
         <td class="py-1 px-1.5 text-center font-bold">${row.sessions}</td>
-        <td class="py-1 px-1.5 text-right font-black text-slate-900">${formatNumberDot(row.total)}</td>
-        <td class="py-1 px-1.5 text-right text-slate-600">${formatNumberDot(row.rate)}</td>
+        <td class="py-1 px-1.5 text-right font-black text-slate-900" title="Tổng nộp = ${formatNumberDot(sesCost)}đ (CP các buổi) + ${formatNumberDot(row.court)}đ (tiền sân) + ${formatNumberDot(row.fund)}đ (quỹ) + ${formatNumberDot(row.fine)}đ (phạt)">${formatNumberDot(row.total)}</td>
+        <td class="py-1 px-1.5 text-right font-bold text-slate-800" title="Tổng ${row.sessions} buổi hoạt động = ${formatNumberDot(sesCost)}đ${row.sessions > 1 ? ` (TB ${formatNumberDot(row.rate)}đ/buổi)` : ''}">
+          <div>${formatNumberDot(sesCost)}</div>
+          ${row.sessions > 1 ? `<div class="text-[9px] text-slate-400 font-normal leading-tight">(${formatNumberDot(row.rate)}/b)</div>` : ''}
+        </td>
         <td class="py-1 px-1.5 text-right text-slate-700">${formatNumberDot(row.court)}</td>
         <td class="py-1 px-1.5 text-right text-slate-700">${formatNumberDot(row.fund)}</td>
         <td class="py-1 px-1.5 text-right ${row.fine > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}">${formatNumberDot(row.fine)}</td>
       </tr>
-    `).join('');
+    `}).join('');
   }
 
   // Official Totals
   const totalOffSessions = data.official.reduce((s, r) => s + (r.sessions || 0), 0);
   const totalOffPaid = data.official.reduce((s, r) => s + (r.total || 0), 0);
+  const totalOffSessionCost = data.official.reduce((s, r) => s + (r.totalSessionCost !== undefined ? r.totalSessionCost : (r.sessions * (r.rate || 0))), 0);
+  const avgOffRate = totalOffSessions > 0 ? Math.round(totalOffSessionCost / totalOffSessions) : 0;
   const totalOffCourt = data.official.reduce((s, r) => s + (r.court || 0), 0);
   const totalOffFund = data.official.reduce((s, r) => s + (r.fund || 0), 0);
   const totalOffFine = data.official.reduce((s, r) => s + (r.fine || 0), 0);
 
   setElText('repTotalOfficialSessions', totalOffSessions);
   setElText('repTotalOfficialPaid', formatNumberDot(totalOffPaid));
-  setElText('repAvgOfficialRate', '100.000');
+  setElText('repAvgOfficialRate', formatNumberDot(totalOffSessionCost));
   setElText('repTotalOfficialCourt', formatNumberDot(totalOffCourt));
   setElText('repTotalOfficialFund', formatNumberDot(totalOffFund));
   setElText('repTotalOfficialFine', formatNumberDot(totalOffFine));
@@ -15727,30 +15737,37 @@ function renderSettlementReport() {
   // 2. Render Table II: Thành viên danh dự
   const tbodyHonorary = document.getElementById('repTableHonoraryBody');
   if (tbodyHonorary) {
-    tbodyHonorary.innerHTML = data.honorary.map(row => `
+    tbodyHonorary.innerHTML = data.honorary.map(row => {
+      const sesCost = row.totalSessionCost !== undefined ? row.totalSessionCost : (row.sessions * (row.rate || 0));
+      return `
       <tr class="hover:bg-sky-50/40 transition divide-x divide-slate-100 text-xs text-slate-800">
         <td class="py-1 px-1 text-center font-bold text-slate-600">${row.stt}</td>
         <td class="py-1 px-2.5 font-bold text-slate-900 truncate" title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</td>
         <td class="py-1 px-1.5 text-center font-bold">${row.sessions}</td>
-        <td class="py-1 px-1.5 text-right font-black text-slate-900">${formatNumberDot(row.total)}</td>
-        <td class="py-1 px-1.5 text-right text-slate-600">${formatNumberDot(row.rate)}</td>
+        <td class="py-1 px-1.5 text-right font-black text-slate-900" title="Tổng nộp = ${formatNumberDot(sesCost)}đ (CP các buổi) + ${formatNumberDot(row.court)}đ (tiền sân) + ${formatNumberDot(row.fund)}đ (quỹ) + ${formatNumberDot(row.fine)}đ (phạt)">${formatNumberDot(row.total)}</td>
+        <td class="py-1 px-1.5 text-right font-bold text-slate-800" title="Tổng ${row.sessions} buổi hoạt động = ${formatNumberDot(sesCost)}đ${row.sessions > 1 ? ` (TB ${formatNumberDot(row.rate)}đ/buổi)` : ''}">
+          <div>${formatNumberDot(sesCost)}</div>
+          ${row.sessions > 1 ? `<div class="text-[9px] text-slate-400 font-normal leading-tight">(${formatNumberDot(row.rate)}/b)</div>` : ''}
+        </td>
         <td class="py-1 px-1.5 text-right text-slate-700">${formatNumberDot(row.court)}</td>
         <td class="py-1 px-1.5 text-right text-slate-700">${formatNumberDot(row.fund)}</td>
         <td class="py-1 px-1.5 text-right ${row.fine > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}">${formatNumberDot(row.fine)}</td>
       </tr>
-    `).join('');
+    `}).join('');
   }
 
   // Honorary Totals
   const totalHonSessions = data.honorary.reduce((s, r) => s + (r.sessions || 0), 0);
   const totalHonPaid = data.honorary.reduce((s, r) => s + (r.total || 0), 0);
+  const totalHonSessionCost = data.honorary.reduce((s, r) => s + (r.totalSessionCost !== undefined ? r.totalSessionCost : (r.sessions * (r.rate || 0))), 0);
+  const avgHonRate = totalHonSessions > 0 ? Math.round(totalHonSessionCost / totalHonSessions) : 0;
   const totalHonCourt = data.honorary.reduce((s, r) => s + (r.court || 0), 0);
   const totalHonFund = data.honorary.reduce((s, r) => s + (r.fund || 0), 0);
   const totalHonFine = data.honorary.reduce((s, r) => s + (r.fine || 0), 0);
 
   setElText('repTotalHonorarySessions', totalHonSessions);
   setElText('repTotalHonoraryPaid', formatNumberDot(totalHonPaid));
-  setElText('repAvgHonoraryRate', '100.000');
+  setElText('repAvgHonoraryRate', formatNumberDot(totalHonSessionCost));
   setElText('repTotalHonoraryCourt', formatNumberDot(totalHonCourt));
   setElText('repTotalHonoraryFund', formatNumberDot(totalHonFund));
   setElText('repTotalHonoraryFine', formatNumberDot(totalHonFine));
@@ -15764,7 +15781,10 @@ function renderSettlementReport() {
         <td class="py-1 px-2.5 font-bold text-slate-900 truncate" title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</td>
         <td class="py-1 px-1.5 text-center font-bold">${row.sessions}</td>
         <td class="py-1 px-1.5 text-right font-black text-slate-900">${formatNumberDot(row.total)}</td>
-        <td class="py-1 px-1.5 text-right text-slate-600">${formatNumberDot(row.rate)}</td>
+        <td class="py-1 px-1.5 text-right font-bold text-slate-800" title="Tổng ${row.sessions} buổi giao lưu = ${formatNumberDot(row.total)}đ${row.sessions > 1 ? ` (TB ${formatNumberDot(row.rate)}đ/buổi)` : ''}">
+          <div>${formatNumberDot(row.total)}</div>
+          ${row.sessions > 1 ? `<div class="text-[9px] text-slate-400 font-normal leading-tight">(${formatNumberDot(row.rate)}/b)</div>` : ''}
+        </td>
         <td class="py-1 px-1.5 text-right text-slate-700">${formatNumberDot(row.court)}</td>
         <td class="py-1 px-1.5 text-right text-slate-400">0</td>
         <td class="py-1 px-1.5 text-right text-slate-400">0</td>
@@ -15775,11 +15795,12 @@ function renderSettlementReport() {
   // Guest Totals
   const totalGuestSessions = data.guests.reduce((s, r) => s + (r.sessions || 0), 0);
   const totalGuestPaid = data.guests.reduce((s, r) => s + (r.total || 0), 0);
+  const avgGuestRate = totalGuestSessions > 0 ? Math.round(totalGuestPaid / totalGuestSessions) : 70000;
   const totalGuestCourt = data.guests.reduce((s, r) => s + (r.court || 0), 0);
 
   setElText('repTotalGuestSessions', totalGuestSessions);
   setElText('repTotalGuestPaid', formatNumberDot(totalGuestPaid));
-  setElText('repAvgGuestRate', '100.000');
+  setElText('repAvgGuestRate', formatNumberDot(totalGuestPaid));
   setElText('repTotalGuestCourt', formatNumberDot(totalGuestCourt));
   setElText('repTotalGuestFund', '0');
   setElText('repTotalGuestFine', '0');
@@ -15800,9 +15821,13 @@ function renderSettlementReport() {
   setElText('repKpiTotalFine', formatNumberDot(data.kpi ? data.kpi.totalFine : grandTotalFine));
 
   // Đối chiếu ví thành viên
-  setElText('repWalletDeducted', formatNumberDot(data.kpi ? data.kpi.walletDeducted : 1800000));
-  setElText('repWalletRemaining', formatNumberDot(data.kpi ? data.kpi.walletRemaining : (grandTotalCollected - 1800000 - grandTotalFine)));
-  setElText('repWalletEndMonthBal', formatNumberDot(data.kpi ? data.kpi.walletEndMonthBal : 0));
+  const totalWalletDeducted = data.kpi ? data.kpi.walletDeducted : (totalOffSessionCost + totalHonSessionCost);
+  const totalWalletRemaining = data.kpi ? data.kpi.walletRemaining : Math.max(0, grandTotalCollected - totalWalletDeducted);
+  const totalWalletEndMonthBal = data.kpi ? data.kpi.walletEndMonthBal : ((AppState.members || []).reduce((sum, m) => sum + (m.balance || 0), 0));
+
+  setElText('repWalletDeducted', formatNumberDot(totalWalletDeducted));
+  setElText('repWalletRemaining', formatNumberDot(totalWalletRemaining));
+  setElText('repWalletEndMonthBal', formatNumberDot(totalWalletEndMonthBal));
 
   // Cập nhật trạng thái nút Khóa / Mở khóa Chốt sổ cuối tháng
   updateMonthLockBtnUI();
@@ -15819,6 +15844,9 @@ function setElText(id, text) {
 
 /**
  * Sinh dữ liệu báo cáo tất toán từ danh sách thành viên thực tế trong AppState
+ * Công thức:
+ * - Chi phí từng buổi lấy từ dữ liệu hoạt động hàng ngày (AppState.activitySessions)
+ * - Tổng nộp của thành viên = Tổng chi phí các buổi + Tiền sân theo mức + Tiền quỹ tháng + Tiền phạt
  */
 function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
   let monthKey = '';
@@ -15831,7 +15859,7 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
     monthKey = monthStr;
     const parts = monthStr.split('-');
     if (parts.length === 2) {
-      monthStr = `${parts[1]}/${parts[0]}`;
+      monthKey = `${parts[1]}/${parts[0]}`;
     }
   }
 
@@ -15853,13 +15881,45 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
   let sttHon = 1;
   let sttG = 1;
 
-  let monthPrefix = monthKey || '';
+  // Helper hàm kiểm tra chuỗi ngày có thuộc tháng được chọn không
+  const isDateInSelectedMonth = (dStr) => {
+    if (!dStr) return false;
+    if (monthKey && dStr.startsWith(monthKey)) return true;
+    if (monthStr && dStr.includes(monthStr)) return true;
+    if (dStr.includes('/')) {
+      const parts = dStr.split(' ')[0].split('/');
+      if (parts.length === 3) {
+        const ym = `${parts[2]}-${parts[1].padStart(2, '0')}`;
+        if (ym === monthKey) return true;
+      }
+    }
+    if (dStr.includes('-')) {
+      const parts = dStr.split(' ')[0].split('-');
+      if (parts.length === 3) {
+        const ym = `${parts[0]}-${parts[1].padStart(2, '0')}`;
+        if (ym === monthKey) return true;
+      }
+    }
+    return false;
+  };
 
-  // Danh sách các buổi trong tháng được chọn
-  const sessionsInMonth = monthPrefix 
-    ? (AppState.activitySessions || []).filter(ses => ses.date && ses.date.startsWith(monthPrefix))
-    : (AppState.activitySessions || []);
+  // Helper hàm so khớp thành viên tham gia hoạt động
+  const isMemberInSession = (att, mem) => {
+    if (!att || !mem) return false;
+    if (att.id && mem.id && String(att.id) === String(mem.id)) return true;
+    const mName = (mem.name || '').trim().toLowerCase();
+    const mChip = (mem.chipName || '').trim().toLowerCase();
+    const aName = (att.name || att.memberName || '').trim().toLowerCase();
+    const aChip = (att.chipName || '').trim().toLowerCase();
+    if (aName && (aName === mName || aName === mChip)) return true;
+    if (aChip && (aChip === mName || aChip === mChip)) return true;
+    if (mChip && aName && (aName.includes(mChip) || mChip.includes(aName))) return true;
+    if (mName && aName && (aName.includes(mName) || mName.includes(aName))) return true;
+    return false;
+  };
 
+  // Danh sách các buổi trong tháng được chọn từ hoạt động hàng ngày
+  const sessionsInMonth = (AppState.activitySessions || []).filter(ses => isDateInSelectedMonth(ses.date));
   const hasSessionsInMonth = sessionsInMonth.length > 0;
 
   // Cấu hình mức Quỹ CLB hàng tháng (mặc định 50.000 VNĐ)
@@ -15867,66 +15927,105 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
     ? Number(AppState.config.monthlyClubFund)
     : 50000;
 
-  // Hàm tính tiền sân theo bậc lũy kế số buổi
+  // Hàm tính tiền sân theo bậc quy định (0 buổi theo mức 0–4 buổi là 50.000đ)
   const calculateCourtFeeForMember = (member, countSessions) => {
-    if (!countSessions || countSessions <= 0) return 0;
+    const count = Math.max(0, Number(countSessions) || 0);
     const tiers = AppState.config?.feeTiers || [
       { id: 1, name: 'Bậc 1 (0–4 buổi)', minSessions: 0, maxSessions: 4, price: 50000 },
       { id: 2, name: 'Bậc 2 (5–9 buổi)', minSessions: 5, maxSessions: 9, price: 100000 },
       { id: 3, name: 'Bậc 3 (10–15 buổi)', minSessions: 10, maxSessions: 15, price: 150000 },
       { id: 4, name: 'Bậc 4 (16–30+ buổi)', minSessions: 16, maxSessions: 999, price: 200000 }
     ];
-    const matched = tiers.find(t => countSessions >= t.minSessions && countSessions <= t.maxSessions);
+    const matched = tiers.find(t => count >= t.minSessions && count <= t.maxSessions);
     return matched ? matched.price : 50000;
   };
 
-  // Tính toán thành viên chính thức và danh dự
+  // Tính toán chi phí cho từng thành viên chính thức và danh dự
   members.forEach(m => {
     let realSessions = 0;
+    let totalSessionCost = 0;
+
+    // A. Quét các buổi hoạt động hàng ngày trong tháng
     sessionsInMonth.forEach(ses => {
-      const attended = (ses.members || []).some(att => att.id === m.id || (att.name && att.name.trim().toLowerCase() === (m.name || '').trim().toLowerCase()));
-      if (attended) realSessions++;
+      const attended = (ses.members || []).find(att => isMemberInSession(att, m));
+      if (attended) {
+        realSessions++;
+        const fee = (attended.fee !== undefined && !isNaN(Number(attended.fee)))
+          ? Number(attended.fee)
+          : (Number(ses.shuttleFeePerMember) || 0);
+        totalSessionCost += fee;
+      }
     });
 
-    const sessions = hasSessionsInMonth ? realSessions : (m.monthlySessions || 0);
+    // B. Fallback qua AppState.attendanceRecords nếu có dữ liệu điểm danh riêng
+    if (realSessions === 0 && AppState.attendanceRecords && AppState.attendanceRecords.length > 0) {
+      const attInMonth = AppState.attendanceRecords.filter(att => isDateInSelectedMonth(att.date) && isMemberInSession(att, m));
+      if (attInMonth.length > 0) {
+        realSessions = attInMonth.length;
+        totalSessionCost = attInMonth.reduce((sum, att) => {
+          const fee = (att.fee !== undefined && !isNaN(Number(att.fee)))
+            ? Number(att.fee)
+            : ((att.shuttleFee !== undefined && !isNaN(Number(att.shuttleFee))) ? Number(att.shuttleFee) : 0);
+          return sum + fee;
+        }, 0);
+      }
+    }
+
+    // C. Fallback qua giao dịch trừ tiền cầu nếu chưa có trong 2 nguồn trên
+    if (totalSessionCost === 0 && (m.monthlySessions || 0) > 0) {
+      const shuttleTx = (AppState.transactions || []).filter(t => 
+        (t.type === 'SHUTTLE_FEE' || t.subType === 'SHUTTLE_ADV_IN' || t.categoryGroup === 'ADVANCE_SHUTTLE_IN') &&
+        isDateInSelectedMonth(t.date) &&
+        ((t.memberId && t.memberId === m.id) || (t.targetName && isMemberInSession({ name: t.targetName }, m)))
+      );
+      if (shuttleTx.length > 0) {
+        if (realSessions === 0) realSessions = shuttleTx.length;
+        totalSessionCost = shuttleTx.reduce((sum, t) => sum + Math.abs(t.amount || t.walletImpact || 0), 0);
+      }
+    }
+
+    const sessions = hasSessionsInMonth ? realSessions : (realSessions > 0 ? realSessions : (m.monthlySessions || 0));
+
+    // CP mỗi buổi: Chi phí trung bình mỗi buổi của thành viên đó (0 nếu không tham gia buổi nào)
+    const rate = sessions > 0 ? Math.round(totalSessionCost / sessions) : 0;
+
+    // Tiền sân theo mức bậc quy định của CLB
+    const court = calculateCourtFeeForMember(m, sessions);
+
+    // Tiền phạt trong tháng
+    const fine = (AppState.transactions || [])
+      .filter(t => (t.subType === 'FINE' || t.categoryGroup === 'FINE' || t.type === 'FINE') &&
+                   isDateInSelectedMonth(t.date) &&
+                   ((t.memberId && t.memberId === m.id) || (t.targetName && isMemberInSession({ name: t.targetName }, m))))
+      .reduce((sum, t) => sum + (Math.abs(t.amount || t.walletImpact) || 0), 0);
 
     if (!m.type || m.type === 'OFFICIAL') {
-      const court = calculateCourtFeeForMember(m, sessions);
       const fund = monthlyFundFee;
-      const fine = (AppState.transactions || [])
-        .filter(t => (t.subType === 'FINE' || t.categoryGroup === 'FINE' || t.type === 'FINE') &&
-                     (t.date && (t.date.startsWith(monthPrefix) || (monthStr && t.date.includes(monthStr)))) &&
-                     ((t.memberId && t.memberId === m.id) || (t.targetName && t.targetName.toLowerCase().includes(m.name.toLowerCase()))))
-        .reduce((sum, t) => sum + (Math.abs(t.amount) || 0), 0);
-      const total = court + fund + fine;
-      const rate = sessions > 0 ? Math.round(total / sessions) : (court + fund);
+      // CÔNG THỨC CHUẨN: TỔNG NỘP = TỔNG CHI PHÍ CÁC BUỔI + TIỀN SÂN THEO MỨC + TIỀN QUỸ THÁNG + TIỀN PHẠT
+      const total = totalSessionCost + court + fund + fine;
 
       official.push({
         stt: sttOff++,
         name: m.name,
         sessions,
         total,
+        totalSessionCost,
         rate,
         court,
         fund,
         fine
       });
     } else if (m.type === 'HONORARY' || m.type === 'UNOFFICIAL') {
-      const court = calculateCourtFeeForMember(m, sessions);
-      const fund = 0;
-      const fine = (AppState.transactions || [])
-        .filter(t => (t.subType === 'FINE' || t.categoryGroup === 'FINE' || t.type === 'FINE') &&
-                     (t.date && (t.date.startsWith(monthPrefix) || (monthStr && t.date.includes(monthStr)))) &&
-                     ((t.memberId && t.memberId === m.id) || (t.targetName && t.targetName.toLowerCase().includes(m.name.toLowerCase()))))
-        .reduce((sum, t) => sum + (Math.abs(t.amount) || 0), 0);
-      const total = court + fund + fine;
-      const rate = sessions > 0 ? Math.round(total / sessions) : court;
+      const fund = 0; // Thành viên danh dự không thu quỹ tháng CLB
+      // TỔNG NỘP = TỔNG CHI PHÍ CÁC BUỔI + TIỀN SÂN THEO MỨC + TIỀN PHẠT
+      const total = totalSessionCost + court + fund + fine;
 
       honorary.push({
         stt: sttHon++,
         name: m.name,
         sessions,
         total,
+        totalSessionCost,
         rate,
         court,
         fund,
@@ -15943,7 +16042,7 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
       const gKey = gName.toLowerCase();
       const prev = guestMap.get(gKey) || { name: gName, sessions: 0, court: 0 };
       prev.sessions += 1;
-      prev.court += (g.fee || 70000);
+      prev.court += (Number(g.fee) || 70000);
       guestMap.set(gKey, prev);
     });
   });
@@ -15960,7 +16059,7 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
       });
       const sCount = hasSessionsInMonth ? guestSessions : (m.monthlySessions || 0);
       if (sCount > 0) {
-        const fee = m.fee || 70000;
+        const fee = Number(m.fee) || 70000;
         guestMap.set(gKey, { name: m.name, sessions: sCount, court: sCount * fee });
       }
     }
@@ -15974,6 +16073,7 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
       name: gItem.name,
       sessions: gItem.sessions,
       total: total,
+      totalSessionCost: 0,
       rate: rate,
       court: gItem.court,
       fund: 0,
@@ -15989,7 +16089,8 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
   const grandTotalCollected = official.concat(honorary, guests).reduce((s, r) => s + r.total, 0);
   const grandTotalCourt = official.concat(honorary, guests).reduce((s, r) => s + r.court, 0);
   const grandTotalFund = official.concat(honorary).reduce((s, r) => s + r.fund, 0);
-  const grandTotalFine = official.reduce((s, r) => s + r.fine, 0);
+  const grandTotalFine = official.concat(honorary).reduce((s, r) => s + r.fine, 0);
+  const grandTotalSessionCost = official.concat(honorary).reduce((s, r) => s + (r.totalSessionCost || 0), 0);
 
   const totalCurrentWalletBal = (AppState.members || []).reduce((sum, m) => sum + (m.balance || 0), 0);
 
@@ -16006,8 +16107,8 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
       totalCourt: grandTotalCourt,
       totalFund: grandTotalFund,
       totalFine: grandTotalFine,
-      walletDeducted: grandTotalCourt,
-      walletRemaining: Math.max(0, grandTotalCollected - grandTotalCourt),
+      walletDeducted: grandTotalSessionCost,
+      walletRemaining: Math.max(0, grandTotalCollected - grandTotalSessionCost),
       walletEndMonthBal: totalCurrentWalletBal
     }
   };

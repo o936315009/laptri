@@ -1753,7 +1753,7 @@ function renderDashboard() {
       clubFundDescEl.textContent = `${fromText}: ${formatMoney(carried)}`;
       clubFundDescEl.className = 'text-[9px] sm:text-[11px] text-emerald-600 font-bold mt-0.5 truncate block';
     } else {
-      clubFundDescEl.textContent = 'Số dư chi tiêu chung';
+      clubFundDescEl.textContent = 'Tổng số quỹ thực có cuối tháng của CLB';
       clubFundDescEl.className = 'text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate block';
     }
   }
@@ -15959,8 +15959,8 @@ const SETTLEMENT_REPORT_PRESET = {
     totalFund: 1325000,
     totalFine: 100000,
     closingClubFund: 1325000,
-    closingAdvanceFund: 1250000,
-    closingTotalFund: 2575000
+    closingAdvanceFund: 0,
+    closingTotalFund: 1325000
   }
 };
 
@@ -16146,9 +16146,9 @@ function renderSettlementReport() {
 
   const closingTotalFund = (data.kpi && data.kpi.closingTotalFund !== undefined)
     ? data.kpi.closingTotalFund
-    : (closingClubFund + closingAdvanceFund);
+    : closingClubFund;
 
-  setElText('repClosingTotalFund', formatNumberDot(closingTotalFund));
+  setElText('repClosingTotalFund', formatNumberDot(closingClubFund));
 
   // Cập nhật trạng thái nút Khóa / Mở khóa Chốt sổ cuối tháng
   updateMonthLockBtnUI();
@@ -16433,7 +16433,7 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
       totalFine: grandTotalFine,
       closingClubFund: currentClubFund,
       closingAdvanceFund: currentAdvanceFund,
-      closingTotalFund: currentClubFund + currentAdvanceFund
+      closingTotalFund: currentClubFund
     }
   };
 }

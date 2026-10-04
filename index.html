@@ -523,6 +523,61 @@
               </div>
             </div>
 
+            <!-- 2B. KHỐI CLB GIAO LƯU & THÀNH VIÊN THAM GIA (HIỂN THỊ KHI CHỌN LOẠI "GIAO LƯU") -->
+            <div id="actExchangeClubSection" class="hidden p-3 bg-gradient-to-br from-amber-50/90 to-orange-50/70 border-2 border-amber-300 rounded-2xl space-y-2.5 shadow-2xs animate-in fade-in duration-150">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5 font-black text-amber-950 text-xs">
+                  <span class="text-sm">🤝</span>
+                  <span>CLB Giao Lưu & Thành Viên Tham Gia</span>
+                </div>
+                <span id="actExchangeClubMemberCountBadge" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-200 text-amber-900 border border-amber-300">
+                  0 người
+                </span>
+              </div>
+
+              <!-- Tên CLB giao lưu -->
+              <div class="flex items-center gap-2">
+                <label class="text-[11px] font-bold text-amber-900 shrink-0">CLB bạn:</label>
+                <input type="text" id="actExchangeClubNameInput" oninput="onExchangeClubNameChanged(this.value)" placeholder="VD: CLB XH" class="flex-1 text-xs font-bold border border-amber-300 rounded-xl px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 placeholder:text-slate-400 shadow-2xs" />
+              </div>
+
+              <!-- Thêm thành viên CLB bạn -->
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-1.5">
+                  <input type="text" id="actNewExchangeMemberInput" onkeydown="if(event.key==='Enter'){event.preventDefault();addExchangeMemberFromInput();}" placeholder="Nhập tên thành viên (VD: HÀ, PHƯỢNG...)" class="flex-1 text-xs font-semibold border border-amber-300 rounded-xl px-2.5 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 placeholder:text-slate-400 shadow-2xs" />
+                  <button type="button" onclick="addExchangeMemberFromInput()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-bold text-xs rounded-xl shadow-2xs transition cursor-pointer shrink-0">
+                    + Thêm
+                  </button>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-amber-800 font-semibold px-0.5">
+                  <span>Mẹo: Nhập nhiều tên phân cách bằng dấu phẩy</span>
+                  <button type="button" onclick="promptAddMultipleExchangeMembers()" class="text-amber-900 hover:underline font-bold cursor-pointer">Dán danh sách</button>
+                </div>
+              </div>
+
+              <!-- Danh sách chip thành viên CLB giao lưu -->
+              <div id="actExchangeMembersChipsContainer" class="flex items-center gap-1.5 flex-wrap pt-0.5 min-h-[28px]">
+                <!-- Rendered dynamically -->
+              </div>
+
+              <!-- Tóm tắt chi phí giao lưu -->
+              <div id="actExchangeClubSummaryBox" class="p-2.5 bg-white/90 rounded-xl border border-amber-200 text-xs flex items-center justify-between gap-2 shadow-2xs">
+                <div>
+                  <span class="text-[10px] text-slate-500 block font-semibold">Tỉ lệ chia tiền CLB bạn:</span>
+                  <b id="actExchangeClubShareText" class="text-amber-900 font-black text-xs">CLB XH (0 người)</b>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] text-slate-500 block font-semibold">CLB bạn thanh toán:</span>
+                  <b id="actExchangeClubTotalPay" class="text-emerald-700 font-black text-xs sm:text-sm">0đ</b>
+                </div>
+              </div>
+
+              <div class="text-[10px] text-amber-900/90 font-medium italic flex items-center gap-1">
+                <span>⚡</span>
+                <span>Chi phí buổi cầu được chia đều cho tất cả thành viên (CLB chủ nhà + CLB giao lưu).</span>
+              </div>
+            </div>
+
             <!-- 3. ĐIỂM DANH THÀNH VIÊN (KHOẢNG CÁCH THU NHỎ GỌN NHƯ MỤC KHÁCH, MẶC ĐỊNH CHƯA ĐIỂM DANH) -->
             <div>
               <div class="flex items-center justify-between pb-0.5">
@@ -4800,13 +4855,32 @@
             Loại hoạt động:
           </label>
           <div class="relative">
-            <select id="newActSessionType" class="w-full px-3 py-2 text-xs font-semibold border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition appearance-none">
+            <select id="newActSessionType" onchange="toggleNewActExchangeClubSection(this.value)" class="w-full px-3 py-2 text-xs font-semibold border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition appearance-none">
               <option value="Buổi cầu" selected>Buổi cầu (sinh hoạt định kỳ)</option>
               <option value="Giao lưu">Giao lưu (khách mời / giao hữu)</option>
               <option value="Giải đấu">Giải đấu (nội bộ / mở rộng)</option>
               <option value="Tập luyện">Tập luyện (nâng cao thể lực & kỹ thuật)</option>
             </select>
             <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3 top-2.5 pointer-events-none"></i>
+          </div>
+        </div>
+
+        <!-- 2A. KHỐI THÔNG TIN CLB GIAO LƯU (HIỂN THỊ KHI CHỌN LOẠI "GIAO LƯU") -->
+        <div id="newActExchangeClubFields" class="hidden p-3 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-2xl space-y-2.5 shadow-2xs animate-in fade-in duration-150">
+          <div class="flex items-center gap-1.5 text-xs font-black text-amber-950">
+            <span>🤝</span>
+            <span>CLB Giao Lưu & Danh Sách Thành Viên</span>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-amber-900 mb-0.5">Tên CLB giao lưu (*):</label>
+            <input type="text" id="newActExchangeClubName" placeholder="VD: CLB XH" class="w-full px-3 py-2 text-xs font-bold border border-amber-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 placeholder:text-slate-400 shadow-2xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-amber-900 mb-0.5">Danh sách thành viên CLB bạn tham gia (*):</label>
+            <textarea id="newActExchangeMembers" rows="2" placeholder="VD: HÀ, PHƯỢNG, TÙNG, THÁI, THANH (phân cách bằng dấu phẩy hoặc xuống dòng)" class="w-full px-3 py-2 text-xs font-semibold border border-amber-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 placeholder:text-slate-400 shadow-2xs"></textarea>
+            <p class="text-[10px] text-amber-800 font-semibold mt-1">
+              ⚡ Toàn bộ chi phí buổi cầu sẽ được chia đều cho tất cả thành viên (CLB Lập Trí + CLB giao lưu).
+            </p>
           </div>
         </div>
 

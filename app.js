@@ -421,6 +421,257 @@ try {
 }
 
 // ==========================================
+// 0B. TÙY BIẾN TÊN GỌI & NHÃN THƯ MỤC GIAO DIỆN TOÀN HỆ THỐNG
+// ==========================================
+const DEFAULT_CUSTOM_LABELS = {
+  tabDashboard: 'Trang chủ',
+  tabMembers: 'Hội viên',
+  tabFinance: 'Thanh toán và ví',
+  tabAttendance: 'Điểm danh',
+  tabTournament: 'Giải đấu',
+  tabSettings: 'Cài đặt',
+  clubFund: 'Tổng Quỹ CLB',
+  advanceFund: 'Quỹ Tạm Ứng',
+  userWallet: 'Ví của bạn',
+  settlementTotalPaid: 'Tổng Nộp'
+};
+
+const CUSTOM_LABELS_PRESETS = {
+  default: {
+    tabDashboard: 'Trang chủ',
+    tabMembers: 'Hội viên',
+    tabFinance: 'Thanh toán và ví',
+    tabAttendance: 'Điểm danh',
+    tabTournament: 'Giải đấu',
+    tabSettings: 'Cài đặt',
+    clubFund: 'Tổng Quỹ CLB',
+    advanceFund: 'Quỹ Tạm Ứng',
+    userWallet: 'Ví của bạn',
+    settlementTotalPaid: 'Tổng Nộp'
+  },
+  athlete: {
+    tabDashboard: 'Tổng quan',
+    tabMembers: 'Danh sách tay vợt',
+    tabFinance: 'Thu chi & Quỹ',
+    tabAttendance: 'Buổi cầu',
+    tabTournament: 'Giải nội bộ',
+    tabSettings: 'Quản trị',
+    clubFund: 'Quỹ CLB',
+    advanceFund: 'Quỹ hoạt động',
+    userWallet: 'Số dư ví',
+    settlementTotalPaid: 'Tổng đóng'
+  },
+  finance: {
+    tabDashboard: 'Bàn làm việc',
+    tabMembers: 'Vận động viên',
+    tabFinance: 'Sổ quỹ & Ví',
+    tabAttendance: 'Sinh hoạt ngày',
+    tabTournament: 'Thi đấu CLB',
+    tabSettings: 'Thiết lập CLB',
+    clubFund: 'Quỹ chung CLB',
+    advanceFund: 'Tiền cọc & ứng',
+    userWallet: 'Ví cá nhân',
+    settlementTotalPaid: 'Quyết toán kỳ'
+  }
+};
+
+function getCustomLabel(key, fallback = '') {
+  if (AppState && AppState.config && AppState.config.customLabels && AppState.config.customLabels[key]) {
+    return AppState.config.customLabels[key];
+  }
+  if (DEFAULT_CUSTOM_LABELS[key]) {
+    return DEFAULT_CUSTOM_LABELS[key];
+  }
+  return fallback;
+}
+
+function applyCustomLabels() {
+  const lblDashboard = getCustomLabel('tabDashboard', 'Trang chủ');
+  const lblMembers = getCustomLabel('tabMembers', 'Hội viên');
+  const lblFinance = getCustomLabel('tabFinance', 'Thanh toán và ví');
+  const lblAttendance = getCustomLabel('tabAttendance', 'Điểm danh');
+  const lblTournament = getCustomLabel('tabTournament', 'Giải đấu');
+  const lblSettings = getCustomLabel('tabSettings', 'Cài đặt');
+
+  const lblClubFund = getCustomLabel('clubFund', 'Tổng Quỹ CLB');
+  const lblAdvanceFund = getCustomLabel('advanceFund', 'Quỹ Tạm Ứng');
+  const lblUserWallet = getCustomLabel('userWallet', 'Ví của bạn');
+  const lblSettlementTotalPaid = getCustomLabel('settlementTotalPaid', 'Tổng Nộp');
+
+  // 1. Desktop Sidebar Navigation
+  const dDash = document.getElementById('navLabelDashboard');
+  if (dDash) dDash.textContent = lblDashboard;
+  const dAtt = document.getElementById('navLabelAttendance');
+  if (dAtt) dAtt.textContent = lblAttendance;
+  const dFin = document.getElementById('navLabelFinance');
+  if (dFin) dFin.textContent = lblFinance;
+  const dMem = document.getElementById('navLabelMembers');
+  if (dMem) dMem.textContent = lblMembers;
+  const dTour = document.getElementById('navLabelTournament');
+  if (dTour) dTour.textContent = lblTournament;
+  const dSet = document.getElementById('navLabelSettings');
+  if (dSet) dSet.textContent = lblSettings;
+
+  // 2. Mobile Bottom Navigation
+  const mDash = document.getElementById('mNavLabelDashboard');
+  if (mDash) mDash.textContent = lblDashboard;
+  const mAtt = document.getElementById('mNavLabelAttendance');
+  if (mAtt) mAtt.textContent = lblAttendance;
+  const mFin = document.getElementById('mNavLabelFinance');
+  if (mFin) mFin.textContent = lblFinance;
+  const mMem = document.getElementById('mNavLabelMembers');
+  if (mMem) mMem.textContent = lblMembers;
+  const mTour = document.getElementById('mNavLabelTournament');
+  if (mTour) mTour.textContent = lblTournament;
+  const mSet = document.getElementById('mNavLabelSettings');
+  if (mSet) mSet.textContent = lblSettings;
+
+  // 3. Dashboard KPI Cards
+  const kpiClubFundLbl = document.getElementById('kpiClubFundLabel');
+  if (kpiClubFundLbl) kpiClubFundLbl.textContent = lblClubFund;
+  const kpiAdvFundLbl = document.getElementById('kpiAdvanceFundLabel');
+  if (kpiAdvFundLbl) kpiAdvFundLbl.textContent = lblAdvanceFund;
+  const kpiWalletLbl = document.getElementById('kpiWalletLabel');
+  if (kpiWalletLbl && AppState.auth?.user) {
+    kpiWalletLbl.textContent = lblUserWallet;
+  }
+
+  // 4. Tab Tài chính
+  const finAdvCardTitle = document.getElementById('financeAdvanceFundCardTitle');
+  if (finAdvCardTitle) finAdvCardTitle.textContent = lblAdvanceFund;
+  const kpiCardAdvTotalLbl = document.getElementById('kpiCardAdvanceFundTotalLabel');
+  if (kpiCardAdvTotalLbl) kpiCardAdvTotalLbl.textContent = lblAdvanceFund;
+
+  // 5. Tab Quản lý thành viên: Tiêu đề danh sách hội viên
+  const tabMemHeader = document.getElementById('tabMembersHeaderTitle');
+  if (tabMemHeader) tabMemHeader.textContent = `Danh Sách ${lblMembers}`;
+
+  // 6. Bảng Tất Toán Tháng: Các cột "Tổng Nộp"
+  document.querySelectorAll('.repLabelTotalPaid').forEach(el => {
+    el.textContent = lblSettlementTotalPaid;
+  });
+}
+
+function populateCustomLabelsInputs() {
+  const cfg = AppState.config?.customLabels || {};
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  };
+  setVal('cfgLabelTabDashboard', cfg.tabDashboard || DEFAULT_CUSTOM_LABELS.tabDashboard);
+  setVal('cfgLabelTabMembers', cfg.tabMembers || DEFAULT_CUSTOM_LABELS.tabMembers);
+  setVal('cfgLabelTabFinance', cfg.tabFinance || DEFAULT_CUSTOM_LABELS.tabFinance);
+  setVal('cfgLabelTabAttendance', cfg.tabAttendance || DEFAULT_CUSTOM_LABELS.tabAttendance);
+  setVal('cfgLabelTabTournament', cfg.tabTournament || DEFAULT_CUSTOM_LABELS.tabTournament);
+  setVal('cfgLabelTabSettings', cfg.tabSettings || DEFAULT_CUSTOM_LABELS.tabSettings);
+
+  setVal('cfgLabelClubFund', cfg.clubFund || DEFAULT_CUSTOM_LABELS.clubFund);
+  setVal('cfgLabelAdvanceFund', cfg.advanceFund || DEFAULT_CUSTOM_LABELS.advanceFund);
+  setVal('cfgLabelUserWallet', cfg.userWallet || DEFAULT_CUSTOM_LABELS.userWallet);
+  setVal('cfgLabelSettlementTotalPaid', cfg.settlementTotalPaid || DEFAULT_CUSTOM_LABELS.settlementTotalPaid);
+}
+
+function applyCustomLabelsPreset(presetName) {
+  const preset = CUSTOM_LABELS_PRESETS[presetName] || CUSTOM_LABELS_PRESETS.default;
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  };
+  setVal('cfgLabelTabDashboard', preset.tabDashboard);
+  setVal('cfgLabelTabMembers', preset.tabMembers);
+  setVal('cfgLabelTabFinance', preset.tabFinance);
+  setVal('cfgLabelTabAttendance', preset.tabAttendance);
+  setVal('cfgLabelTabTournament', preset.tabTournament);
+  setVal('cfgLabelTabSettings', preset.tabSettings);
+
+  setVal('cfgLabelClubFund', preset.clubFund);
+  setVal('cfgLabelAdvanceFund', preset.advanceFund);
+  setVal('cfgLabelUserWallet', preset.userWallet);
+  setVal('cfgLabelSettlementTotalPaid', preset.settlementTotalPaid);
+
+  const presetTitle = presetName === 'athlete' ? 'Thể Thao' : (presetName === 'finance' ? 'Tài Chính' : 'Chuẩn CLB');
+  showToast(`💡 Đã điền nhanh mẫu phong cách "${presetTitle}". Bấm [Lưu tùy biến tên gọi] để kích hoạt!`, 'info');
+}
+
+function saveCustomLabelsConfig() {
+  const currentRole = getCurrentUserRole();
+  if (currentRole !== 'ADMIN' && currentRole !== 'DEV_ADMIN') {
+    showToast('⚠️ Chỉ Quản lý mới có toàn quyền sửa tùy biến tên gọi giao diện CLB!', 'error');
+    return;
+  }
+
+  const getVal = (id, fallback) => {
+    const el = document.getElementById(id);
+    return (el && el.value.trim()) ? el.value.trim() : fallback;
+  };
+
+  if (!AppState.config) AppState.config = {};
+  AppState.config.customLabels = {
+    tabDashboard: getVal('cfgLabelTabDashboard', DEFAULT_CUSTOM_LABELS.tabDashboard),
+    tabMembers: getVal('cfgLabelTabMembers', DEFAULT_CUSTOM_LABELS.tabMembers),
+    tabFinance: getVal('cfgLabelTabFinance', DEFAULT_CUSTOM_LABELS.tabFinance),
+    tabAttendance: getVal('cfgLabelTabAttendance', DEFAULT_CUSTOM_LABELS.tabAttendance),
+    tabTournament: getVal('cfgLabelTabTournament', DEFAULT_CUSTOM_LABELS.tabTournament),
+    tabSettings: getVal('cfgLabelTabSettings', DEFAULT_CUSTOM_LABELS.tabSettings),
+
+    clubFund: getVal('cfgLabelClubFund', DEFAULT_CUSTOM_LABELS.clubFund),
+    advanceFund: getVal('cfgLabelAdvanceFund', DEFAULT_CUSTOM_LABELS.advanceFund),
+    userWallet: getVal('cfgLabelUserWallet', DEFAULT_CUSTOM_LABELS.userWallet),
+    settlementTotalPaid: getVal('cfgLabelSettlementTotalPaid', DEFAULT_CUSTOM_LABELS.settlementTotalPaid)
+  };
+
+  saveData();
+  applyCustomLabels();
+  if (typeof renderDashboard === 'function') renderDashboard();
+  if (typeof renderFinanceTab === 'function') renderFinanceTab();
+  if (typeof renderSettlementReport === 'function') renderSettlementReport();
+
+  showToast('✓ Đã lưu tùy biến tên gọi giao diện CLB thành công! Toàn bộ tên thư mục & thuật ngữ đã cập nhật tức thì.', 'success');
+}
+
+function resetCustomLabelsToDefault() {
+  const currentRole = getCurrentUserRole();
+  if (currentRole !== 'ADMIN' && currentRole !== 'DEV_ADMIN') {
+    showToast('⚠️ Chỉ Quản lý mới có toàn quyền khôi phục tên gọi mặc định!', 'error');
+    return;
+  }
+
+  if (!confirm('Bạn có chắc chắn muốn khôi phục toàn bộ tên gọi và thư mục giao diện về mặc định chuẩn CLB không?')) {
+    return;
+  }
+
+  if (!AppState.config) AppState.config = {};
+  AppState.config.customLabels = Object.assign({}, DEFAULT_CUSTOM_LABELS);
+
+  populateCustomLabelsInputs();
+  saveData();
+  applyCustomLabels();
+  if (typeof renderDashboard === 'function') renderDashboard();
+  if (typeof renderFinanceTab === 'function') renderFinanceTab();
+  if (typeof renderSettlementReport === 'function') renderSettlementReport();
+
+  showToast('↺ Đã khôi phục toàn bộ tên gọi và thư mục về mặc định!', 'info');
+}
+
+if (typeof window !== 'undefined') {
+  window.DEFAULT_CUSTOM_LABELS = DEFAULT_CUSTOM_LABELS;
+  window.CUSTOM_LABELS_PRESETS = CUSTOM_LABELS_PRESETS;
+  window.getCustomLabel = getCustomLabel;
+  window.applyCustomLabels = applyCustomLabels;
+  window.populateCustomLabelsInputs = populateCustomLabelsInputs;
+  window.applyCustomLabelsPreset = applyCustomLabelsPreset;
+  window.saveCustomLabelsConfig = saveCustomLabelsConfig;
+  window.resetCustomLabelsToDefault = resetCustomLabelsToDefault;
+  window.openCancelTransactionModal = openCancelTransactionModal;
+  window.setCancelReasonQuick = setCancelReasonQuick;
+  window.handleConfirmCancelTransaction = handleConfirmCancelTransaction;
+  window.showCancelAuditDetails = showCancelAuditDetails;
+  window.restoreCancelledTransaction = restoreCancelledTransaction;
+  window.getMemberMonthlyFundPaymentTx = getMemberMonthlyFundPaymentTx;
+  window.isMemberMonthlyFundPaid = isMemberMonthlyFundPaid;
+}
+
+// ==========================================
 // 0. ĐỊNH NGHĨA VAI TRÒ & PHÂN QUYỀN HỆ THỐNG (USER ACCESS & PERMISSIONS)
 // ==========================================
 const ROLE_DEFINITIONS = {
@@ -548,7 +799,8 @@ function getBlankClubInitialData(club) {
       allowNegativeWallet: true,
       settlementMode: 'MONTHLY',
       defaultSettlementDay: 'END_OF_MONTH',
-      monthlyClubFund: 50000
+      monthlyClubFund: 50000,
+      customLabels: Object.assign({}, DEFAULT_CUSTOM_LABELS)
     },
     funds: {
       clubFund: initFund,
@@ -879,7 +1131,8 @@ const DEFAULT_INITIAL_DATA = {
     settlementMode: 'MONTHLY',          // 'DAILY' (Cuối ngày) hoặc 'MONTHLY' (Cuối tháng)
     defaultSettlementDay: 'END_OF_MONTH', // Ngày tất toán mặc định: cuối tháng
     monthlyClubFund: 50000,             // Mức Quỹ CLB hàng tháng mặc định: 50.000 VNĐ / TV
-    attendanceCutoffTime: '17:00'       // Giờ chốt tự điểm danh thành viên (mặc định 17:00)
+    attendanceCutoffTime: '17:00',      // Giờ chốt tự điểm danh thành viên (mặc định 17:00)
+    customLabels: Object.assign({}, DEFAULT_CUSTOM_LABELS)
   },
   funds: {
     clubFund: 0,                  // 0 đ - Quỹ CLB sạch bắt đầu từ đầu
@@ -1120,6 +1373,11 @@ function loadData() {
             }
           });
         }
+        if (!AppState.config.customLabels) {
+          AppState.config.customLabels = Object.assign({}, DEFAULT_CUSTOM_LABELS);
+        } else {
+          AppState.config.customLabels = Object.assign({}, DEFAULT_CUSTOM_LABELS, AppState.config.customLabels);
+        }
       }
 
       if (!AppState.funds) AppState.funds = {};
@@ -1143,8 +1401,10 @@ function loadData() {
       AppState.funds.shuttlePaidTotal = 0;
       AppState.funds.courtPaidTotal = 0;
 
-      // Đảm bảo số dư Quỹ CLB thực có hiện tại
-      AppState.funds.clubFund = 6700000;
+      // Khởi tạo số dư Quỹ CLB nếu chưa có
+      if (AppState.funds.clubFund === undefined || AppState.funds.clubFund === null) {
+        AppState.funds.clubFund = 6700000;
+      }
 
       if (!AppState.settlementSnapshots) AppState.settlementSnapshots = {};
 
@@ -1646,6 +1906,7 @@ function calculateMemberWalletBreakdown(memberOrId) {
   let fine = 0;
   (AppState.transactions || []).forEach(tx => {
     if (isDateOrMonthInClosedCycle(tx.date)) return;
+    if (tx.isCancelled || tx.status === 'CANCELLED') return;
     if (tx.subType === 'FINE' || tx.type === 'FINE') {
       if (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase()))) || (tx.description && tx.description.toLowerCase().includes(memberName))) {
         fine += Math.abs(tx.amount || tx.walletImpact || 0);
@@ -1657,6 +1918,7 @@ function calculateMemberWalletBreakdown(memberOrId) {
   let clubFund = 0;
   (AppState.transactions || []).forEach(tx => {
     if (isDateOrMonthInClosedCycle(tx.date)) return;
+    if (tx.isCancelled || tx.status === 'CANCELLED') return;
     if (tx.subType === 'MEM_FUND') {
       if (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase())))) {
         clubFund += Math.abs(tx.walletImpact || tx.amount || 0);
@@ -1668,6 +1930,7 @@ function calculateMemberWalletBreakdown(memberOrId) {
   let courtFee = 0;
   (AppState.transactions || []).forEach(tx => {
     if (isDateOrMonthInClosedCycle(tx.date)) return;
+    if (tx.isCancelled || tx.status === 'CANCELLED') return;
     if ((tx.type === 'COURT_FEE' || tx.subType === 'COURT_ADV_IN') && (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase()))))) {
       if (tx.walletImpact && tx.walletImpact < 0) {
         courtFee += Math.abs(tx.walletImpact);
@@ -1685,6 +1948,7 @@ function calculateMemberWalletBreakdown(memberOrId) {
   let topUpTransactions = 0;
   (AppState.transactions || []).forEach(tx => {
     if (isDateOrMonthInClosedCycle(tx.date)) return;
+    if (tx.isCancelled || tx.status === 'CANCELLED') return;
     if (tx.type === 'TOPUP' || tx.subType === 'TOPUP' || tx.categoryGroup === 'WALLET_TOPUP' || tx.type === 'SETTLEMENT') {
       if (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase())))) {
         topUpTransactions += Math.abs(tx.amount || tx.walletImpact || 0);
@@ -1696,7 +1960,7 @@ function calculateMemberWalletBreakdown(memberOrId) {
   (AppState.topUpRequests || []).forEach(req => {
     if (isDateOrMonthInClosedCycle(req.createdAt || req.date)) return;
     if (req.status === 'APPROVED' && (req.memberId === memberId || (req.memberName && (req.memberName.toLowerCase().includes(memberName) || memberName.includes(req.memberName.toLowerCase()))))) {
-      const alreadyInTx = (AppState.transactions || []).some(tx => tx.requestId === req.id || tx.id === req.id);
+      const alreadyInTx = (AppState.transactions || []).some(tx => (tx.requestId === req.id || tx.id === req.id) && !tx.isCancelled && tx.status !== 'CANCELLED');
       if (!alreadyInTx) {
         topUpTransactions += Math.abs(req.amount || 0);
       }
@@ -1812,7 +2076,7 @@ function renderDashboard() {
         : 'text-xs sm:text-lg md:text-2xl font-black text-emerald-700 block truncate';
     }
     if (kpiWalletLabelEl) {
-      kpiWalletLabelEl.textContent = 'Ví Của Bạn';
+      kpiWalletLabelEl.textContent = getCustomLabel('userWallet', 'Ví Của Bạn');
     }
     if (kpiWalletDescEl) {
       const displayName = mem ? (mem.chipName || mem.name) : (currentUser.name || currentUser.username);
@@ -1828,7 +2092,7 @@ function renderDashboard() {
       totalWalletEl.textContent = formatMoney(totalClubWallet);
       totalWalletEl.className = 'text-xs sm:text-lg md:text-2xl font-black text-slate-900 block truncate';
     }
-    if (kpiWalletLabelEl) kpiWalletLabelEl.textContent = 'Ví Thành Viên';
+    if (kpiWalletLabelEl) kpiWalletLabelEl.textContent = getCustomLabel('userWallet', 'Ví Thành Viên');
     if (kpiWalletDescEl) kpiWalletDescEl.textContent = 'Tổng tiền ví toàn CLB';
   }
 
@@ -1847,6 +2111,9 @@ function renderDashboard() {
 
   // 11. Cập nhật thông báo yêu cầu nạp tiền chờ xác thực
   renderTopUpBadges();
+
+  // 12. Áp dụng nhãn tên gọi thư mục tùy biến
+  applyCustomLabels();
 }
 
 function renderDashboardWalletList() {
@@ -6206,6 +6473,7 @@ function calculateClubFundStats() {
   (AppState.transactions || []).forEach(tx => {
     // Bỏ qua các giao dịch thuộc các chu kỳ tháng đã chốt sổ
     if (isDateOrMonthInClosedCycle(tx.date)) return;
+    if (tx.isCancelled || tx.status === 'CANCELLED') return;
 
     const amt = Math.abs(tx.amount || 0);
     const desc = String(tx.description || '').toLowerCase();
@@ -6321,6 +6589,7 @@ function calculateAdvanceFundStats() {
   (AppState.transactions || []).forEach(tx => {
     // Bỏ qua các giao dịch thuộc các chu kỳ tháng đã chốt sổ
     if (isDateOrMonthInClosedCycle(tx.date)) return;
+    if (tx.isCancelled || tx.status === 'CANCELLED') return;
 
     const amt = Math.abs(tx.amount || 0);
 
@@ -6575,6 +6844,9 @@ function renderFinanceTab() {
 
   // Render danh sách yêu cầu nạp tiền chờ xác thực & thông báo
   renderTopUpBadges();
+
+  // Áp dụng nhãn tên gọi thư mục tùy biến
+  applyCustomLabels();
 }
 
 /**
@@ -6659,6 +6931,10 @@ function renderFullTransactionTable() {
 
   if (selectedType !== 'ALL') {
     list = list.filter(tx => {
+      if (selectedType === 'CANCELLED') return tx.isCancelled || tx.status === 'CANCELLED';
+      // Với các bộ lọc danh mục cụ thể (không phải CANCELLED), chỉ hiển thị giao dịch còn hiệu lực:
+      if (tx.isCancelled || tx.status === 'CANCELLED') return false;
+
       if (selectedType === 'MEM_FUND') return tx.subType === 'MEM_FUND';
       if (selectedType === 'FINE') return tx.subType === 'FINE' || tx.type === 'FINE';
       if (selectedType === 'PRIZE') return tx.subType === 'PRIZE';
@@ -6678,6 +6954,9 @@ function renderFullTransactionTable() {
       (tx.targetName && tx.targetName.toLowerCase().includes(query)) ||
       (tx.description && tx.description.toLowerCase().includes(query)) ||
       (tx.categoryName && tx.categoryName.toLowerCase().includes(query)) ||
+      (tx.cancelReason && tx.cancelReason.toLowerCase().includes(query)) ||
+      (tx.cancelledBy && tx.cancelledBy.toLowerCase().includes(query)) ||
+      (tx.id && tx.id.toLowerCase().includes(query)) ||
       (tx.date && tx.date.includes(query))
     );
   }
@@ -6685,14 +6964,17 @@ function renderFullTransactionTable() {
   if (list.length === 0) {
     const emptyMsg = isMemberRoleTx 
       ? 'Chưa có lịch sử giao dịch ví của bạn'
-      : 'Chưa có giao dịch phù hợp điều kiện lọc';
-    tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 italic">${emptyMsg}</td></tr>`;
+      : (selectedType === 'CANCELLED' ? 'Không có khoản thu chi nào bị hủy bỏ' : 'Chưa có giao dịch phù hợp điều kiện lọc');
+    tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 italic">${emptyMsg}</td></tr>`;
     return;
   }
+
+  const canCancelTx = canPerformFinance();
 
   tbody.innerHTML = list.map(tx => {
     let typeBadge = '';
     const st = tx.subType || tx.type;
+    const isCancelled = !!(tx.isCancelled || tx.status === 'CANCELLED');
 
     switch (st) {
       case 'MEM_FUND':
@@ -6770,6 +7052,10 @@ function renderFullTransactionTable() {
         typeBadge = `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px]">${tx.categoryName || 'Giao dịch'}</span>`;
     }
 
+    if (isCancelled) {
+      typeBadge += ` <span class="px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-800 font-black border border-rose-300 text-[10px] ml-1">❌ Đã hủy</span>`;
+    }
+
     // Tác động Ví thành viên
     let walletImpactHtml = `<span class="text-slate-300 font-medium">—</span>`;
     if (tx.walletImpact !== undefined && tx.walletImpact !== 0) {
@@ -6782,6 +7068,10 @@ function renderFullTransactionTable() {
       walletImpactHtml = `<b class="text-emerald-600 font-black text-xs">+${formatMoney(Math.abs(tx.amount))}</b>`;
     } else if (tx.type === 'COURT_FEE') {
       walletImpactHtml = `<b class="text-rose-600 font-black text-xs">−${formatMoney(Math.abs(tx.amount))}</b>`;
+    }
+
+    if (isCancelled && walletImpactHtml !== `<span class="text-slate-300 font-medium">—</span>`) {
+      walletImpactHtml = `<s class="line-through text-slate-400 opacity-70">${walletImpactHtml}</s>`;
     }
 
     // Tác động Quỹ CLB
@@ -6798,13 +7088,52 @@ function renderFullTransactionTable() {
       fundImpactHtml = `<b class="text-rose-600 font-black text-xs">−${formatMoney(Math.abs(tx.amount))}</b>`;
     }
 
+    if (isCancelled && fundImpactHtml !== `<span class="text-slate-300 font-medium">—</span>`) {
+      fundImpactHtml = `<s class="line-through text-slate-400 opacity-70">${fundImpactHtml}</s>`;
+    }
+
+    // Hiển thị ghi chú lý do hủy nếu có
+    const cancelAuditNote = isCancelled && tx.cancelReason
+      ? `<div class="text-[10px] text-rose-600 font-medium mt-0.5 flex items-center gap-1"><span>⚠️ Lý do hủy:</span> <span class="italic font-normal">${tx.cancelReason}</span> ${tx.cancelledBy ? `<span class="text-slate-400">(${tx.cancelledBy})</span>` : ''}</div>`
+      : '';
+
+    // Cột thao tác
+    let actionColHtml = '';
+    if (isCancelled) {
+      actionColHtml = `
+        <div class="flex items-center justify-center gap-1">
+          <button type="button" onclick="showCancelAuditDetails('${tx.id}')" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] border border-slate-300 transition cursor-pointer flex items-center gap-0.5" title="Xem lý do hủy và thông tin kiểm toán">
+            <span>ℹ️</span> <span>Chi tiết</span>
+          </button>
+          ${canCancelTx ? `
+            <button type="button" onclick="restoreCancelledTransaction('${tx.id}')" class="px-1.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-black text-[10px] border border-emerald-300 transition cursor-pointer" title="Khôi phục lại giao dịch này">
+              ↺
+            </button>
+          ` : ''}
+        </div>
+      `;
+    } else {
+      actionColHtml = `
+        ${canCancelTx ? `
+          <button type="button" onclick="openCancelTransactionModal('${tx.id}')" class="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-900 font-bold text-[10px] border border-rose-200 hover:border-rose-300 transition cursor-pointer flex items-center gap-1 mx-auto" title="Hủy / xóa giao dịch thu sai, thu thừa">
+            <span>🗑️</span> <span>Hủy</span>
+          </button>
+        ` : `<span class="text-slate-300 font-medium">—</span>`}
+      `;
+    }
+
+    const rowClass = isCancelled 
+      ? 'bg-rose-50/20 hover:bg-rose-50/40 text-slate-500 opacity-75 transition' 
+      : 'hover:bg-slate-50 transition';
+
     return `
-      <tr class="hover:bg-slate-50 transition">
+      <tr class="${rowClass}">
         <td class="py-2.5 px-3 text-slate-500 whitespace-nowrap text-[11px]">${tx.date}</td>
         <td class="py-2.5 px-2 whitespace-nowrap">${typeBadge}</td>
         <td class="py-2.5 px-3">
           <div class="font-bold text-slate-900 text-xs">${tx.targetName || 'Giao dịch CLB'}</div>
           <div class="text-[11px] text-slate-500 line-clamp-1">${tx.description || ''}</div>
+          ${cancelAuditNote}
         </td>
         <td class="py-2.5 px-3 text-center whitespace-nowrap">
           ${walletImpactHtml}
@@ -6813,6 +7142,9 @@ function renderFullTransactionTable() {
           ${fundImpactHtml}
         </td>
         <td class="py-2.5 px-3 text-slate-500 font-medium text-[11px] whitespace-nowrap">${tx.operator || 'admin'}</td>
+        <td class="py-2.5 px-2 text-center whitespace-nowrap">
+          ${actionColHtml}
+        </td>
       </tr>
     `;
   }).join('');
@@ -6843,16 +7175,91 @@ function openMonthlyFundModal() {
   openModal('monthlyFundModal');
 }
 
+/**
+ * Kiểm tra xem một thành viên đã nộp Quỹ CLB cho tháng chỉ định hay chưa (bỏ qua giao dịch đã bị hủy)
+ * @param {string} memberId
+ * @param {string} monthVal - 'YYYY-MM' (VD: '2026-10')
+ * @returns {object|null} Giao dịch đã nộp nếu có
+ */
+function getMemberMonthlyFundPaymentTx(memberId, monthVal) {
+  if (!memberId || !monthVal) return null;
+  const [y, m] = monthVal.split('-');
+  const mNum = parseInt(m, 10);
+  const yNum = parseInt(y, 10);
+  const monthSlash = `${String(mNum).padStart(2, '0')}/${yNum}`;
+  const monthSlashShort = `${mNum}/${yNum}`;
+
+  const member = (AppState.members || []).find(x => x.id === memberId);
+  const memberName = (member?.name || '').trim().toLowerCase();
+
+  return (AppState.transactions || []).find(tx => {
+    if (tx.isCancelled || tx.status === 'CANCELLED') return false;
+    if (tx.subType !== 'MEM_FUND') return false;
+
+    // Khớp danh tính thành viên
+    const isTarget = (tx.memberId && tx.memberId === memberId) ||
+      (tx.targetName && memberName && (tx.targetName.trim().toLowerCase() === memberName || tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase())));
+    if (!isTarget) return false;
+
+    // 1. Kiểm tra trường month trực tiếp
+    if (tx.month === monthVal) return true;
+
+    // 2. Kiểm tra chuỗi description (VD: 'Thu Quỹ thành viên Tháng 10/2026')
+    const desc = (tx.description || '').toLowerCase();
+    if (desc.includes(monthSlash.toLowerCase()) || desc.includes(monthSlashShort.toLowerCase())) return true;
+    if (desc.includes(`tháng ${mNum}/${yNum}`) || desc.includes(`tháng ${String(mNum).padStart(2, '0')}/${yNum}`)) return true;
+
+    // 3. Nếu ngày giao dịch nằm trong tháng đó và không chỉ định tháng khác
+    if (tx.date) {
+      if (tx.date.startsWith(`${yNum}-${String(mNum).padStart(2, '0')}`)) {
+        return true;
+      }
+      if (tx.date.includes('/')) {
+        const parts = tx.date.split(' ')[0].split('/');
+        if (parts.length === 3 && parts[1] === String(mNum).padStart(2, '0') && parts[2] === String(yNum)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  });
+}
+
+function isMemberMonthlyFundPaid(memberId, monthVal) {
+  return !!getMemberMonthlyFundPaymentTx(memberId, monthVal);
+}
+
 function renderMonthlyFundMemberList() {
   const container = document.getElementById('monthlyFundMemberList');
   if (!container) return;
 
+  const monthInput = document.getElementById('monthlyFundMonth');
+  const monthVal = monthInput ? monthInput.value : '';
+
   // CHỈ ÁP DỤNG CHO THÀNH VIÊN CHÍNH THỨC
-  const officialMembers = AppState.members.filter(m => m.type === 'OFFICIAL');
+  const officialMembers = (AppState.members || []).filter(m => m.type === 'OFFICIAL');
 
   container.innerHTML = officialMembers.map(m => {
     const bal = m.balance || 0;
     const isNeg = bal < 0;
+    const paidTx = getMemberMonthlyFundPaymentTx(m.id, monthVal);
+
+    if (paidTx) {
+      const paidDate = paidTx.date ? paidTx.date.split(' ')[0] : '';
+      return `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100/90 border border-slate-200 text-slate-500 opacity-80" title="Thành viên này đã đóng Quỹ ${monthVal} vào ngày ${paidDate}">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <input type="checkbox" name="monthlyFundMemberCheckbox" value="${m.id}" disabled class="rounded text-slate-400 focus:ring-0 w-3.5 h-3.5 cursor-not-allowed opacity-50" />
+            <span class="font-bold text-slate-700 text-[11px] truncate">${m.name}</span>
+          </div>
+          <span class="text-[9px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded-full shrink-0 ml-1">
+            ✓ Đã thu
+          </span>
+        </div>
+      `;
+    }
+
     return `
       <label class="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:bg-emerald-50/50 transition">
         <div class="flex items-center gap-1.5 min-w-0">
@@ -6865,10 +7272,12 @@ function renderMonthlyFundMemberList() {
       </label>
     `;
   }).join('');
+
+  updateMonthlyFundSummary();
 }
 
 function toggleAllMonthlyFundMembers(selectAll) {
-  const checkboxes = document.querySelectorAll('input[name="monthlyFundMemberCheckbox"]');
+  const checkboxes = document.querySelectorAll('input[name="monthlyFundMemberCheckbox"]:not(:disabled)');
   checkboxes.forEach(cb => cb.checked = selectAll);
   updateMonthlyFundSummary();
 }
@@ -6884,10 +7293,19 @@ function setMonthlyFundAmountQuick(val) {
 function updateMonthlyFundSummary() {
   const checkboxes = document.querySelectorAll('input[name="monthlyFundMemberCheckbox"]:checked');
   const count = checkboxes.length;
-  const officialTotal = AppState.members.filter(m => m.type === 'OFFICIAL').length;
+  const officialTotal = (AppState.members || []).filter(m => m.type === 'OFFICIAL').length;
+  const monthInput = document.getElementById('monthlyFundMonth');
+  const monthVal = monthInput ? monthInput.value : '';
+  const paidCount = (AppState.members || []).filter(m => m.type === 'OFFICIAL' && isMemberMonthlyFundPaid(m.id, monthVal)).length;
 
   const countBadge = document.getElementById('monthlyFundSelectedCount');
-  if (countBadge) countBadge.textContent = `${count}/${officialTotal}`;
+  if (countBadge) {
+    if (paidCount > 0) {
+      countBadge.textContent = `${count}/${officialTotal - paidCount} chưa thu (${paidCount} đã nộp)`;
+    } else {
+      countBadge.textContent = `${count}/${officialTotal}`;
+    }
+  }
 
   const amtInput = document.getElementById('monthlyFundAmount');
   const eachAmt = Math.max(0, Number(amtInput?.value) || 0);
@@ -6923,7 +7341,7 @@ function handleMonthlyFundSubmit(e) {
     return;
   }
   if (checkboxes.length === 0) {
-    showToast('Vui lòng tích chọn ít nhất 1 thành viên chính thức!', 'warning');
+    showToast('Vui lòng tích chọn ít nhất 1 thành viên chính thức cần thu!', 'warning');
     return;
   }
 
@@ -6932,23 +7350,38 @@ function handleMonthlyFundSubmit(e) {
   const nowStr = getNowTimestampString();
   const operator = getFinanceOperatorName();
 
+  // QUY TẮC CỐT LÕI: QUỸ CLB CHỈ ĐƯỢC THU 1 LẦN TRÊN THÁNG CHO MỖI THÀNH VIÊN
+  const duplicateMembers = [];
+  checkboxes.forEach(cb => {
+    const memId = cb.value;
+    if (isMemberMonthlyFundPaid(memId, monthVal)) {
+      const mem = (AppState.members || []).find(x => x.id === memId);
+      duplicateMembers.push(mem ? mem.name : memId);
+    }
+  });
+
+  if (duplicateMembers.length > 0) {
+    showToast(`⚠️ Không thể thu! Các thành viên sau đã đóng Quỹ ${monthFormatted}: ${duplicateMembers.join(', ')}. Mỗi người chỉ được thu 1 lần/tháng.`, 'error', 7000);
+    renderMonthlyFundMemberList();
+    return;
+  }
+
   let totalCollected = 0;
   const memberNames = [];
 
   checkboxes.forEach(cb => {
     const memberId = cb.value;
-    const member = AppState.members.find(x => x.id === memberId);
+    const member = (AppState.members || []).find(x => x.id === memberId);
     if (!member) return;
 
-    // Tự động trừ trực tiếp vào Ví thành viên
-    member.balance = (member.balance || 0) - amount;
     totalCollected += amount;
     memberNames.push(member.name);
 
-    // Ghi nhận giao dịch trừ ví cho từng thành viên
+    // Ghi nhận giao dịch trừ ví cho từng thành viên (gán rõ tx.month và status)
     AppState.transactions.push({
       id: 'TX_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
       date: nowStr,
+      month: monthVal,
       categoryGroup: 'INCOME_A',
       subType: 'MEM_FUND',
       categoryName: 'Quỹ thành viên',
@@ -6958,15 +7391,240 @@ function handleMonthlyFundSubmit(e) {
       walletImpact: -amount, // Trừ ví thành viên
       fundImpact: amount,    // Cộng Quỹ CLB
       description: `Thu Quỹ thành viên ${monthFormatted} (Trừ ví)`,
-      operator: operator
+      operator: operator,
+      status: 'ACTIVE'
     });
   });
 
+  // Tự động tính toán lại số dư Ví thành viên và Quỹ CLB
+  refreshAllMembersWalletBreakdown();
+  calculateClubFundStats();
+  calculateAdvanceFundStats();
   saveData();
+
   closeModal('monthlyFundModal');
   renderDashboard();
   renderFinanceTab();
+  renderFullTransactionTable();
+  renderMemberManagementList();
   showToast(`✓ Đã thu thành công ${formatMoney(totalCollected)} Quỹ ${monthFormatted} từ ${checkboxes.length} thành viên!`, 'success');
+}
+
+// ==========================================
+// QUẢN LÝ HỦY / XÓA GIAO DỊCH THU CHI SAI (LƯU VẾT KIỂM TOÁN)
+// ==========================================
+function openCancelTransactionModal(txId) {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Chỉ Quản lý hoặc Ban tài chính mới có quyền hủy / xóa giao dịch!', 'error');
+    openLoginModal();
+    return;
+  }
+
+  const tx = (AppState.transactions || []).find(t => t.id === txId);
+  if (!tx) {
+    showToast('Không tìm thấy thông tin giao dịch!', 'error');
+    return;
+  }
+
+  if (tx.isCancelled || tx.status === 'CANCELLED') {
+    showCancelAuditDetails(txId);
+    return;
+  }
+
+  const idInp = document.getElementById('cancelTxId');
+  if (idInp) idInp.value = tx.id;
+
+  const codeEl = document.getElementById('cancelTxCodeBadge');
+  if (codeEl) codeEl.textContent = tx.id;
+
+  const nameEl = document.getElementById('cancelTxTargetName');
+  if (nameEl) nameEl.textContent = tx.targetName || 'CLB';
+
+  const dateEl = document.getElementById('cancelTxDate');
+  if (dateEl) dateEl.textContent = tx.date || '';
+
+  const descEl = document.getElementById('cancelTxDesc');
+  if (descEl) descEl.textContent = `${tx.categoryName || tx.subType || 'Giao dịch'} — ${tx.description || ''}`;
+
+  const wEl = document.getElementById('cancelTxWalletImpact');
+  if (wEl) {
+    if (tx.walletImpact !== undefined && tx.walletImpact !== 0) {
+      wEl.textContent = (tx.walletImpact < 0 ? '-' : '+') + formatMoney(Math.abs(tx.walletImpact));
+      wEl.className = tx.walletImpact < 0 ? 'text-xs font-black text-rose-700' : 'text-xs font-black text-emerald-700';
+    } else {
+      wEl.textContent = '0 đ (Không ảnh hưởng)';
+      wEl.className = 'text-xs font-bold text-slate-500';
+    }
+  }
+
+  const fEl = document.getElementById('cancelTxFundImpact');
+  if (fEl) {
+    if (tx.fundImpact !== undefined && tx.fundImpact !== 0) {
+      fEl.textContent = (tx.fundImpact > 0 ? '+' : '-') + formatMoney(Math.abs(tx.fundImpact));
+      fEl.className = tx.fundImpact > 0 ? 'text-xs font-black text-emerald-700' : 'text-xs font-black text-rose-700';
+    } else if (tx.amount) {
+      fEl.textContent = formatMoney(tx.amount);
+      fEl.className = 'text-xs font-black text-slate-800';
+    } else {
+      fEl.textContent = '0 đ';
+      fEl.className = 'text-xs font-bold text-slate-500';
+    }
+  }
+
+  const opEl = document.getElementById('cancelTxOperator');
+  if (opEl) opEl.textContent = getFinanceOperatorName();
+
+  const nowEl = document.getElementById('cancelTxTimeNow');
+  if (nowEl) nowEl.textContent = getNowTimestampString();
+
+  const reasonInp = document.getElementById('cancelTxReason');
+  if (reasonInp) {
+    reasonInp.value = '';
+    // Gợi ý thông minh nếu là giao dịch Quỹ thành viên
+    if (tx.subType === 'MEM_FUND') {
+      reasonInp.value = 'Quỹ CLB tháng bị thu trùng 2 lần, hủy bỏ khoản thu thừa';
+    }
+  }
+
+  openModal('modalCancelTransaction');
+}
+
+function setCancelReasonQuick(text) {
+  const reasonInp = document.getElementById('cancelTxReason');
+  if (reasonInp) {
+    reasonInp.value = text;
+    reasonInp.focus();
+  }
+}
+
+function handleConfirmCancelTransaction(e) {
+  if (e) e.preventDefault();
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền thực hiện hủy giao dịch!', 'error');
+    return;
+  }
+
+  const txId = document.getElementById('cancelTxId')?.value;
+  const reason = document.getElementById('cancelTxReason')?.value.trim();
+
+  if (!txId) {
+    showToast('Lỗi: Thiếu mã giao dịch cần hủy!', 'error');
+    return;
+  }
+  if (!reason) {
+    showToast('⚠️ Vui lòng nhập lý do hủy / xóa giao dịch để lưu vết kiểm toán!', 'warning');
+    return;
+  }
+
+  const tx = (AppState.transactions || []).find(t => t.id === txId);
+  if (!tx) {
+    showToast('Không tìm thấy giao dịch này trong hệ thống!', 'error');
+    return;
+  }
+
+  const operator = getFinanceOperatorName();
+  const nowStr = getNowTimestampString();
+
+  // Đánh dấu hủy giao dịch và lưu vết kiểm toán đầy đủ
+  tx.isCancelled = true;
+  tx.status = 'CANCELLED';
+  tx.cancelReason = reason;
+  tx.cancelledBy = operator;
+  tx.cancelledAt = nowStr;
+
+  // Tính toán lại toàn bộ ví thành viên và Quỹ CLB tự động
+  refreshAllMembersWalletBreakdown();
+  calculateClubFundStats();
+  calculateAdvanceFundStats();
+  saveData();
+
+  closeModal('modalCancelTransaction');
+  renderDashboard();
+  renderFinanceTab();
+  renderFullTransactionTable();
+  renderMemberManagementList();
+
+  showToast(`✓ Đã hủy giao dịch ${tx.id}! Số dư ví thành viên và Quỹ CLB đã được tự động hoàn trả chuẩn xác.`, 'success', 5000);
+}
+
+function showCancelAuditDetails(txId) {
+  const tx = (AppState.transactions || []).find(t => t.id === txId);
+  if (!tx) return;
+
+  const modal = document.getElementById('modalCancelAuditDetails');
+  if (!modal) return;
+
+  const idEl = document.getElementById('auditTxId');
+  if (idEl) idEl.textContent = tx.id;
+
+  const descEl = document.getElementById('auditTxDesc');
+  if (descEl) descEl.textContent = `${tx.categoryName || tx.subType || 'Giao dịch'} — ${tx.description || ''} (${tx.targetName || 'CLB'})`;
+
+  const wEl = document.getElementById('auditTxWallet');
+  if (wEl) {
+    wEl.textContent = tx.walletImpact !== undefined && tx.walletImpact !== 0 ? formatMoney(tx.walletImpact) : '—';
+  }
+
+  const fEl = document.getElementById('auditTxFund');
+  if (fEl) {
+    fEl.textContent = tx.fundImpact !== undefined && tx.fundImpact !== 0 ? formatMoney(tx.fundImpact) : formatMoney(tx.amount || 0);
+  }
+
+  const rEl = document.getElementById('auditCancelReason');
+  if (rEl) rEl.textContent = tx.cancelReason || 'Thu sai/thu thừa, đã hủy bỏ';
+
+  const byEl = document.getElementById('auditCancelledBy');
+  if (byEl) byEl.textContent = tx.cancelledBy || 'Quản lý';
+
+  const atEl = document.getElementById('auditCancelledAt');
+  if (atEl) atEl.textContent = tx.cancelledAt || 'Trước đó';
+
+  const restoreBtn = document.getElementById('btnRestoreTx');
+  if (restoreBtn) {
+    const canRestore = canPerformFinance();
+    if (canRestore) {
+      restoreBtn.classList.remove('hidden');
+      restoreBtn.onclick = () => {
+        closeModal('modalCancelAuditDetails');
+        restoreCancelledTransaction(tx.id);
+      };
+    } else {
+      restoreBtn.classList.add('hidden');
+    }
+  }
+
+  openModal('modalCancelAuditDetails');
+}
+
+function restoreCancelledTransaction(txId) {
+  if (!canPerformFinance()) {
+    showToast('⚠️ Bạn không có quyền khôi phục giao dịch!', 'error');
+    return;
+  }
+
+  const tx = (AppState.transactions || []).find(t => t.id === txId);
+  if (!tx) return;
+
+  if (!confirm(`Bạn có chắc chắn muốn KHÔI PHỤC lại giao dịch [${tx.id}]?\n\nNội dung: ${tx.description || tx.categoryName}\nSố tiền sẽ được tính toán trở lại vào Sổ Quỹ và Ví thành viên.`)) {
+    return;
+  }
+
+  tx.isCancelled = false;
+  tx.status = 'ACTIVE';
+  tx.lastRestoredAt = getNowTimestampString();
+  tx.restoredBy = getFinanceOperatorName();
+
+  refreshAllMembersWalletBreakdown();
+  calculateClubFundStats();
+  calculateAdvanceFundStats();
+  saveData();
+
+  renderDashboard();
+  renderFinanceTab();
+  renderFullTransactionTable();
+  renderMemberManagementList();
+
+  showToast(`↺ Đã khôi phục lại giao dịch ${tx.id}! Số liệu tài chính đã được cập nhật lại.`, 'success');
 }
 
 // ==========================================
@@ -14626,6 +15284,7 @@ function renderSettingsTab() {
   renderFeeTiersConfigTable();
   renderUserAccessTable();
   renderMultiClubSettingsSection();
+  populateCustomLabelsInputs();
   
   // Cập nhật huy hiệu trạng thái đám mây trong tab Cấu hình
   if (typeof updateCloudSyncUI === 'function') {
@@ -16213,6 +16872,9 @@ function renderSettlementReport() {
 
   // Cập nhật trạng thái nút Khóa / Mở khóa Chốt sổ cuối tháng
   updateMonthLockBtnUI();
+
+  // Cập nhật nhãn cột tất toán tùy biến
+  applyCustomLabels();
 }
 
 function formatNumberDot(num) {
@@ -16362,6 +17024,7 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
     // C. Fallback qua giao dịch trừ tiền cầu nếu chưa có trong 2 nguồn trên
     if (totalSessionCost === 0 && (m.monthlySessions || 0) > 0) {
       const shuttleTx = (AppState.transactions || []).filter(t => 
+        !t.isCancelled && t.status !== 'CANCELLED' &&
         (t.type === 'SHUTTLE_FEE' || t.subType === 'SHUTTLE_ADV_IN' || t.categoryGroup === 'ADVANCE_SHUTTLE_IN') &&
         isDateInSelectedMonth(t.date) &&
         ((t.memberId && t.memberId === m.id) || (t.targetName && isMemberInSession({ name: t.targetName }, m)))
@@ -16382,7 +17045,7 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
 
     // Tiền phạt trong tháng
     const fine = (AppState.transactions || [])
-      .filter(t => (t.subType === 'FINE' || t.categoryGroup === 'FINE' || t.type === 'FINE') &&
+      .filter(t => !t.isCancelled && t.status !== 'CANCELLED' && (t.subType === 'FINE' || t.categoryGroup === 'FINE' || t.type === 'FINE') &&
                    isDateInSelectedMonth(t.date) &&
                    ((t.memberId && t.memberId === m.id) || (t.targetName && isMemberInSession({ name: t.targetName }, m))))
       .reduce((sum, t) => sum + (Math.abs(t.amount || t.walletImpact) || 0), 0);
@@ -16643,6 +17306,7 @@ function checkDeveloperRouteOnStartup() {
 function initApp() {
   try {
     loadData();
+    applyCustomLabels();
     applyThemeColor(AppState.config?.themeColor || 'emerald');
     renderDashboard();
     renderAuthBadge();
@@ -17444,6 +18108,11 @@ function subscribeToCloudClub(clubSlug) {
     // Cập nhật AppState
     isReceivingFromCloud = true;
     AppState.config = { ...AppState.config, ...incomingConfig };
+    if (!AppState.config.customLabels) {
+      AppState.config.customLabels = Object.assign({}, DEFAULT_CUSTOM_LABELS);
+    } else {
+      AppState.config.customLabels = Object.assign({}, DEFAULT_CUSTOM_LABELS, AppState.config.customLabels);
+    }
     AppState.members = incomingMembers;
     AppState.funds = { ...AppState.funds, ...incomingFunds };
     AppState.activitySessions = incomingSessions;
@@ -17524,6 +18193,7 @@ function subscribeToCloudClub(clubSlug) {
     if (nameEl) nameEl.textContent = AppState.config?.clubName || 'CLB CẦU LÔNG';
 
     // 5. Cập nhật giao diện các màn hình đang mở
+    applyCustomLabels();
     renderDashboard();
     renderMemberManagementList();
     renderFinanceTab();
@@ -18102,6 +18772,7 @@ function calculateMemberMonthlySpending(memberId, monthStr) {
     courtCost = breakdown.courtFee || 0;
   } else {
     (AppState.transactions || []).forEach(tx => {
+      if (tx.isCancelled || tx.status === 'CANCELLED') return;
       let txMonth = '';
       if (tx.date) {
         if (tx.date.includes('/')) {

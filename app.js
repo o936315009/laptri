@@ -4927,7 +4927,7 @@ function buildAttendeeOptions(selectedId, excludeIds = [], placeholder = '-- Ch�
       return;
     }
     const isSel = a.id === selectedId ? 'selected' : '';
-    html += `<option value="${a.id}" ${isSel} title="${a.name}">${a.chipName}</option>`;
+    html += `<option value="${a.id}" ${isSel}>${a.chipName}</option>`;
   });
   return html;
 }
@@ -4967,28 +4967,28 @@ function formatMatchResultInfo(idx, m) {
   const prize = (m.prize && m.prize.trim()) ? m.prize.trim() : '';
   const matchTitle = (m.name && m.name.trim()) ? m.name.trim() : `Trận ${idx + 1}`;
 
-  let highlight1 = 'font-bold text-slate-800 bg-slate-100 px-1 py-0.2 rounded';
-  let highlight2 = 'font-bold text-slate-800 bg-slate-100 px-1 py-0.2 rounded';
+  let highlight1 = 'font-bold text-slate-800 bg-slate-100 px-1 py-0.2 rounded text-[10px] sm:text-[10.5px]';
+  let highlight2 = 'font-bold text-slate-800 bg-slate-100 px-1 py-0.2 rounded text-[10px] sm:text-[10.5px]';
   let badge1 = '';
   let badge2 = '';
-  let compactBadge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-500">Chưa đấu</span>';
+  let compactBadge = '<span class="px-1.5 py-0.2 rounded text-[9px] sm:text-[10px] font-bold bg-slate-100 text-slate-500">Chưa đấu</span>';
 
   if (s1 > s2 && (s1 > 0 || s2 > 0)) {
-    highlight1 = 'font-black text-emerald-900 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300';
+    highlight1 = 'font-black text-emerald-900 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300 text-[10px] sm:text-[10.5px]';
     badge1 = ' 🏆';
-    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">🏆 ${pair1} Thắng</span>`;
+    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[9px] sm:text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">🏆 ${pair1} Thắng</span>`;
   } else if (s2 > s1 && (s1 > 0 || s2 > 0)) {
-    highlight2 = 'font-black text-emerald-900 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300';
+    highlight2 = 'font-black text-emerald-900 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300 text-[10px] sm:text-[10.5px]';
     badge2 = ' 🏆';
-    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">🏆 ${pair2} Thắng</span>`;
+    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[9px] sm:text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">🏆 ${pair2} Thắng</span>`;
   } else if (s1 === s2 && s1 > 0) {
-    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">Hòa</span>`;
+    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[9px] sm:text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">Hòa</span>`;
   } else if (prize) {
-    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-600">Đang đấu</span>`;
+    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[9px] sm:text-[10px] font-bold bg-slate-100 text-slate-600">Đang đấu</span>`;
   }
 
-  const prizeLineTag = prize ? ` <span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-800 bg-amber-50 px-1 py-0.2 rounded border border-amber-200 shrink-0">🎁 ${prize}</span>` : '';
-  const lineHtml = `<span class="font-bold text-slate-700 text-[11px] shrink-0">${matchTitle}:</span> <span class="${highlight1} truncate"><b>${pair1}</b> (${s1})${badge1}</span> <span class="text-slate-400 font-bold px-0.5 text-[10px] shrink-0">đấu</span> <span class="${highlight2} truncate"><b>${pair2}</b> (${s2})${badge2}</span>${prizeLineTag}`;
+  const prizeLineTag = prize ? ` <span class="inline-flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-amber-800 bg-amber-50 px-1 py-0.2 rounded border border-amber-200 shrink-0">🎁 ${prize}</span>` : '';
+  const lineHtml = `<span class="font-bold text-slate-700 text-[10px] sm:text-[10.5px] shrink-0">${matchTitle}:</span> <span class="${highlight1} truncate"><b>${pair1}</b> (${s1})${badge1}</span> <span class="text-slate-400 font-bold px-0.5 text-[9px] sm:text-[10px] shrink-0">đấu</span> <span class="${highlight2} truncate"><b>${pair2}</b> (${s2})${badge2}</span>${prizeLineTag}`;
   
   let headerPill = '';
   if (s1 === 0 && s2 === 0) {
@@ -5014,7 +5014,7 @@ function updateMatchResultRealtime() {
       summaryContainer.innerHTML = matches.map((m, idx) => {
         const info = formatMatchResultInfo(idx, m);
         return `
-          <div class="py-1 px-2 bg-white rounded-lg border border-emerald-200/90 shadow-2xs flex items-center justify-between gap-1.5 text-xs">
+          <div class="py-1 px-1.5 sm:px-2 bg-white rounded-lg border border-emerald-200/90 shadow-2xs flex items-center justify-between gap-1 text-[10px] sm:text-[11px]">
             <div class="flex items-center gap-1.5 min-w-0 truncate">
               <span class="w-4 h-4 rounded bg-emerald-700 text-white font-black text-[10px] flex items-center justify-center shrink-0">${idx + 1}</span>
               <div class="flex items-center gap-1 min-w-0 truncate">${info.lineHtml}</div>
@@ -5037,7 +5037,7 @@ function updateMatchResultRealtime() {
       lineEl.innerHTML = `
         <div class="flex items-center gap-1.5 min-w-0 truncate">
           <span class="text-[10px] shrink-0">🏸</span>
-          <div class="flex items-center gap-1 min-w-0 truncate text-[11px] text-slate-800">${info.lineHtml}</div>
+          <div class="flex items-center gap-1 min-w-0 truncate text-[10px] sm:text-[10.5px] text-slate-800">${info.lineHtml}</div>
         </div>
         <div class="shrink-0 flex items-center gap-1">${info.compactBadge}</div>
       `;
@@ -5100,15 +5100,15 @@ function renderActivityMatches() {
   // Render thanh tần suất
   if (statsBar) {
     if (attendees.length === 0) {
-      statsBar.innerHTML = `<span class="text-slate-400 text-[11px] italic">Chưa có ai được điểm danh có mặt trong buổi này</span>`;
+      statsBar.innerHTML = `<span class="text-slate-400 text-[10px] sm:text-[11px] italic">Chưa có ai được điểm danh có mặt trong buổi này</span>`;
     } else {
       statsBar.innerHTML = attendees.map(a => {
         const c = matchCounts[a.id] || 0;
         const color = c === 0 ? 'bg-slate-100 text-slate-500 border-slate-200' : (c >= 2 ? 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold' : 'bg-white text-slate-800 border-slate-200');
         return `
-          <span class="px-2 py-1 rounded-lg text-[11px] border ${color} flex items-center gap-1 shadow-xs">
+          <span class="px-1.5 py-0.5 rounded-lg text-[10px] sm:text-[11px] border ${color} flex items-center gap-1 shadow-2xs">
             <span>${a.chipName}:</span>
-            <b class="text-xs">${c} trận</b>
+            <b class="text-[10px] sm:text-[11px]">${c} trận</b>
           </span>
         `;
       }).join('');
@@ -5140,7 +5140,7 @@ function renderActivityMatches() {
                      class="text-xs text-slate-900 font-black uppercase tracking-tight bg-transparent focus:outline-none border-0 w-16 sm:w-28 p-0" 
                      title="Chạm để đổi tên trận đấu" />
             </div>
-            <span id="matchHeaderResult-${m.id}" class="text-[10px] sm:text-[11px] font-bold text-emerald-900 bg-emerald-100/90 px-1.5 py-0.2 rounded-md border border-emerald-300 shadow-2xs truncate">
+            <span id="matchHeaderResult-${m.id}" class="text-[9.5px] sm:text-[10.5px] font-bold text-emerald-900 bg-emerald-100/90 px-1.5 py-0.2 rounded-md border border-emerald-300 shadow-2xs truncate">
               ${info.headerPill}
             </span>
           </div>
@@ -5155,7 +5155,7 @@ function renderActivityMatches() {
           <!-- Đội 1 (Cặp 1) + Ô nhập tỉ số của Đội 1 -->
           <div class="space-y-1 bg-emerald-50/50 p-1.5 sm:p-2 rounded-xl border border-emerald-200/80">
             <div class="flex items-center justify-between gap-1">
-              <div class="flex items-center gap-1 text-[10px] font-black text-emerald-900 uppercase tracking-tight truncate">
+              <div class="flex items-center gap-1 text-[9.5px] sm:text-[10px] font-black text-emerald-900 uppercase tracking-tight truncate">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
                 <span class="truncate">Đội 1 (Cặp 1)</span>
               </div>
@@ -5168,10 +5168,10 @@ function renderActivityMatches() {
               </div>
             </div>
             <div class="grid grid-cols-2 gap-1">
-              <select onchange="updateMatchPlayer(${m.id}, 0, 0, this.value)" class="w-full text-[11px] font-bold border border-slate-200 rounded-lg py-1 px-1 bg-white focus:ring-1 focus:ring-emerald-500 truncate" title="Người 1">
+              <select onchange="updateMatchPlayer(${m.id}, 0, 0, this.value)" class="w-full text-[9px] sm:text-[10px] font-bold border border-slate-200 rounded-lg py-0.5 px-0.5 sm:px-1 bg-white focus:ring-1 focus:ring-emerald-500 tracking-tight" title="Người 1">
                 ${buildAttendeeOptions(p1, [p2, p3, p4].filter(Boolean), '-- 1 --')}
               </select>
-              <select onchange="updateMatchPlayer(${m.id}, 0, 1, this.value)" class="w-full text-[11px] font-bold border border-slate-200 rounded-lg py-1 px-1 bg-white focus:ring-1 focus:ring-emerald-500 truncate" title="Người 2">
+              <select onchange="updateMatchPlayer(${m.id}, 0, 1, this.value)" class="w-full text-[9px] sm:text-[10px] font-bold border border-slate-200 rounded-lg py-0.5 px-0.5 sm:px-1 bg-white focus:ring-1 focus:ring-emerald-500 tracking-tight" title="Người 2">
                 ${buildAttendeeOptions(p2, [p1, p3, p4].filter(Boolean), '-- 2 --')}
               </select>
             </div>
@@ -5180,7 +5180,7 @@ function renderActivityMatches() {
           <!-- Đội 2 (Cặp 2) + Ô nhập tỉ số của Đội 2 -->
           <div class="space-y-1 bg-amber-50/50 p-1.5 sm:p-2 rounded-xl border border-amber-200/80">
             <div class="flex items-center justify-between gap-1">
-              <div class="flex items-center gap-1 text-[10px] font-black text-amber-900 uppercase tracking-tight truncate">
+              <div class="flex items-center gap-1 text-[9.5px] sm:text-[10px] font-black text-amber-900 uppercase tracking-tight truncate">
                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
                 <span class="truncate">Đội 2 (Cặp 2)</span>
               </div>
@@ -5193,10 +5193,10 @@ function renderActivityMatches() {
               </div>
             </div>
             <div class="grid grid-cols-2 gap-1">
-              <select onchange="updateMatchPlayer(${m.id}, 1, 0, this.value)" class="w-full text-[11px] font-bold border border-slate-200 rounded-lg py-1 px-1 bg-white focus:ring-1 focus:ring-emerald-500 truncate" title="Người 1">
+              <select onchange="updateMatchPlayer(${m.id}, 1, 0, this.value)" class="w-full text-[9px] sm:text-[10px] font-bold border border-slate-200 rounded-lg py-0.5 px-0.5 sm:px-1 bg-white focus:ring-1 focus:ring-emerald-500 tracking-tight" title="Người 1">
                 ${buildAttendeeOptions(p3, [p1, p2, p4].filter(Boolean), '-- 1 --')}
               </select>
-              <select onchange="updateMatchPlayer(${m.id}, 1, 1, this.value)" class="w-full text-[11px] font-bold border border-slate-200 rounded-lg py-1 px-1 bg-white focus:ring-1 focus:ring-emerald-500 truncate" title="Người 2">
+              <select onchange="updateMatchPlayer(${m.id}, 1, 1, this.value)" class="w-full text-[9px] sm:text-[10px] font-bold border border-slate-200 rounded-lg py-0.5 px-0.5 sm:px-1 bg-white focus:ring-1 focus:ring-emerald-500 tracking-tight" title="Người 2">
                 ${buildAttendeeOptions(p4, [p1, p2, p3].filter(Boolean), '-- 2 --')}
               </select>
             </div>

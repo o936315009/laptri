@@ -22,6 +22,9 @@
       darkMode: 'class',
       theme: {
         extend: {
+          screens: {
+            'xs': '420px',
+          },
           fontFamily: {
             sans: ['"Be Vietnam Pro"', 'sans-serif'],
           },
@@ -48,12 +51,19 @@
       --brand-600: #059669;
       --brand-700: #047857;
     }
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
     body {
       font-family: 'Be Vietnam Pro', sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
     .safe-area-bottom {
-      padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
+      padding-bottom: max(0.45rem, env(safe-area-inset-bottom));
+    }
+    .safe-area-top {
+      padding-top: max(0.25rem, env(safe-area-inset-top));
     }
     /* Tối ưu hóa thu hẹp độ rộng, khoảng cách các dòng cho toàn bộ giao diện gọn gàng */
     table th, table td {
@@ -66,8 +76,8 @@
     }
     /* Custom scrollbar */
     ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+      width: 4px;
+      height: 4px;
     }
     ::-webkit-scrollbar-track {
       background: #f1f5f9;
@@ -79,35 +89,72 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
+
+    /* ĐẶC BIỆT TỐI ƯU GIAO DIỆN TRÌNH DUYỆT ĐIỆN THOẠI DI ĐỘNG (MOBILE WEB OPTIMIZATION) */
+    @media (max-width: 640px) {
+      /* Chống tràn ngang trên màn hình điện thoại */
+      body {
+        font-size: 13px;
+      }
+      /* Nút bấm mobile touch target thân thiện, chống bấm trượt */
+      button, .cursor-pointer, select, input[type="checkbox"], input[type="radio"] {
+        touch-action: manipulation;
+      }
+      /* Bảng biểu tự động cuộn ngang trơn tru mượt mà trên iPhone/Android */
+      .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+      }
+      /* Cỡ chữ bảng biểu trên điện thoại vừa vặn, không bị xô lệch */
+      table th, table td {
+        padding-left: 0.35rem !important;
+        padding-right: 0.35rem !important;
+        font-size: 0.72rem !important;
+      }
+      /* Modal trên điện thoại hiển thị toàn vẹn, cuộn mượt và không bị che khuất bàn phím ảo */
+      .fixed.inset-0 {
+        padding: 0.5rem !important;
+      }
+      .fixed.inset-0 > div {
+        max-height: calc(100dvh - 1rem) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        margin: auto !important;
+      }
+      /* Font kích thước chuẩn >= 16px tránh iOS Safari tự động phóng to viewport khi chạm vào ô nhập */
+      input[type="text"], input[type="number"], input[type="password"], input[type="date"], input[type="search"], select, textarea {
+        font-size: 16px !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
 
   <!-- TOP HEADER (TỐI ƯU GIAO DIỆN TRÌNH DUYỆT ĐIỆN THOẠI & THU HẸP ĐỘ RỘNG GỌN ĐẸP) -->
-  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-    <div class="max-w-5xl mx-auto px-2.5 sm:px-4 lg:px-6 h-12 sm:h-14 flex items-center justify-between gap-2">
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs safe-area-top">
+    <div class="max-w-5xl mx-auto px-2 sm:px-4 lg:px-6 h-12 sm:h-14 flex items-center justify-between gap-1.5 sm:gap-2">
       <!-- Logo & Club Name (Thiết kế tinh gọn, chuẩn app mobile) -->
-      <div class="flex items-center space-x-2 sm:space-x-2.5 cursor-pointer min-w-0" onclick="switchTab('dashboard')">
+      <div class="flex items-center space-x-1.5 sm:space-x-2.5 cursor-pointer min-w-0" onclick="switchTab('dashboard')">
         <div id="headerClubLogoBadge" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-brand-700 via-brand-600 to-teal-400 flex items-center justify-center text-white shadow-sm ring-1 ring-brand-500/20 text-sm sm:text-base font-bold shrink-0">
           <span id="headerClubIconSpan">🏸</span>
         </div>
         <div class="min-w-0">
-          <h1 id="headerClubName" class="font-black text-xs sm:text-sm md:text-base leading-tight text-slate-900 tracking-tight truncate">CLB LẬP TRÍ</h1>
+          <h1 id="headerClubName" class="font-black text-xs sm:text-sm md:text-base leading-tight text-slate-900 tracking-tight truncate max-w-[105px] xs:max-w-[170px] sm:max-w-none">CLB LẬP TRÍ</h1>
           <!-- Subtitle: Ẩn theo yêu cầu của bạn để giao diện điện thoại và CLB gọn đẹp nhất -->
           <p id="headerClubSubTitle" class="hidden"></p>
         </div>
       </div>
 
       <!-- User Status & Quick Actions -->
-      <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+      <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
         <!-- Multi-Club Switcher: Ẩn hoàn toàn khỏi Header theo yêu cầu để giao diện không bị chèn ép nút thừa -->
         <div id="headerClubSwitcherContainer" class="hidden">
           <!-- Rendered via JS -->
         </div>
 
         <!-- Biểu tượng Đám mây [ ☁️ 🟢 ] (Hiện trạng thái kết nối hoặc mất kết nối) -->
-        <div id="headerCloudSyncBadge" onclick="openCloudSyncModal()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs shrink-0 select-none transition cursor-pointer hover:opacity-90" title="Đám mây: Đã kết nối Google Firebase (laptri-8e2b3)">
-          <span class="text-sm leading-none select-none">☁️</span>
+        <div id="headerCloudSyncBadge" onclick="openCloudSyncModal()" class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs shrink-0 select-none transition cursor-pointer hover:opacity-90" title="Đám mây: Đã kết nối Google Firebase">
+          <span class="text-xs sm:text-sm leading-none select-none">☁️</span>
           <span class="relative flex h-2 w-2">
             <span id="cloudSyncPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span id="cloudSyncDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></span>
@@ -122,13 +169,13 @@
         </div>
 
         <!-- Nút Chuông Thông Báo Yêu Cầu Nạp Tiền Chờ Kế Toán Xác Thực -->
-        <button id="headerTopUpNoticeBtn" type="button" onclick="openPendingTopUpRequestsModal()" class="relative hidden items-center justify-center w-8 h-8 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 transition cursor-pointer shadow-2xs shrink-0" title="Yêu cầu nạp tiền chờ xác thực">
-          <span class="text-sm select-none">🔔</span>
+        <button id="headerTopUpNoticeBtn" type="button" onclick="openPendingTopUpRequestsModal()" class="relative hidden items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 transition cursor-pointer shadow-2xs shrink-0" title="Yêu cầu nạp tiền chờ xác thực">
+          <span class="text-xs sm:text-sm select-none">🔔</span>
           <span id="headerTopUpNoticeBadge" class="absolute -top-1 -right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white ring-2 ring-white select-none">0</span>
         </button>
 
         <!-- Auth Status -->
-        <div id="userAuthBadge" class="flex items-center space-x-1.5 sm:space-x-2">
+        <div id="userAuthBadge" class="flex items-center space-x-1 sm:space-x-2">
           <!-- Rendered via JS -->
         </div>
       </div>
@@ -182,73 +229,73 @@
         <div id="dashboardTopUpNoticeContainer"></div>
 
         <!-- 3 KPI CARDS (HIỂN THỊ ĐỦ TRÊN 1 DÒNG CHUẨN ĐIỆN THOẠI) -->
-        <div class="grid grid-cols-3 gap-2 sm:gap-4">
+        <div class="grid grid-cols-3 gap-1.5 sm:gap-3.5">
           <!-- Card 1: Quỹ CLB -->
-          <div class="bg-white p-2.5 sm:p-5 rounded-2xl border border-slate-200 shadow-xs relative overflow-hidden transition hover:shadow-md flex flex-col justify-between">
+          <div class="bg-white p-2 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs relative overflow-hidden transition hover:shadow-md flex flex-col justify-between">
             <div class="flex items-center justify-between gap-1">
-              <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">Tổng Quỹ CLB</span>
-              <div class="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <i data-lucide="piggy-bank" class="w-3.5 h-3.5 sm:w-5 sm:h-5"></i>
+              <span class="text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">Tổng Quỹ CLB</span>
+              <div class="w-5 h-5 sm:w-8 sm:h-8 rounded-md sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <i data-lucide="piggy-bank" class="w-3 h-3 sm:w-4 sm:h-4"></i>
               </div>
             </div>
-            <div class="mt-1.5 sm:mt-3">
-              <span id="kpiClubFund" class="text-xs sm:text-lg md:text-2xl font-black text-slate-900 block truncate">0 đ</span>
+            <div class="mt-1 sm:mt-2.5">
+              <span id="kpiClubFund" class="text-[11px] xs:text-sm sm:text-lg md:text-2xl font-black text-slate-900 block truncate leading-tight">0 đ</span>
             </div>
-            <p id="kpiClubFundDesc" class="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate block">Tổng số quỹ thực có cuối tháng của CLB</p>
+            <p id="kpiClubFundDesc" class="text-[8px] xs:text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate block">Tổng số quỹ thực có cuối tháng</p>
             <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400"></div>
           </div>
 
           <!-- Card 2: Quỹ tạm ứng -->
-          <div class="bg-white p-2.5 sm:p-5 rounded-2xl border border-slate-200 shadow-xs relative overflow-hidden transition hover:shadow-md flex flex-col justify-between">
+          <div class="bg-white p-2 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs relative overflow-hidden transition hover:shadow-md flex flex-col justify-between">
             <div class="flex items-center justify-between gap-1">
-              <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">Quỹ Tạm Ứng</span>
-              <div class="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                <i data-lucide="hand-coins" class="w-3.5 h-3.5 sm:w-5 sm:h-5"></i>
+              <span class="text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">Quỹ Tạm Ứng</span>
+              <div class="w-5 h-5 sm:w-8 sm:h-8 rounded-md sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <i data-lucide="hand-coins" class="w-3 h-3 sm:w-4 sm:h-4"></i>
               </div>
             </div>
-            <div class="mt-1.5 sm:mt-3">
-              <span id="kpiAdvanceFund" class="text-xs sm:text-lg md:text-2xl font-black text-slate-900 block truncate">0 đ</span>
+            <div class="mt-1 sm:mt-2.5">
+              <span id="kpiAdvanceFund" class="text-[11px] xs:text-sm sm:text-lg md:text-2xl font-black text-slate-900 block truncate leading-tight">0 đ</span>
             </div>
-            <p id="kpiAdvanceFundDesc" class="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate block">Tiền cọc / Ứng trước</p>
+            <p id="kpiAdvanceFundDesc" class="text-[8px] xs:text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate block">Tiền cọc / Ứng trước</p>
             <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
           </div>
 
           <!-- Card 3: Số dư ví thành viên / Ví cá nhân -->
-          <div class="bg-white p-2.5 sm:p-5 rounded-2xl border border-slate-200 shadow-xs relative overflow-hidden transition hover:shadow-md flex flex-col justify-between">
+          <div class="bg-white p-2 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs relative overflow-hidden transition hover:shadow-md flex flex-col justify-between">
             <div class="flex items-center justify-between gap-1">
-              <span id="kpiWalletLabel" class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">Ví Cá Nhân</span>
-              <div class="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                <i data-lucide="wallet-cards" class="w-3.5 h-3.5 sm:w-5 sm:h-5"></i>
+              <span id="kpiWalletLabel" class="text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">Ví Cá Nhân</span>
+              <div class="w-5 h-5 sm:w-8 sm:h-8 rounded-md sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <i data-lucide="wallet-cards" class="w-3 h-3 sm:w-4 sm:h-4"></i>
               </div>
             </div>
-            <div class="mt-1.5 sm:mt-3">
-              <span id="kpiTotalWallet" class="text-xs sm:text-lg md:text-2xl font-black text-slate-900 block truncate">0 đ</span>
+            <div class="mt-1 sm:mt-2.5">
+              <span id="kpiTotalWallet" class="text-[11px] xs:text-sm sm:text-lg md:text-2xl font-black text-slate-900 block truncate leading-tight">0 đ</span>
             </div>
-            <p id="kpiWalletDesc" class="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate hidden sm:block">Số dư ví của bạn</p>
+            <p id="kpiWalletDesc" class="text-[8px] xs:text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate hidden xs:block">Số dư ví của bạn</p>
             <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
           </div>
         </div>
 
         <!-- QUICK ACTIONS BAR (LƯỚI TIỆN BẤM TAY TRÊN ĐIỆN THOẠI & MÁY TÍNH) -->
-        <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-2.5">
-          <button onclick="openTodayActivitySession()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer" title="Điểm danh hoạt động">
-            <i data-lucide="user-check" class="w-4 h-4 mr-1.5 sm:mr-2 shrink-0"></i>
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5 sm:gap-2.5">
+          <button onclick="openTodayActivitySession()" class="inline-flex items-center justify-center px-2.5 sm:px-4 py-2 sm:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer" title="Điểm danh hoạt động">
+            <i data-lucide="user-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 shrink-0"></i>
             <span class="truncate">Điểm danh</span>
           </button>
-          <button onclick="openCreateActivityModal()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer" title="Tạo buổi hoạt động cho bất kỳ ngày nào trong chu kỳ">
-            <i data-lucide="calendar-plus" class="w-4 h-4 mr-1.5 sm:mr-2 shrink-0"></i>
+          <button onclick="openCreateActivityModal()" class="inline-flex items-center justify-center px-2.5 sm:px-4 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer" title="Tạo buổi hoạt động cho bất kỳ ngày nào trong chu kỳ">
+            <i data-lucide="calendar-plus" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 shrink-0"></i>
             <span class="truncate">Tạo HĐ mới</span>
           </button>
-          <button onclick="openTopUpModal()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer">
-            <i data-lucide="plus-circle" class="w-4 h-4 mr-1.5 sm:mr-2 shrink-0"></i>
+          <button onclick="openTopUpModal()" class="inline-flex items-center justify-center px-2.5 sm:px-4 py-2 sm:py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 shrink-0"></i>
             <span class="truncate">Nạp tiền vào ví</span>
           </button>
-          <button onclick="openSettlementReportModal()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition active:scale-95 cursor-pointer">
-            <i data-lucide="bar-chart-3" class="w-4 h-4 mr-1.5 sm:mr-2 shrink-0"></i>
+          <button onclick="openSettlementReportModal()" class="inline-flex items-center justify-center px-2.5 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition active:scale-95 cursor-pointer">
+            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 shrink-0"></i>
             <span class="truncate">Bảng tất toán</span>
           </button>
-          <button onclick="openFineModal()" class="inline-flex items-center justify-center px-3 sm:px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl shadow-2xs transition active:scale-95 cursor-pointer">
-            <i data-lucide="alert-triangle" class="w-4 h-4 mr-1.5 sm:mr-2 text-amber-500 shrink-0"></i>
+          <button onclick="openFineModal()" class="col-span-2 sm:col-span-1 inline-flex items-center justify-center px-2.5 sm:px-4 py-2 sm:py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl shadow-2xs transition active:scale-95 cursor-pointer">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 text-amber-500 shrink-0"></i>
             <span class="truncate">Phạt vi phạm</span>
           </button>
         </div>
@@ -496,8 +543,8 @@
                   <span>Thành viên chính thức</span>
                   <span id="actOfficialCountBadge" class="text-emerald-700 font-bold text-[11px]">0/20</span>
                 </div>
-                <!-- Cột dạng chip 5 cột gọn gàng, hiển thị trọn vẹn tên -->
-                <div id="actOfficialMemberGrid" class="grid grid-cols-5 gap-1 sm:gap-1.5 text-center">
+                <!-- Cột dạng chip 4 cột trên điện thoại nhỏ, 5 cột trên màn hình rộng, hiển thị trọn vẹn tên -->
+                <div id="actOfficialMemberGrid" class="grid grid-cols-4 xs:grid-cols-5 gap-1 sm:gap-1.5 text-center">
                   <!-- Rendered dynamically -->
                 </div>
               </div>
@@ -508,8 +555,8 @@
                   <span>Thành viên danh dự</span>
                   <span id="actHonoraryCountBadge" class="text-purple-700 font-bold text-[11px]">0/7</span>
                 </div>
-                <!-- Cột dạng chip 5 cột gọn gàng, hiển thị trọn vẹn tên -->
-                <div id="actHonoraryMemberGrid" class="grid grid-cols-5 gap-1 sm:gap-1.5 text-center">
+                <!-- Cột dạng chip 4 cột trên điện thoại nhỏ, 5 cột trên màn hình rộng, hiển thị trọn vẹn tên -->
+                <div id="actHonoraryMemberGrid" class="grid grid-cols-4 xs:grid-cols-5 gap-1 sm:gap-1.5 text-center">
                   <!-- Rendered dynamically -->
                 </div>
               </div>
@@ -972,7 +1019,7 @@
                 </button>
 
                 <!-- A.5 Thu khác -->
-                <button type="button" onclick="openOtherIncomeModal()" class="p-2 rounded-lg border border-teal-200 bg-teal-50/60 hover:bg-teal-100 text-left transition cursor-pointer flex items-center justify-between group">
+                <button type="button" onclick="openOtherIncomeModal()" class="col-span-2 sm:col-span-1 p-2 rounded-lg border border-teal-200 bg-teal-50/60 hover:bg-teal-100 text-left transition cursor-pointer flex items-center justify-between group">
                   <div class="flex items-center gap-2">
                     <span class="text-sm">📥</span>
                     <div>
@@ -1215,14 +1262,14 @@
                   <p class="text-[9px] text-slate-400 mt-0.5">Thành viên có thể âm ví khi trừ tiền sân bậc & cầu. Hỗ trợ tất toán cuối ngày, cuối tháng hoặc ngày bất kỳ.</p>
                 </div>
               </div>
-              <div class="flex items-center gap-2">
-                <button type="button" onclick="openSettlementReportModal()" class="px-3 py-1.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 text-white font-bold text-xs rounded-lg transition shadow-2xs flex items-center gap-1.5 cursor-pointer">
+              <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                <button type="button" onclick="openSettlementReportModal()" class="flex-1 sm:flex-initial justify-center px-3 py-1.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 text-white font-bold text-xs rounded-lg transition shadow-2xs flex items-center gap-1.5 cursor-pointer">
                   <span>📊</span>
-                  <span>Bảng Thống Kê Tất Toán (Xuất Ảnh)</span>
+                  <span class="truncate">Báo Cáo Tất Toán (Xuất Ảnh)</span>
                 </button>
-                <button type="button" onclick="openSettlementDebtModal()" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:from-purple-700 active:to-indigo-700 text-white font-bold text-xs rounded-lg transition shadow-2xs flex items-center gap-1.5 cursor-pointer">
+                <button type="button" onclick="openSettlementDebtModal()" class="flex-1 sm:flex-initial justify-center px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:from-purple-700 active:to-indigo-700 text-white font-bold text-xs rounded-lg transition shadow-2xs flex items-center gap-1.5 cursor-pointer">
                   <span>💰</span>
-                  <span>Tất Toán Dư Nợ Ví TV</span>
+                  <span class="truncate">Tất Toán Dư Nợ Ví TV</span>
                 </button>
               </div>
             </div>
@@ -1309,25 +1356,25 @@
               <p class="text-xs text-slate-500 mt-0.5">Tạo tài khoản, quản lý số dư ví, cấp lại mật khẩu và phân loại: Danh sách thành viên và khác</p>
             </div>
 
-            <div id="memberManagementAdminButtons" class="flex flex-wrap items-center gap-2">
-              <button onclick="openBatchImportMemberModal()" class="inline-flex items-center px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black rounded-xl shadow-xs transition cursor-pointer" title="Dán danh sách tên + SĐT từ nhóm Zalo / Excel để tạo hàng loạt trong 1 giây">
+            <div id="memberManagementAdminButtons" class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+              <button onclick="openBatchImportMemberModal()" class="inline-flex items-center justify-center px-3 sm:px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black rounded-xl shadow-xs transition cursor-pointer" title="Dán danh sách tên + SĐT từ nhóm Zalo / Excel để tạo hàng loạt trong 1 giây">
                 <span class="mr-1.5">⚡</span>
-                <span>Dán danh sách Zalo / Excel</span>
+                <span class="truncate">Dán DS Zalo / Excel</span>
               </button>
-              <button onclick="openMemberModal('official')" class="inline-flex items-center px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition cursor-pointer">
-                <i data-lucide="user-plus" class="w-3.5 h-3.5 mr-1.5"></i>
-                + Thành viên chính thức
+              <button onclick="openMemberModal('official')" class="inline-flex items-center justify-center px-3 sm:px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition cursor-pointer">
+                <i data-lucide="user-plus" class="w-3.5 h-3.5 mr-1.5 shrink-0"></i>
+                <span class="truncate">+ TV chính thức</span>
               </button>
-              <button onclick="openMemberModal('honorary')" class="inline-flex items-center px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-semibold rounded-xl border border-purple-200 transition cursor-pointer">
-                <i data-lucide="award" class="w-3.5 h-3.5 mr-1.5 text-purple-600"></i>
-                + Thành viên danh dự
+              <button onclick="openMemberModal('honorary')" class="inline-flex items-center justify-center px-3 sm:px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-semibold rounded-xl border border-purple-200 transition cursor-pointer">
+                <i data-lucide="award" class="w-3.5 h-3.5 mr-1.5 text-purple-600 shrink-0"></i>
+                <span class="truncate">+ TV danh dự</span>
               </button>
-              <button onclick="openAddGuestModal()" class="inline-flex items-center px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl border border-slate-200 transition cursor-pointer">
-                <i data-lucide="user-check" class="w-3.5 h-3.5 mr-1.5"></i>
-                + Khách A/B/C
+              <button onclick="openAddGuestModal()" class="inline-flex items-center justify-center px-3 sm:px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-xl border border-slate-200 transition cursor-pointer">
+                <i data-lucide="user-check" class="w-3.5 h-3.5 mr-1.5 shrink-0"></i>
+                <span class="truncate">+ Khách A/B/C</span>
               </button>
-              <button id="btnDeleteSelectedMembers" type="button" onclick="deleteSelectedMembers()" class="hidden items-center px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1.5"></i>
+              <button id="btnDeleteSelectedMembers" type="button" onclick="deleteSelectedMembers()" class="hidden col-span-2 sm:col-span-1 items-center justify-center px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1.5 shrink-0"></i>
                 <span>Xóa đã chọn (<span id="selectedMembersCountBadge">0</span>)</span>
               </button>
             </div>
@@ -6116,6 +6163,39 @@ const firebaseConfig = {
     </div>
   </div>
 
+  <!-- MOBILE BOTTOM NAVIGATION (THANH ĐIỀU HƯỚNG CỐ ĐỊNH CHUẨN APP DI ĐỘNG) -->
+  <nav id="mobileBottomNav" class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] md:hidden safe-area-bottom">
+    <div class="flex items-center justify-around h-14 px-1 max-w-lg mx-auto">
+      <button onclick="switchTab('dashboard')" id="m-nav-dashboard" class="flex flex-col items-center justify-center py-1 px-1 text-brand-700 transition active:scale-95 text-center flex-1 cursor-pointer">
+        <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold tracking-tight">Trang chủ</span>
+      </button>
+      <button onclick="openTodayActivitySession()" id="m-nav-attendance" class="flex flex-col items-center justify-center py-1 px-1 text-slate-500 hover:text-brand-700 transition active:scale-95 text-center flex-1 cursor-pointer" title="Điểm danh hoạt động">
+        <i data-lucide="user-check" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold tracking-tight">Điểm danh</span>
+      </button>
+      <button onclick="switchTab('finance')" id="m-nav-finance" class="flex flex-col items-center justify-center py-1 px-1 text-slate-500 hover:text-brand-700 transition active:scale-95 text-center flex-1 cursor-pointer relative">
+        <div class="relative inline-flex items-center justify-center">
+          <i data-lucide="wallet" class="w-5 h-5 mb-0.5"></i>
+          <span id="mNavFinancePendingDot" class="hidden absolute -top-1 -right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white animate-pulse"></span>
+        </div>
+        <span class="text-[10px] font-bold tracking-tight">Tài chính</span>
+      </button>
+      <button onclick="switchTab('members')" id="m-nav-members" class="flex flex-col items-center justify-center py-1 px-1 text-slate-500 hover:text-brand-700 transition active:scale-95 text-center flex-1 cursor-pointer">
+        <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold tracking-tight">Hội viên</span>
+      </button>
+      <button onclick="switchTab('tournament')" id="m-nav-tournament" class="flex flex-col items-center justify-center py-1 px-1 text-slate-500 hover:text-brand-700 transition active:scale-95 text-center flex-1 cursor-pointer">
+        <i data-lucide="trophy" class="w-5 h-5 mb-0.5 text-amber-500"></i>
+        <span class="text-[10px] font-bold tracking-tight">Giải đấu</span>
+      </button>
+      <button onclick="switchTab('settings')" id="m-nav-settings" class="flex flex-col items-center justify-center py-1 px-1 text-slate-500 hover:text-brand-700 transition active:scale-95 text-center flex-1 cursor-pointer">
+        <i data-lucide="settings" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold tracking-tight">Cài đặt</span>
+      </button>
+    </div>
+  </nav>
+
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toastContainer" class="fixed bottom-16 sm:bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
@@ -6128,6 +6208,6 @@ const firebaseConfig = {
   <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- Application Logic - Thực thi tức thì khi HTML đã dựng xong -->
-  <script defer src="app.js?v=5.6"></script>
+  <script defer src="app.js?v=5.9"></script>
 </body>
 </html>

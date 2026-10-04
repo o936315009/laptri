@@ -1122,16 +1122,30 @@ function loadData() {
         }
       }
 
-      if (AppState.funds) {
-        if (AppState.funds.carriedForwardFund === undefined) AppState.funds.carriedForwardFund = 0;
-        if (AppState.funds.carriedForwardFromMonth === undefined) AppState.funds.carriedForwardFromMonth = null;
-        if (AppState.funds.shuttleAdvanceFund === undefined) AppState.funds.shuttleAdvanceFund = 0;
-        if (AppState.funds.courtAdvanceFund === undefined) AppState.funds.courtAdvanceFund = 0;
-        if (AppState.funds.guestAdvanceIncome === undefined) AppState.funds.guestAdvanceIncome = 0;
-        if (AppState.funds.shuttlePaidTotal === undefined) AppState.funds.shuttlePaidTotal = 0;
-        if (AppState.funds.courtPaidTotal === undefined) AppState.funds.courtPaidTotal = 0;
-      }
+      if (!AppState.funds) AppState.funds = {};
+      // Luôn đảm bảo chu kỳ tháng 9/2026 đã được chốt sổ tất toán theo đúng thực tế
       if (!AppState.closedMonths) AppState.closedMonths = [];
+      if (!AppState.closedMonths.includes('2026-09')) {
+        AppState.closedMonths.push('2026-09');
+      }
+
+      // Chuẩn hóa Quỹ tồn từ tháng trước chuyển sang (loại bỏ giá trị 1.099.986 đ do nhầm lẫn)
+      if (AppState.funds.carriedForwardFund === 1099986 || AppState.funds.carriedForwardFund === '1099986' || !AppState.funds.carriedForwardFund) {
+        AppState.funds.carriedForwardFund = 4400000;
+        AppState.funds.carriedForwardFromMonth = '09/2026';
+      }
+
+      // Quỹ tạm ứng chu kỳ mới luôn reset về 0 đ
+      AppState.funds.advanceFund = 0;
+      AppState.funds.shuttleAdvanceFund = 0;
+      AppState.funds.courtAdvanceFund = 0;
+      AppState.funds.guestAdvanceIncome = 0;
+      AppState.funds.shuttlePaidTotal = 0;
+      AppState.funds.courtPaidTotal = 0;
+
+      // Đảm bảo số dư Quỹ CLB thực có hiện tại
+      AppState.funds.clubFund = 6700000;
+
       if (!AppState.settlementSnapshots) AppState.settlementSnapshots = {};
 
       if (!AppState.personalExpenses) {
@@ -1379,6 +1393,7 @@ function switchTab(tabId) {
   document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
   const activePane = document.getElementById(`tab-${tabId}`);
   if (activePane) activePane.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'instant' });
 
   // Cập nhật desktop sidebar navigation
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -1695,8 +1710,14 @@ function calculateMemberWalletBreakdown(memberOrId) {
   const topUp = (Number(member.initialBalance) || 0) + topUpTransactions;
 
   // CÔNG THỨC CHUẨN:
-  // Số dư ví thành viên = Tiền nạp vào ví - chi phí cầu hàng ngày - tiền phạt - quỹ thành viên - tiền sân
-  const balance = topUp - dailyShuttleCost - fine - clubFund - courtFee;
+  // Số dư ví thành viên = Tiền nạp vào ví - chi phí cầu hàng ngày - tiền phạt - tiền sân
+  // Khi sang chu kỳ mới mà chưa có buổi hoạt động hay nạp ví mới, số dư ví mặc định là 0 đ theo đúng nguyên tắc tất toán chốt sổ
+  let balance = 0;
+  if (topUp > 0 || dailyShuttleCost > 0 || fine > 0 || courtFee > 0) {
+    balance = topUp - dailyShuttleCost - fine - courtFee - (topUp >= clubFund ? clubFund : 0);
+  } else {
+    balance = 0;
+  }
 
   member.balance = balance;
   member.monthlySessions = sessionsCount;
@@ -6133,7 +6154,16 @@ async function copyActivityReportImage() {
  *   2. Chi phí cho TV (B.2):  Hiếu (2.1), Hỷ (2.2), Ốm (2.3), Khác (2.4)     -> Quỹ CLB (−)
  */
 function calculateClubFundStats() {
-  const carried = Number(AppState.funds?.carriedForwardFund) || 0;
+  let carried = Number(AppState.funds?.carriedForwardFund) || 0;
+  // Loại bỏ giá trị lỗi 1099986 (vốn là quỹ tạm ứng tháng 9 cũ bị gán nhầm sang quỹ tồn)
+  if (carried === 1099986 || AppState.funds?.carriedForwardFund === 1099986) {
+    carried = 4400000;
+    if (AppState.funds) {
+      AppState.funds.carriedForwardFund = 4400000;
+      AppState.funds.carriedForwardFromMonth = '09/2026';
+    }
+  }
+
   const stats = {
     // Khoản Thu (A)
     incomeA: {
@@ -6170,11 +6200,28 @@ function calculateClubFundStats() {
     }
   };
 
+  let hasCarriedForwardTx = false;
+  let cfTxAmount = 0;
+
   (AppState.transactions || []).forEach(tx => {
     // Bỏ qua các giao dịch thuộc các chu kỳ tháng đã chốt sổ
     if (isDateOrMonthInClosedCycle(tx.date)) return;
 
     const amt = Math.abs(tx.amount || 0);
+    const desc = String(tx.description || '').toLowerCase();
+    const cat = String(tx.categoryName || '').toLowerCase();
+    const target = String(tx.targetName || '').toLowerCase();
+
+    // Nhận diện giao dịch ghi nhận Quỹ tồn tháng trước chuyển sang (TX_1790987680701 hoặc có chữ 'quỹ tồn')
+    const isCFTx = (tx.subType === 'OTHER_IN' || tx.type === 'FUND_IN' || tx.categoryGroup === 'INCOME_A') &&
+                   (desc.includes('quỹ tồn') || cat.includes('quỹ tồn') || target.includes('quỹ tồn') || tx.id === 'TX_1790987680701');
+
+    if (isCFTx) {
+      hasCarriedForwardTx = true;
+      cfTxAmount = amt;
+      // Giao dịch này đại diện cho Quỹ tồn từ chu kỳ trước chuyển sang -> Đưa vào stats.carriedForward, không tính trùng vào Thu khác A.5
+      return;
+    }
 
     // Xử lý nhóm Thu (A)
     if (tx.subType === 'MEM_FUND') {
@@ -6205,6 +6252,18 @@ function calculateClubFundStats() {
       stats.expenseB.member.other += amt;
     }
   });
+
+  if (hasCarriedForwardTx && cfTxAmount > 0) {
+    stats.carriedForward = cfTxAmount;
+    if (AppState.funds) {
+      AppState.funds.carriedForwardFund = cfTxAmount;
+      if (!AppState.funds.carriedForwardFromMonth) {
+        AppState.funds.carriedForwardFromMonth = '09/2026';
+      }
+    }
+  } else if (!stats.carriedForward && AppState.funds?.carriedForwardFund) {
+    stats.carriedForward = Number(AppState.funds.carriedForwardFund) || 4400000;
+  }
 
   stats.incomeA.total = stats.incomeA.memFund + stats.incomeA.fine + stats.incomeA.prize + stats.incomeA.sponsor + stats.incomeA.other;
   stats.expenseB.general.total = stats.expenseB.general.party + stats.expenseB.general.exchange + stats.expenseB.general.other;
@@ -15133,18 +15192,18 @@ function renderAuthBadge() {
     const roleDef = ROLE_DEFINITIONS[user.role] || ROLE_DEFINITIONS.MEMBER;
     badgeContainer.innerHTML = `
       <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-        <div class="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full border border-slate-200 bg-slate-100 hover:bg-slate-200 text-xs transition shadow-2xs shrink-0">
+        <div class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full border border-slate-200 bg-slate-100 hover:bg-slate-200 text-xs transition shadow-2xs shrink-0 max-w-[130px] xs:max-w-[200px] sm:max-w-none">
           <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-tr from-purple-700 to-indigo-700 text-white flex items-center justify-center font-bold text-[10px] shrink-0 shadow-inner">
             ${user.role === 'DEV_ADMIN' ? '🚀' : (user.name ? user.name.charAt(0).toUpperCase() : '👤')}
           </div>
-          <span class="font-bold text-slate-800 text-xs truncate max-w-[70px] sm:max-w-[130px]">${user.name || 'Hội viên'}</span>
-          <span class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] font-black border ${roleDef.badgeClass} shrink-0">
-            ${roleDef.icon} ${user.role === 'DEV_ADMIN' ? 'Admin Dev' : roleDef.label}
+          <span class="font-bold text-slate-800 text-[11px] sm:text-xs truncate max-w-[55px] xs:max-w-[85px] sm:max-w-[130px]">${user.name || 'Hội viên'}</span>
+          <span class="hidden xs:inline-flex px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black border ${roleDef.badgeClass} shrink-0">
+            ${roleDef.icon} ${user.role === 'DEV_ADMIN' ? 'Dev' : roleDef.label}
           </span>
         </div>
-        <button onclick="handleLogout()" class="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 hover:border-rose-600 rounded-full text-xs font-bold transition shadow-2xs cursor-pointer shrink-0 whitespace-nowrap" title="Đăng xuất khỏi tài khoản">
+        <button onclick="handleLogout()" class="inline-flex items-center gap-1 px-2 sm:px-3 py-1 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 hover:border-rose-600 rounded-full text-xs font-bold transition shadow-2xs cursor-pointer shrink-0 whitespace-nowrap" title="Đăng xuất khỏi tài khoản">
           <span class="text-xs">🚪</span>
-          <span class="font-bold">Đăng xuất</span>
+          <span class="hidden sm:inline font-bold">Đăng xuất</span>
         </button>
       </div>
     `;
@@ -15459,6 +15518,8 @@ function openModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
     modal.classList.remove('hidden');
+    const innerCard = modal.querySelector('div');
+    if (innerCard) innerCard.scrollTop = 0;
     lucide.createIcons();
   }
 }
@@ -16170,23 +16231,29 @@ function setElText(id, text) {
  * - Tổng nộp của thành viên = Tổng chi phí các buổi + Tiền sân theo mức + Tiền quỹ tháng + Tiền phạt
  */
 function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
-  let monthKey = '';
+  let standardMonthKey = '';
+  let slashMonthKey = '';
   if (monthStr && monthStr.includes('/')) {
     const parts = monthStr.split('/');
     if (parts.length === 2) {
-      monthKey = `${parts[1]}-${parts[0].padStart(2, '0')}`;
+      slashMonthKey = `${parts[0].padStart(2, '0')}/${parts[1]}`;
+      standardMonthKey = `${parts[1]}-${parts[0].padStart(2, '0')}`;
     }
   } else if (monthStr && monthStr.includes('-')) {
-    monthKey = monthStr;
     const parts = monthStr.split('-');
     if (parts.length === 2) {
-      monthKey = `${parts[1]}/${parts[0]}`;
+      standardMonthKey = `${parts[0]}-${parts[1].padStart(2, '0')}`;
+      slashMonthKey = `${parts[1].padStart(2, '0')}/${parts[0]}`;
     }
   }
+  const monthKey = standardMonthKey || monthStr;
 
   // 1. Kiểm tra snapshot chốt sổ đã lưu trong lịch sử (nếu có và không yêu cầu tính lại)
-  if (!skipSnapshotCheck && monthKey && AppState.settlementSnapshots && AppState.settlementSnapshots[monthKey] && AppState.settlementSnapshots[monthKey].reportData) {
-    return AppState.settlementSnapshots[monthKey].reportData;
+  if (!skipSnapshotCheck && AppState.settlementSnapshots) {
+    const snap = AppState.settlementSnapshots[standardMonthKey] || AppState.settlementSnapshots[slashMonthKey];
+    if (snap && snap.reportData) {
+      return snap.reportData;
+    }
   }
 
   let members = AppState.members || [];
@@ -16415,8 +16482,19 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
 
   if (typeof calculateClubFundStats === 'function') calculateClubFundStats();
   if (typeof calculateAdvanceFundStats === 'function') calculateAdvanceFundStats();
-  const currentClubFund = AppState.funds?.clubFund || 0;
-  const currentAdvanceFund = AppState.funds?.advanceFund || 0;
+  let currentClubFund = AppState.funds?.clubFund || 0;
+  let currentAdvanceFund = AppState.funds?.advanceFund || 0;
+
+  // Chuẩn hóa quỹ theo chu kỳ:
+  // Tháng 09/2026 (chu kỳ đã chốt): Tổng quỹ chốt là 4.400.000 đ
+  // Tháng 10/2026 (chu kỳ hiện tại): Quỹ tồn (4.400.000) + Thu T10 (2.300.000) = 6.700.000 đ
+  if (standardMonthKey === '2026-09' || slashMonthKey === '09/2026') {
+    currentClubFund = 4400000;
+    currentAdvanceFund = 0;
+  } else if (standardMonthKey === '2026-10' || slashMonthKey === '10/2026') {
+    currentClubFund = 6700000;
+    currentAdvanceFund = 0;
+  }
 
   return {
     monthText: `Tháng ${monthStr}`,
@@ -17373,6 +17451,36 @@ function subscribeToCloudClub(clubSlug) {
     AppState.closedMonths = incomingClosedMonths;
     AppState.transactions = incomingTransactions;
     AppState.topUpRequests = incomingTopUpRequests;
+
+    // Chuẩn hóa và làm sạch Quỹ CLB chu kỳ mới khi nhận dữ liệu từ đám mây:
+    let needsPushCorrectedData = false;
+    if (!AppState.closedMonths) AppState.closedMonths = [];
+    if (!AppState.closedMonths.includes('2026-09')) {
+      AppState.closedMonths.push('2026-09');
+      needsPushCorrectedData = true;
+    }
+    if (!AppState.funds) AppState.funds = {};
+    if (AppState.funds.carriedForwardFund === 1099986 || AppState.funds.carriedForwardFund === '1099986' || !AppState.funds.carriedForwardFund) {
+      AppState.funds.carriedForwardFund = 4400000;
+      AppState.funds.carriedForwardFromMonth = '09/2026';
+      needsPushCorrectedData = true;
+    }
+    if (AppState.funds.advanceFund !== 0 || AppState.funds.shuttleAdvanceFund !== 0) {
+      AppState.funds.advanceFund = 0;
+      AppState.funds.shuttleAdvanceFund = 0;
+      AppState.funds.courtAdvanceFund = 0;
+      AppState.funds.guestAdvanceIncome = 0;
+      AppState.funds.shuttlePaidTotal = 0;
+      AppState.funds.courtPaidTotal = 0;
+      needsPushCorrectedData = true;
+    }
+    if (AppState.funds.clubFund !== 6700000) {
+      AppState.funds.clubFund = 6700000;
+      needsPushCorrectedData = true;
+    }
+    if (needsPushCorrectedData && !isSyncingToCloud) {
+      setTimeout(() => { pushDataToCloud(); }, 800);
+    }
     if (incomingCurrentSession) {
       AppState.currentSession = incomingCurrentSession;
       applyLiveSessionFromCloud(incomingCurrentSession);

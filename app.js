@@ -4927,7 +4927,7 @@ function buildAttendeeOptions(selectedId, excludeIds = [], placeholder = '-- Ch�
       return;
     }
     const isSel = a.id === selectedId ? 'selected' : '';
-    html += `<option value="${a.id}" ${isSel}>${a.chipName} (${a.name})</option>`;
+    html += `<option value="${a.id}" ${isSel} title="${a.name}">${a.chipName}</option>`;
   });
   return html;
 }
@@ -4967,31 +4967,28 @@ function formatMatchResultInfo(idx, m) {
   const prize = (m.prize && m.prize.trim()) ? m.prize.trim() : '';
   const matchTitle = (m.name && m.name.trim()) ? m.name.trim() : `Trận ${idx + 1}`;
 
-  let highlight1 = 'font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded-lg';
-  let highlight2 = 'font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded-lg';
+  let highlight1 = 'font-bold text-slate-800 bg-slate-100 px-1 py-0.2 rounded';
+  let highlight2 = 'font-bold text-slate-800 bg-slate-100 px-1 py-0.2 rounded';
   let badge1 = '';
   let badge2 = '';
-  let statusBadge = hasPlayers
-    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">Sẵn sàng</span>'
-    : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">Chưa đấu</span>';
-  const prizePill = prize ? `<span class="inline-flex items-center gap-1 font-bold text-amber-800 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded text-[10px] shadow-2xs">🎁 ${prize}</span>` : '';
+  let compactBadge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-500">Chưa đấu</span>';
 
   if (s1 > s2 && (s1 > 0 || s2 > 0)) {
-    highlight1 = 'font-black text-emerald-900 bg-emerald-100 px-1.5 py-0.5 rounded-lg border border-emerald-300';
-    badge1 = ' <span class="text-xs" title="Đội 1 Thắng">🏆</span>';
-    statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1">🏆 ${pair1} Thắng ${prizePill}</span>`;
+    highlight1 = 'font-black text-emerald-900 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300';
+    badge1 = ' 🏆';
+    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">🏆 ${pair1} Thắng</span>`;
   } else if (s2 > s1 && (s1 > 0 || s2 > 0)) {
-    highlight2 = 'font-black text-emerald-900 bg-emerald-100 px-1.5 py-0.5 rounded-lg border border-emerald-300';
-    badge2 = ' <span class="text-xs" title="Đội 2 Thắng">🏆</span>';
-    statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1">🏆 ${pair2} Thắng ${prizePill}</span>`;
+    highlight2 = 'font-black text-emerald-900 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300';
+    badge2 = ' 🏆';
+    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">🏆 ${pair2} Thắng</span>`;
   } else if (s1 === s2 && s1 > 0) {
-    statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 inline-flex items-center gap-1">Hòa ${prizePill}</span>`;
+    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">Hòa</span>`;
   } else if (prize) {
-    statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 inline-flex items-center gap-1">Đang đấu ${prizePill}</span>`;
+    compactBadge = `<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-600">Đang đấu</span>`;
   }
 
-  const prizeLineTag = prize ? ` <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">🎁 ${prize}</span>` : '';
-  const lineHtml = `${matchTitle}: <span class="${highlight1}"><b>${pair1}</b> (${s1})${badge1}</span> <span class="text-slate-400 font-bold px-1 text-[10px]">đấu</span> <span class="${highlight2}"><b>${pair2}</b> (${s2})${badge2}</span>${prizeLineTag}`;
+  const prizeLineTag = prize ? ` <span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-800 bg-amber-50 px-1 py-0.2 rounded border border-amber-200 shrink-0">🎁 ${prize}</span>` : '';
+  const lineHtml = `<span class="font-bold text-slate-700 text-[11px] shrink-0">${matchTitle}:</span> <span class="${highlight1} truncate"><b>${pair1}</b> (${s1})${badge1}</span> <span class="text-slate-400 font-bold px-0.5 text-[10px] shrink-0">đấu</span> <span class="${highlight2} truncate"><b>${pair2}</b> (${s2})${badge2}</span>${prizeLineTag}`;
   
   let headerPill = '';
   if (s1 === 0 && s2 === 0) {
@@ -5000,13 +4997,13 @@ function formatMatchResultInfo(idx, m) {
     headerPill = `${matchTitle}: 🏸 ${pair1} (${s1}) - (${s2}) ${pair2}${prize ? ` • 🎁 ${prize}` : ''}`;
   }
 
-  return { s1, s2, pair1, pair2, prize, matchTitle, lineHtml, headerPill, statusBadge };
+  return { s1, s2, pair1, pair2, prize, matchTitle, lineHtml, headerPill, statusBadge: compactBadge, compactBadge };
 }
 
 function updateMatchResultRealtime() {
   const matches = activityState.matches || [];
   
-  // Cập nhật bảng tổng hợp dòng trận đấu ở trên
+  // Cập nhật bảng tổng hợp dòng KẾT QUẢ ở trên (1 dòng tinh gọn mỗi trận)
   const summaryCard = document.getElementById('actMatchLinesSummaryCard');
   const summaryContainer = document.getElementById('actMatchLinesSummary');
   if (summaryCard && summaryContainer) {
@@ -5017,19 +5014,19 @@ function updateMatchResultRealtime() {
       summaryContainer.innerHTML = matches.map((m, idx) => {
         const info = formatMatchResultInfo(idx, m);
         return `
-          <div class="p-2 bg-white rounded-xl border border-emerald-200/90 shadow-2xs flex items-center justify-between flex-wrap gap-1.5">
-            <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-              <span class="w-5 h-5 rounded-md bg-emerald-700 text-white font-black text-[10px] flex items-center justify-center shrink-0">${idx + 1}</span>
-              <span class="text-xs text-slate-800 min-w-0">${info.lineHtml}</span>
+          <div class="py-1 px-2 bg-white rounded-lg border border-emerald-200/90 shadow-2xs flex items-center justify-between gap-1.5 text-xs">
+            <div class="flex items-center gap-1.5 min-w-0 truncate">
+              <span class="w-4 h-4 rounded bg-emerald-700 text-white font-black text-[10px] flex items-center justify-center shrink-0">${idx + 1}</span>
+              <div class="flex items-center gap-1 min-w-0 truncate">${info.lineHtml}</div>
             </div>
-            <div class="shrink-0">${info.statusBadge}</div>
+            <div class="shrink-0 flex items-center gap-1">${info.compactBadge}</div>
           </div>
         `;
       }).join('');
     }
   }
 
-  // Cập nhật từng card trận đấu
+  // Cập nhật từng card trận đấu (1 dòng chân card tinh gọn)
   matches.forEach((m, idx) => {
     const info = formatMatchResultInfo(idx, m);
     const lineEl = document.getElementById(`matchCardResultLine-${m.id}`);
@@ -5038,11 +5035,11 @@ function updateMatchResultRealtime() {
 
     if (lineEl) {
       lineEl.innerHTML = `
-        <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-          <span class="text-xs shrink-0">🏸</span>
-          <span class="text-[11px] text-slate-800 min-w-0">${info.lineHtml}</span>
+        <div class="flex items-center gap-1.5 min-w-0 truncate">
+          <span class="text-[10px] shrink-0">🏸</span>
+          <div class="flex items-center gap-1 min-w-0 truncate text-[11px] text-slate-800">${info.lineHtml}</div>
         </div>
-        <div class="shrink-0">${info.statusBadge}</div>
+        <div class="shrink-0 flex items-center gap-1">${info.compactBadge}</div>
       `;
     }
     if (badgeEl) {
@@ -5130,77 +5127,77 @@ function renderActivityMatches() {
     const prizeDetails = getMatchPrizeDetails(m);
 
     return `
-      <div class="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+      <div class="bg-white p-2 sm:p-2.5 rounded-xl border border-slate-200 shadow-xs space-y-1.5">
         <!-- Match Header: Tên trận tùy chọn + Huy hiệu kết quả theo cặp + Xóa -->
-        <div class="flex items-center justify-between flex-wrap gap-1.5">
-          <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-            <span class="w-6 h-6 rounded-lg bg-emerald-700 text-white font-black text-xs flex items-center justify-center shrink-0">${idx + 1}</span>
-            <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 shadow-2xs">
-              <span class="text-[10px] text-slate-400 font-bold">Tên:</span>
+        <div class="flex items-center justify-between gap-1">
+          <div class="flex items-center gap-1 min-w-0 truncate">
+            <span class="w-5 h-5 rounded-md bg-emerald-700 text-white font-black text-xs flex items-center justify-center shrink-0">${idx + 1}</span>
+            <div class="flex items-center gap-0.5 bg-slate-50 border border-slate-200 rounded-md px-1 py-0.2 shadow-2xs shrink-0">
+              <span class="text-[9px] text-slate-400 font-bold">Tên:</span>
               <input type="text" value="${m.name || `Trận ${idx + 1}`}" 
                      oninput="updateMatchName(${m.id}, this.value)" 
-                     placeholder="Tên trận..." 
-                     class="text-xs text-slate-900 font-black uppercase tracking-tight bg-transparent focus:outline-none border-0 w-24 sm:w-32" 
-                     title="Chạm hoặc nhấp để đổi tên trận đấu" />
+                     placeholder="Tên..." 
+                     class="text-xs text-slate-900 font-black uppercase tracking-tight bg-transparent focus:outline-none border-0 w-16 sm:w-28 p-0" 
+                     title="Chạm để đổi tên trận đấu" />
             </div>
-            <span id="matchHeaderResult-${m.id}" class="text-[10px] sm:text-[11px] font-bold text-emerald-900 bg-emerald-100/90 px-2 py-0.5 rounded-lg border border-emerald-300 shadow-2xs truncate max-w-[200px] sm:max-w-none">
+            <span id="matchHeaderResult-${m.id}" class="text-[10px] sm:text-[11px] font-bold text-emerald-900 bg-emerald-100/90 px-1.5 py-0.2 rounded-md border border-emerald-300 shadow-2xs truncate">
               ${info.headerPill}
             </span>
           </div>
-          <button type="button" onclick="removeActivityMatch(${m.id})" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition shrink-0" title="Xóa trận này">
+          <button type="button" onclick="removeActivityMatch(${m.id})" class="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition shrink-0" title="Xóa trận này">
             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
           </button>
         </div>
 
-        <!-- Match Teams & Scores Pickers (Tỉ số đi liền theo từng cặp) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200">
+        <!-- Match Teams & Scores Pickers (2 Cột song song như trên máy tính) -->
+        <div class="grid grid-cols-2 gap-1.5 sm:gap-2 bg-slate-50 p-1.5 sm:p-2 rounded-xl border border-slate-200">
           
           <!-- Đội 1 (Cặp 1) + Ô nhập tỉ số của Đội 1 -->
-          <div class="space-y-1.5 bg-emerald-50/50 p-2 rounded-xl border border-emerald-200/80">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5 text-[10px] font-black text-emerald-900 uppercase tracking-tight">
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>Đội 1 (Cặp 1)</span>
+          <div class="space-y-1 bg-emerald-50/50 p-1.5 sm:p-2 rounded-xl border border-emerald-200/80">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-1 text-[10px] font-black text-emerald-900 uppercase tracking-tight truncate">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                <span class="truncate">Đội 1 (Cặp 1)</span>
               </div>
-              <div class="flex items-center gap-1 bg-white px-2 py-0.5 rounded-lg border border-emerald-300 shadow-2xs">
-                <span class="text-[10px] font-bold text-slate-500">Tỉ số:</span>
+              <div class="flex items-center gap-0.5 bg-white px-1.5 py-0.5 rounded-md border border-emerald-300 shadow-2xs shrink-0">
+                <span class="text-[9px] font-bold text-slate-400">Tỉ số:</span>
                 <input type="number" min="0" max="30" value="${info.s1}" 
                        oninput="updateMatchScore(${m.id}, this.value, null)" 
-                       class="w-10 text-center font-black text-xs text-emerald-900 bg-transparent focus:outline-none" 
+                       class="w-7 sm:w-8 text-center font-black text-xs text-emerald-900 bg-transparent focus:outline-none p-0" 
                        title="Nhập tỉ số của Đội 1" />
               </div>
             </div>
-            <div class="grid grid-cols-2 gap-1 sm:gap-1.5">
-              <select onchange="updateMatchPlayer(${m.id}, 0, 0, this.value)" class="w-full text-[11px] sm:text-xs font-semibold border border-slate-200 rounded-lg py-1.5 px-1 sm:px-2 bg-white focus:ring-1 focus:ring-emerald-500 truncate">
-                ${buildAttendeeOptions(p1, [p2, p3, p4].filter(Boolean), '-- Người 1 --')}
+            <div class="grid grid-cols-2 gap-1">
+              <select onchange="updateMatchPlayer(${m.id}, 0, 0, this.value)" class="w-full text-[11px] font-bold border border-slate-200 rounded-lg py-1 px-1 bg-white focus:ring-1 focus:ring-emerald-500 truncate" title="Người 1">
+                ${buildAttendeeOptions(p1, [p2, p3, p4].filter(Boolean), '-- 1 --')}
               </select>
-              <select onchange="updateMatchPlayer(${m.id}, 0, 1, this.value)" class="w-full text-[11px] sm:text-xs font-semibold border border-slate-200 rounded-lg py-1.5 px-1 sm:px-2 bg-white focus:ring-1 focus:ring-emerald-500 truncate">
-                ${buildAttendeeOptions(p2, [p1, p3, p4].filter(Boolean), '-- Người 2 --')}
+              <select onchange="updateMatchPlayer(${m.id}, 0, 1, this.value)" class="w-full text-[11px] font-bold border border-slate-200 rounded-lg py-1 px-1 bg-white focus:ring-1 focus:ring-emerald-500 truncate" title="Người 2">
+                ${buildAttendeeOptions(p2, [p1, p3, p4].filter(Boolean), '-- 2 --')}
               </select>
             </div>
           </div>
 
           <!-- Đội 2 (Cặp 2) + Ô nhập tỉ số của Đội 2 -->
-          <div class="space-y-1.5 bg-amber-50/50 p-2 rounded-xl border border-amber-200/80">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5 text-[10px] font-black text-amber-900 uppercase tracking-tight">
-                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                <span>Đội 2 (Cặp 2)</span>
+          <div class="space-y-1 bg-amber-50/50 p-1.5 sm:p-2 rounded-xl border border-amber-200/80">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-1 text-[10px] font-black text-amber-900 uppercase tracking-tight truncate">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                <span class="truncate">Đội 2 (Cặp 2)</span>
               </div>
-              <div class="flex items-center gap-1 bg-white px-2 py-0.5 rounded-lg border border-amber-300 shadow-2xs">
-                <span class="text-[10px] font-bold text-slate-500">Tỉ số:</span>
+              <div class="flex items-center gap-0.5 bg-white px-1.5 py-0.5 rounded-md border border-amber-300 shadow-2xs shrink-0">
+                <span class="text-[9px] font-bold text-slate-400">Tỉ số:</span>
                 <input type="number" min="0" max="30" value="${info.s2}" 
                        oninput="updateMatchScore(${m.id}, null, this.value)" 
-                       class="w-10 text-center font-black text-xs text-amber-900 bg-transparent focus:outline-none" 
+                       class="w-7 sm:w-8 text-center font-black text-xs text-amber-900 bg-transparent focus:outline-none p-0" 
                        title="Nhập tỉ số của Đội 2" />
               </div>
             </div>
-            <div class="grid grid-cols-2 gap-1 sm:gap-1.5">
-              <select onchange="updateMatchPlayer(${m.id}, 1, 0, this.value)" class="w-full text-[11px] sm:text-xs font-semibold border border-slate-200 rounded-lg py-1.5 px-1 sm:px-2 bg-white focus:ring-1 focus:ring-emerald-500 truncate">
-                ${buildAttendeeOptions(p3, [p1, p2, p4].filter(Boolean), '-- Người 1 --')}
+            <div class="grid grid-cols-2 gap-1">
+              <select onchange="updateMatchPlayer(${m.id}, 1, 0, this.value)" class="w-full text-[11px] font-bold border border-slate-200 rounded-lg py-1 px-1 bg-white focus:ring-1 focus:ring-emerald-500 truncate" title="Người 1">
+                ${buildAttendeeOptions(p3, [p1, p2, p4].filter(Boolean), '-- 1 --')}
               </select>
-              <select onchange="updateMatchPlayer(${m.id}, 1, 1, this.value)" class="w-full text-[11px] sm:text-xs font-semibold border border-slate-200 rounded-lg py-1.5 px-1 sm:px-2 bg-white focus:ring-1 focus:ring-emerald-500 truncate">
-                ${buildAttendeeOptions(p4, [p1, p2, p3].filter(Boolean), '-- Người 2 --')}
+              <select onchange="updateMatchPlayer(${m.id}, 1, 1, this.value)" class="w-full text-[11px] font-bold border border-slate-200 rounded-lg py-1 px-1 bg-white focus:ring-1 focus:ring-emerald-500 truncate" title="Người 2">
+                ${buildAttendeeOptions(p4, [p1, p2, p3].filter(Boolean), '-- 2 --')}
               </select>
             </div>
           </div>
@@ -5208,16 +5205,16 @@ function renderActivityMatches() {
         </div>
 
         <!-- Thanh chọn giải thưởng trận đấu (Tùy chỉnh số lượng & loại giải thưởng) -->
-        <div class="bg-amber-50/70 p-2 sm:p-2.5 rounded-xl border border-amber-200/90 space-y-1.5">
+        <div class="bg-amber-50/70 p-1.5 sm:p-2 rounded-xl border border-amber-200/90 space-y-1">
           
           <!-- Tiêu đề + Huy hiệu giải thưởng + Nút bỏ thưởng -->
           <div class="flex items-center justify-between flex-wrap gap-1">
-            <div class="flex items-center gap-1.5 text-xs font-black text-amber-900 uppercase tracking-tight">
+            <div class="flex items-center gap-1 text-[11px] font-black text-amber-900 uppercase tracking-tight">
               <span>🎁</span>
               <span>Giải thưởng đội thắng:</span>
             </div>
-            <div class="flex items-center gap-1.5">
-              <span id="matchPrizeBadge-${m.id}" class="font-bold text-amber-900 bg-amber-200/90 px-2 py-0.5 rounded-md border border-amber-300 text-[11px] shadow-2xs ${m.prize ? '' : 'hidden'}">
+            <div class="flex items-center gap-1">
+              <span id="matchPrizeBadge-${m.id}" class="font-bold text-amber-900 bg-amber-200/90 px-1.5 py-0.2 rounded-md border border-amber-300 text-[10px] shadow-2xs ${m.prize ? '' : 'hidden'}">
                 ${m.prize || ''}
               </span>
               ${m.prize ? `
@@ -5227,17 +5224,17 @@ function renderActivityMatches() {
           </div>
 
           <!-- Bộ điều chỉnh số lượng & Chọn loại giải thưởng -->
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-1">
             
             <!-- Tùy chỉnh số lượng: [ - ] [ 2 ] [ + ] -->
             <div class="flex items-center bg-white border border-amber-300 rounded-lg p-0.5 shadow-2xs shrink-0" title="Điều chỉnh số lượng phần thưởng">
-              <span class="text-[10px] font-black text-amber-900 px-1 select-none">SL:</span>
+              <span class="text-[9px] font-black text-amber-900 px-1 select-none">SL:</span>
               <button type="button" onclick="changeMatchPrizeQty(${m.id}, -1)" class="w-5 h-5 rounded bg-amber-100/80 hover:bg-amber-200 text-amber-900 font-black text-xs flex items-center justify-center transition cursor-pointer select-none">
                 −
               </button>
               <input type="number" min="1" max="99" value="${prizeDetails.qty}" 
                      oninput="setMatchPrizeQty(${m.id}, this.value)" 
-                     class="w-6 text-center font-black text-xs text-amber-950 bg-transparent focus:outline-none" 
+                     class="w-5 text-center font-black text-xs text-amber-950 bg-transparent focus:outline-none p-0" 
                      title="Số lượng" />
               <button type="button" onclick="changeMatchPrizeQty(${m.id}, 1)" class="w-5 h-5 rounded bg-amber-100/80 hover:bg-amber-200 text-amber-900 font-black text-xs flex items-center justify-center transition cursor-pointer select-none">
                 +
@@ -5253,7 +5250,7 @@ function renderActivityMatches() {
                   : 'bg-white text-slate-700 border-amber-200 hover:bg-amber-100 font-bold';
                 return `
                   <button type="button" onclick="selectMatchPrizeType(${m.id}, '${t.name}')" 
-                          class="px-2 py-0.5 rounded-lg text-[11px] border transition flex items-center gap-1 cursor-pointer select-none whitespace-nowrap shrink-0 ${activeClass}">
+                          class="px-1.5 py-0.5 rounded-lg text-[10px] border transition flex items-center gap-1 cursor-pointer select-none whitespace-nowrap shrink-0 ${activeClass}">
                     <span>${t.icon || '🎁'}</span>
                     <span>${t.name}</span>
                     ${t.isCustom ? `
@@ -5265,7 +5262,7 @@ function renderActivityMatches() {
 
               <!-- Nút Thêm loại giải thưởng -->
               <button type="button" onclick="promptAddNewPrizeType(${m.id})" 
-                      class="px-2 py-0.5 rounded-lg text-[11px] font-bold border border-dashed border-amber-400 bg-amber-100/50 hover:bg-amber-200/80 text-amber-900 flex items-center gap-1 transition cursor-pointer shadow-2xs whitespace-nowrap shrink-0" 
+                      class="px-1.5 py-0.5 rounded-lg text-[10px] font-bold border border-dashed border-amber-400 bg-amber-100/50 hover:bg-amber-200/80 text-amber-900 flex items-center gap-0.5 transition cursor-pointer shadow-2xs whitespace-nowrap shrink-0" 
                       title="Thêm loại giải thưởng mới vào danh sách">
                 <span>➕</span> Thêm
               </button>
@@ -5274,13 +5271,13 @@ function renderActivityMatches() {
           </div>
 
           <!-- Nhập tự do khác -->
-          <div class="flex items-center gap-1.5 pt-0.5">
+          <div class="flex items-center gap-1 pt-0.5">
             <span class="text-[10px] font-bold text-amber-900 shrink-0">Khác:</span>
             <input type="text" id="matchPrizeInput-${m.id}" 
                    value="${isCustomPrizeText(m.prize, prizeTypes) ? m.prize : ''}" 
                    oninput="updateMatchCustomPrize(${m.id}, this.value)" 
-                   placeholder="Nhập giải thưởng khác (chầu cafe, sinh tố...)..." 
-                   class="flex-1 text-[11px] font-medium px-2 py-1 bg-white border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500 text-slate-800 placeholder:text-slate-400" />
+                   placeholder="Nhập giải thưởng khác..." 
+                   class="flex-1 text-[11px] font-medium px-2 py-0.5 bg-white border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500 text-slate-800 placeholder:text-slate-400" />
             ${isCustomPrizeText(m.prize, prizeTypes) ? `
             <button type="button" onclick="clearMatchPrize(${m.id})" class="text-slate-400 hover:text-rose-600 text-xs px-1 font-bold cursor-pointer" title="Xóa">✕</button>
             ` : ''}
@@ -5288,13 +5285,13 @@ function renderActivityMatches() {
 
         </div>
 
-        <!-- Dòng kết quả trận đấu hiển thị gọn gàng -->
-        <div id="matchCardResultLine-${m.id}" class="text-[11px] font-semibold text-slate-700 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200/80 flex items-center justify-between flex-wrap gap-1.5">
-          <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-            <span class="text-xs shrink-0">🏸</span>
-            <span class="text-[11px] text-slate-800 min-w-0">${info.lineHtml}</span>
+        <!-- Dòng kết quả chân thẻ trận đấu hiển thị 1 dòng gọn gàng -->
+        <div id="matchCardResultLine-${m.id}" class="text-[11px] font-semibold text-slate-700 bg-slate-50/80 px-2 py-1 rounded-lg border border-slate-200/80 flex items-center justify-between gap-1.5">
+          <div class="flex items-center gap-1.5 min-w-0 truncate">
+            <span class="text-[10px] shrink-0">🏸</span>
+            <div class="flex items-center gap-1 min-w-0 truncate text-[11px] text-slate-800">${info.lineHtml}</div>
           </div>
-          <div class="shrink-0">${info.statusBadge}</div>
+          <div class="shrink-0 flex items-center gap-1">${info.compactBadge}</div>
         </div>
 
       </div>

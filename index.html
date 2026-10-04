@@ -744,10 +744,10 @@
               </div>
 
               <!-- Nội dung thống kê và danh sách các trận cầu: Ẩn mặc định, CHỈ HIỂN THỊ KHI BẤM NÚT THÊM TRẬN -->
-              <div id="actMatchStatsContentArea" class="hidden space-y-2.5">
+              <div id="actMatchStatsContentArea" class="hidden space-y-1.5 sm:space-y-2">
                 <!-- Thống kê tần suất vào sân của từng người -->
-                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                  <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+                <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                  <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5 flex items-center justify-between">
                     <span>Số trận đã đấu trong buổi (tính theo người có mặt)</span>
                   </div>
                   <div id="actMemberMatchStatsBar" class="flex flex-wrap gap-1 text-xs">
@@ -755,22 +755,21 @@
                   </div>
                 </div>
 
-                <!-- BẢNG DÒNG KẾT QUẢ CÁC TRẬN ĐẤU (HIỂN THỊ TỈ SỐ THEO CẶP) -->
-                <div id="actMatchLinesSummaryCard" class="bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200/90 space-y-1.5">
+                <!-- BẢNG DÒNG KẾT QUẢ CÁC TRẬN ĐẤU -->
+                <div id="actMatchLinesSummaryCard" class="bg-emerald-50/80 p-2 sm:p-2.5 rounded-xl border border-emerald-200/90 space-y-1">
                   <div class="flex items-center justify-between">
-                    <div class="text-[11px] font-black text-emerald-950 uppercase tracking-wide flex items-center gap-1.5">
+                    <div class="text-xs font-black text-emerald-950 uppercase tracking-wide flex items-center gap-1.5">
                       <span>⚡</span>
-                      <span>Kết quả các dòng trận đấu (Tỉ số theo cặp):</span>
+                      <span>KẾT QUẢ</span>
                     </div>
-                    <span class="text-[10px] text-emerald-700 font-semibold italic">Tự động cập nhật khi nhập điểm</span>
                   </div>
-                  <div id="actMatchLinesSummary" class="space-y-1.5 text-xs">
+                  <div id="actMatchLinesSummary" class="space-y-1 text-xs">
                     <!-- Rendered dynamically -->
                   </div>
                 </div>
 
                 <!-- Danh sách từng trận đấu (Trận 1: A+B vs C+D, Trận 2: A+C vs C+E...) -->
-                <div id="actMatchesContainer" class="space-y-2.5">
+                <div id="actMatchesContainer" class="space-y-1.5 sm:space-y-2">
                   <!-- Rendered dynamically -->
                 </div>
               </div>

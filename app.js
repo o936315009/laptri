@@ -2477,9 +2477,13 @@ function openActivityHistoryModal() {
         }
         const memberCount = (ses.members || []).length;
         const guestCount = (ses.guests || []).length;
-        const exCount = ses.exchangeClub ? (ses.exchangeClub.count || (ses.exchangeClub.members || []).length) : 0;
+        const exClubs = Array.isArray(ses.exchangeClubs) && ses.exchangeClubs.length > 0 
+          ? ses.exchangeClubs 
+          : (ses.exchangeClub ? [ses.exchangeClub] : []);
+        const exCount = exClubs.reduce((sum, c) => sum + ((c.members || []).length || c.count || 0), 0);
+        const exNames = exClubs.map(c => c.name).filter(Boolean).join(', ');
         const totalPeople = ses.attendeeCount || (memberCount + guestCount + exCount);
-        const exBadge = ses.exchangeClub ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-black">🤝 ${escapeHtml(ses.exchangeClub.name || 'CLB Giao lưu')} (${exCount} TV)</span>` : '';
+        const exBadge = exClubs.length > 0 ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-black">🤝 ${escapeHtml(exNames || 'CLB Giao lưu')} (${exCount} TV)</span>` : '';
 
         return `
           <div class="p-3 bg-slate-50 hover:bg-emerald-50/50 rounded-2xl border border-slate-200 transition flex items-center justify-between gap-3 cursor-pointer" onclick="openSessionAttendanceView('${ses.id}')" title="Bấm vào để mở giao diện hoạt động đã điểm danh ngày ${dateFormatted}">
@@ -2532,12 +2536,15 @@ function openActivitySessionDetailModal(sessionId) {
     dateFormatted = dateFormatted.split('-').reverse().join('/');
   }
 
-  const exClub = ses.exchangeClub;
-  const exCount = exClub ? (exClub.count || (exClub.members || []).length) : 0;
+  const exClubs = Array.isArray(ses.exchangeClubs) && ses.exchangeClubs.length > 0 
+    ? ses.exchangeClubs 
+    : (ses.exchangeClub ? [ses.exchangeClub] : []);
+  const exCount = exClubs.reduce((sum, c) => sum + ((c.members || []).length || c.count || 0), 0);
+  const exNames = exClubs.map(c => c.name).filter(Boolean).join(', ');
   const totalParticipants = ses.attendeeCount || ((ses.members ? ses.members.length : 0) + (ses.guests ? ses.guests.length : 0) + exCount);
 
-  if (titleEl) titleEl.textContent = `Buổi Cầu Ngày ${dateFormatted}${exClub ? ` • Giao lưu ${exClub.name}` : ''}`;
-  if (subEl) subEl.textContent = `Tổng cộng: ${totalParticipants} người tham gia${exClub ? ` (${(ses.members || []).length} TV chủ nhà + ${exCount} TV ${exClub.name})` : ''}`;
+  if (titleEl) titleEl.textContent = `Buổi Cầu Ngày ${dateFormatted}${exClubs.length > 0 ? ` • Giao lưu ${exNames}` : ''}`;
+  if (subEl) subEl.textContent = `Tổng cộng: ${totalParticipants} người tham gia${exClubs.length > 0 ? ` (${(ses.members || []).length} TV chủ nhà + ${exCount} TV bạn)` : ''}`;
 
   if (bodyEl) {
     const memberChips = (ses.members || []).map(m => `
@@ -2554,15 +2561,7 @@ function openActivitySessionDetailModal(sessionId) {
       </span>
     `).join('');
 
-    const exMembersList = exClub && Array.isArray(exClub.members) ? exClub.members : [];
-    const exMembersChips = exMembersList.map(name => `
-      <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 rounded-lg border border-amber-300 text-xs font-black text-amber-950 shadow-2xs">
-        <span>🤝 ${escapeHtml(name)}</span>
-        <span class="text-amber-700 font-bold">(${formatMoney(exClub.feePerPerson || ses.shuttleFeePerMember || 0)})</span>
-      </span>
-    `).join('');
-
-    const exTotalPay = exClub ? (exClub.totalPay || (exCount * (exClub.feePerPerson || ses.shuttleFeePerMember || 0))) : 0;
+    const exTotalPay = ses.exchangePaid !== undefined ? ses.exchangePaid : exClubs.reduce((sum, c) => sum + (c.totalPay || ((c.count || (c.members || []).length) * (c.feePerPerson || ses.shuttleFeePerMember || 0))), 0);
 
     bodyEl.innerHTML = `
       <div class="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200 text-center">
@@ -2571,7 +2570,7 @@ function openActivitySessionDetailModal(sessionId) {
           <b class="text-emerald-800 font-black text-xs sm:text-sm">${formatMoney(ses.shuttleTotal || 0)}</b>
         </div>
         <div>
-          <span class="text-[10px] text-slate-500 block font-bold">🎟️ ${exClub ? `CLB bạn & Khách` : 'Thu khách'}</span>
+          <span class="text-[10px] text-slate-500 block font-bold">🎟️ ${exClubs.length > 0 ? `CLB bạn & Khách` : 'Thu khách'}</span>
           <b class="text-amber-800 font-black text-xs sm:text-sm">${formatMoney((ses.guestPaid || 0) + exTotalPay)}</b>
         </div>
         <div>
@@ -2580,23 +2579,37 @@ function openActivitySessionDetailModal(sessionId) {
         </div>
       </div>
 
-      ${exClub ? `
-      <div class="p-3 bg-amber-50/70 rounded-2xl border border-amber-300/80 space-y-1.5">
-        <div class="flex items-center justify-between">
-          <div class="text-xs font-black text-amber-950 flex items-center gap-1.5">
-            <span>🤝</span>
-            <span>CLB Giao Lưu: <b>${escapeHtml(exClub.name || 'CLB Giao lưu')}</b></span>
+      ${exClubs.length > 0 ? `
+      <div class="space-y-2">
+        ${exClubs.map(c => {
+          const cMems = Array.isArray(c.members) ? c.members : [];
+          const cCount = c.count || cMems.length;
+          const cPay = c.totalPay || (cCount * (c.feePerPerson || ses.shuttleFeePerMember || 0));
+          return `
+          <div class="p-3 bg-amber-50/70 rounded-2xl border border-amber-300/80 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <div class="text-xs font-black text-amber-950 flex items-center gap-1.5">
+                <span>🤝</span>
+                <span>CLB Giao Lưu: <b>${escapeHtml(c.name || 'CLB Giao lưu')}</b></span>
+              </div>
+              <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
+                ${cCount} người • Đóng ${formatMoney(cPay)}
+              </span>
+            </div>
+            <div class="text-[11px] text-amber-800 font-semibold">
+              Chi phí chia đều: <b>${formatMoney(c.feePerPerson || ses.shuttleFeePerMember || 0)}/người</b>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${cMems.length > 0 ? cMems.map(name => `
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 rounded-lg border border-amber-300 text-xs font-black text-amber-950 shadow-2xs">
+                  <span>🤝 ${escapeHtml(name)}</span>
+                  <span class="text-amber-700 font-bold">(${formatMoney(c.feePerPerson || ses.shuttleFeePerMember || 0)})</span>
+                </span>
+              `).join('') : '<span class="text-xs text-amber-700 italic">Chưa có tên thành viên</span>'}
+            </div>
           </div>
-          <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
-            ${exCount} người • Đóng ${formatMoney(exTotalPay)}
-          </span>
-        </div>
-        <div class="text-[11px] text-amber-800 font-semibold">
-          Chi phí chia đều: <b>${formatMoney(exClub.feePerPerson || ses.shuttleFeePerMember || 0)}/người</b>
-        </div>
-        <div class="flex flex-wrap gap-1.5 pt-1">
-          ${exMembersChips || '<span class="text-xs text-amber-700 italic">Chưa có tên thành viên</span>'}
-        </div>
+          `;
+        }).join('')}
       </div>
       ` : ''}
 
@@ -2655,6 +2668,7 @@ let activityState = {
   lang: 'VI',
   exchangeClubName: '',
   exchangeMembers: [],
+  exchangeClubs: [],
   selectedMemberIds: new Set(),
   selectedGuestIds: new Set(),
   saveGuestDebt: false,
@@ -2683,6 +2697,7 @@ function saveActivitySessionState() {
       lang: activityState.lang || 'VI',
       exchangeClubName: activityState.exchangeClubName || '',
       exchangeMembers: Array.isArray(activityState.exchangeMembers) ? activityState.exchangeMembers : [],
+      exchangeClubs: Array.isArray(activityState.exchangeClubs) ? activityState.exchangeClubs : [],
       selectedMemberIds: Array.from(activityState.selectedMemberIds || []),
       selectedGuestIds: Array.from(activityState.selectedGuestIds || []),
       saveGuestDebt: activityState.saveGuestDebt,
@@ -2738,6 +2753,19 @@ function applyLiveSessionFromCloud(data) {
     activityState.lang = data.lang || 'VI';
     activityState.exchangeClubName = data.exchangeClubName || '';
     activityState.exchangeMembers = Array.isArray(data.exchangeMembers) ? data.exchangeMembers : [];
+    if (Array.isArray(data.exchangeClubs) && data.exchangeClubs.length > 0) {
+      activityState.exchangeClubs = data.exchangeClubs;
+      activityState.exchangeClubName = activityState.exchangeClubs.map(c => c.name).filter(Boolean).join(', ');
+      activityState.exchangeMembers = activityState.exchangeClubs.flatMap(c => c.members || []);
+    } else if (activityState.exchangeClubName || activityState.exchangeMembers.length > 0) {
+      activityState.exchangeClubs = [{
+        id: 'EXC_1',
+        name: activityState.exchangeClubName || 'CLB Giao lưu',
+        members: [...activityState.exchangeMembers]
+      }];
+    } else {
+      activityState.exchangeClubs = [];
+    }
     activityState.selectedMemberIds = restoredMembers;
     activityState.selectedGuestIds = restoredGuests;
     activityState.saveGuestDebt = !!data.saveGuestDebt;
@@ -2813,6 +2841,7 @@ function initActivitySessionData(forceReset = false) {
   activityState.lang = 'VI';
   activityState.exchangeClubName = '';
   activityState.exchangeMembers = [];
+  activityState.exchangeClubs = [];
   activityState.selectedMemberIds = new Set();
   activityState.selectedGuestIds = new Set();
   activityState.saveGuestDebt = false;
@@ -3105,12 +3134,22 @@ function loadSessionIntoAttendance(ses, startInEditMode = false) {
   activityState.dailyBoxPrice = ses.dailyBoxPrice || AppState.config?.dailyBoxPrice || 340000;
   activityState.selectedMemberIds = new Set((ses.members || []).map(m => m.id));
   activityState.selectedGuestIds = new Set((ses.guests || []).map(g => g.id));
-  if (ses.exchangeClub) {
+  if (Array.isArray(ses.exchangeClubs) && ses.exchangeClubs.length > 0) {
+    activityState.exchangeClubs = JSON.parse(JSON.stringify(ses.exchangeClubs));
+    activityState.exchangeClubName = activityState.exchangeClubs.map(c => c.name).filter(Boolean).join(', ');
+    activityState.exchangeMembers = activityState.exchangeClubs.flatMap(c => c.members || []);
+  } else if (ses.exchangeClub) {
     activityState.exchangeClubName = ses.exchangeClub.name || '';
     activityState.exchangeMembers = Array.isArray(ses.exchangeClub.members) ? [...ses.exchangeClub.members] : [];
+    activityState.exchangeClubs = [{
+      id: 'EXC_1',
+      name: activityState.exchangeClubName || 'CLB Giao lưu',
+      members: [...activityState.exchangeMembers]
+    }];
   } else {
     activityState.exchangeClubName = '';
     activityState.exchangeMembers = [];
+    activityState.exchangeClubs = [];
   }
   if (ses.expenses && ses.expenses.length > 0) {
     activityState.expenses = JSON.parse(JSON.stringify(ses.expenses));
@@ -3465,7 +3504,8 @@ function openCreateActivityModal() {
   }
   const clubNameInp = document.getElementById('newActExchangeClubName');
   if (clubNameInp) {
-    clubNameInp.value = activityState.exchangeClubName || '';
+    const clubs = (typeof getNormalizedExchangeClubs === 'function') ? getNormalizedExchangeClubs() : [];
+    clubNameInp.value = clubs.length > 0 ? clubs.map(c => c.name).filter(Boolean).join(', ') : (activityState.exchangeClubName || '');
   }
   const clubMemsInp = document.getElementById('newActExchangeMembers');
   if (clubMemsInp) {
@@ -3564,14 +3604,28 @@ function submitCreateActivitySession(e) {
   activityState.editingSessionId = null;
 
   if (chosenType === 'Giao lưu') {
-    const clubName = document.getElementById('newActExchangeClubName')?.value.trim() || 'CLB Giao lưu';
+    const rawClubName = document.getElementById('newActExchangeClubName')?.value.trim() || 'CLB Giao lưu';
     const rawMems = document.getElementById('newActExchangeMembers')?.value || '';
+    const clubNames = rawClubName.split(/[,;\n\r]+/).map(s => s.trim()).filter(Boolean);
+    if (clubNames.length === 0) clubNames.push('CLB Giao lưu');
+
     const parsedMems = rawMems.split(/[,;\n\r]+/).map(s => s.trim().toUpperCase()).filter(Boolean);
-    activityState.exchangeClubName = clubName;
-    activityState.exchangeMembers = parsedMems;
+
+    activityState.exchangeClubs = clubNames.map((cName, idx) => ({
+      id: 'EXC_' + Date.now() + '_' + idx,
+      name: cName,
+      members: (idx === 0) ? parsedMems : []
+    }));
+    if (typeof syncExchangeClubsBackward === 'function') {
+      syncExchangeClubsBackward();
+    } else {
+      activityState.exchangeClubName = clubNames.join(', ');
+      activityState.exchangeMembers = parsedMems;
+    }
   } else {
     activityState.exchangeClubName = '';
     activityState.exchangeMembers = [];
+    activityState.exchangeClubs = [];
   }
 
   if (activityState.expenses && activityState.expenses.length > 0) {
@@ -3597,7 +3651,7 @@ function submitCreateActivitySession(e) {
   switchTab('attendance');
   renderAttendanceTab();
 
-  let toastExtra = chosenType === 'Giao lưu' ? ` (CLB ${activityState.exchangeClubName}: ${activityState.exchangeMembers.length} người)` : '';
+  let toastExtra = chosenType === 'Giao lưu' ? ` (${(activityState.exchangeClubs || []).length} CLB: ${activityState.exchangeClubName}: ${activityState.exchangeMembers.length} người)` : '';
   showToast(`✓ Đã tạo buổi hoạt động ngày ${formattedDate} (${chosenType}${toastExtra}) với đơn giá hộp: ${formatMoney(chosenBoxPrice)} (1 quả = ${formatMoney(unitPrice)})!`, 'success');
 }
 
@@ -4764,6 +4818,40 @@ function onActivityTypeChanged(val) {
   recalculateActivitySplit();
 }
 
+function syncExchangeClubsBackward() {
+  if (!Array.isArray(activityState.exchangeClubs)) {
+    activityState.exchangeClubs = [];
+  }
+  activityState.exchangeClubName = activityState.exchangeClubs.map(c => c.name).filter(Boolean).join(', ');
+  activityState.exchangeMembers = activityState.exchangeClubs.flatMap(c => c.members || []);
+}
+
+function getNormalizedExchangeClubs() {
+  if (Array.isArray(activityState.exchangeClubs) && activityState.exchangeClubs.length > 0) {
+    return activityState.exchangeClubs;
+  }
+  if ((activityState.exchangeClubName && activityState.exchangeClubName.trim()) || (Array.isArray(activityState.exchangeMembers) && activityState.exchangeMembers.length > 0)) {
+    const rawName = (activityState.exchangeClubName || 'CLB Giao lưu').trim();
+    const names = rawName.split(/[,;\n\r]+/).map(s => s.trim()).filter(Boolean);
+    if (names.length <= 1) {
+      activityState.exchangeClubs = [{
+        id: 'EXC_' + Date.now(),
+        name: rawName || 'CLB Giao lưu',
+        members: Array.isArray(activityState.exchangeMembers) ? [...activityState.exchangeMembers] : []
+      }];
+    } else {
+      activityState.exchangeClubs = names.map((n, i) => ({
+        id: 'EXC_' + Date.now() + '_' + i,
+        name: n,
+        members: i === 0 ? (Array.isArray(activityState.exchangeMembers) ? [...activityState.exchangeMembers] : []) : []
+      }));
+    }
+    syncExchangeClubsBackward();
+    return activityState.exchangeClubs;
+  }
+  return [];
+}
+
 function renderExchangeClubUI() {
   const section = document.getElementById('actExchangeClubSection');
   if (!section) return;
@@ -4783,39 +4871,85 @@ function renderExchangeClubUI() {
   if (quickBar) quickBar.classList.add('hidden');
   if (quickBtn) quickBtn.classList.add('hidden');
 
-  // Input Tên CLB
-  const nameInput = document.getElementById('actExchangeClubNameInput');
-  if (nameInput && document.activeElement !== nameInput) {
-    nameInput.value = activityState.exchangeClubName || '';
+  const clubs = getNormalizedExchangeClubs();
+  if (clubs.length === 0) {
+    clubs.push({
+      id: 'EXC_' + Date.now(),
+      name: 'CLB Giao lưu',
+      members: []
+    });
+    syncExchangeClubsBackward();
   }
+
+  const totalMembers = clubs.reduce((sum, c) => sum + (c.members ? c.members.length : 0), 0);
 
   // Count badge
   const countBadge = document.getElementById('actExchangeClubMemberCountBadge');
-  const members = Array.isArray(activityState.exchangeMembers) ? activityState.exchangeMembers : [];
   if (countBadge) {
-    countBadge.textContent = `${members.length} người`;
+    countBadge.textContent = `${totalMembers} người • ${clubs.length} CLB`;
   }
 
-  // Chips container
-  const container = document.getElementById('actExchangeMembersChipsContainer');
+  // Render danh sách các thẻ CLB vào actExchangeClubsListContainer
+  const container = document.getElementById('actExchangeClubsListContainer');
   if (container) {
-    if (members.length === 0) {
-      container.innerHTML = '';
-    } else {
-      container.innerHTML = members.map((memName, idx) => `
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-white border border-amber-300 text-amber-950 shadow-2xs">
-          <span>🤝 ${escapeHtml(memName)}</span>
-          <button type="button" onclick="removeExchangeMember(${idx})" class="w-4 h-4 rounded-full hover:bg-rose-100 hover:text-rose-600 flex items-center justify-center text-[11px] text-slate-400 font-black transition cursor-pointer" title="Xóa người này">✕</button>
-        </span>
-      `).join('');
-    }
-  }
+    container.innerHTML = clubs.map((club, cIdx) => {
+      const cMembers = Array.isArray(club.members) ? club.members : [];
+      return `
+        <div class="p-2.5 bg-white/95 rounded-xl border border-amber-300 shadow-2xs space-y-2">
+          <!-- Club Header -->
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+              <span class="text-[11px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
+                CLB #${cIdx + 1}
+              </span>
+              <input type="text"
+                     value="${escapeHtml(club.name)}" 
+                     onchange="updateExchangeClubName(${cIdx}, this.value)" 
+                     placeholder="Tên CLB bạn (VD: CLB XH, CLB A...)" 
+                     class="font-black text-xs text-amber-950 bg-amber-50/60 focus:bg-white border border-amber-200 focus:border-amber-400 rounded-lg px-2 py-1 w-full max-w-[200px] outline-none transition shadow-2xs" 
+                     title="Chạm vào để sửa tên CLB này" />
+              <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 shrink-0">
+                ${cMembers.length} người
+              </span>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" onclick="promptAddMultipleExchangeMembers(${cIdx})" class="text-[10px] text-amber-800 hover:text-amber-950 font-bold px-1.5 py-0.5 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 transition cursor-pointer" title="Dán danh sách nhiều thành viên">
+                📋 Dán DS
+              </button>
+              ${clubs.length > 1 ? `
+                <button type="button" onclick="removeExchangeClub(${cIdx})" class="text-[10px] text-rose-500 hover:text-rose-700 hover:bg-rose-50 font-bold px-1.5 py-0.5 rounded transition cursor-pointer" title="Xóa toàn bộ CLB này">
+                  ✕ Xóa CLB
+                </button>
+              ` : ''}
+            </div>
+          </div>
 
-  // Cập nhật tóm tắt
-  const shareText = document.getElementById('actExchangeClubShareText');
-  const clubName = activityState.exchangeClubName || 'CLB Giao lưu';
-  if (shareText) {
-    shareText.textContent = `${clubName} (${members.length} người)`;
+          <!-- Quick Add Member Row for this Club -->
+          <div class="flex items-center gap-1.5">
+            <input type="text" 
+                   id="actExClubInput_${cIdx}" 
+                   placeholder="Nhập tên TV ${escapeHtml(club.name)} (cách nhau dấu phẩy)..." 
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();addExchangeMemberFromClubInput(${cIdx});}"
+                   class="flex-1 px-2.5 py-1 text-xs font-semibold border border-amber-200 rounded-lg bg-amber-50/30 focus:bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-900 placeholder:text-slate-400" />
+            <button type="button" 
+                    onclick="addExchangeMemberFromClubInput(${cIdx})" 
+                    class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-xs rounded-lg transition cursor-pointer shadow-2xs shrink-0">
+              + Thêm
+            </button>
+          </div>
+
+          <!-- Member Chips for this Club -->
+          <div class="flex flex-wrap gap-1 min-h-[24px]">
+            ${cMembers.length > 0 ? cMembers.map((memName, mIdx) => `
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-50 border border-amber-200 text-amber-950 shadow-2xs">
+                <span>🤝 ${escapeHtml(memName)}</span>
+                <button type="button" onclick="removeExchangeMemberFromClub(${cIdx}, ${mIdx})" class="w-3.5 h-3.5 rounded-full hover:bg-rose-100 hover:text-rose-600 flex items-center justify-center text-[10px] text-slate-400 font-black transition cursor-pointer" title="Xóa người này">✕</button>
+              </span>
+            `).join('') : '<span class="text-[11px] text-amber-700/70 italic py-0.5">Chưa có thành viên nào. Nhập tên và bấm "+ Thêm".</span>'}
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 }
 
@@ -4824,18 +4958,28 @@ function enableExchangeClubMode() {
   const typeSelect = document.getElementById('actTypeSelect');
   if (typeSelect) typeSelect.value = 'Giao lưu';
 
+  const clubs = getNormalizedExchangeClubs();
+  if (clubs.length === 0) {
+    clubs.push({
+      id: 'EXC_' + Date.now(),
+      name: 'CLB Giao lưu',
+      members: []
+    });
+    syncExchangeClubsBackward();
+  }
+
   saveActivitySessionState();
   renderExchangeClubUI();
   recalculateActivitySplit();
 
-  const clubInput = document.getElementById('actExchangeClubNameInput');
-  if (clubInput) {
-    clubInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => {
-      clubInput.focus();
-    }, 150);
-  }
-  showToast('🤝 Đã bật chế độ Giao lưu! Nhập tên CLB bạn và thành viên tham gia.', 'info');
+  setTimeout(() => {
+    const firstInput = document.getElementById('actExClubInput_0');
+    if (firstInput) {
+      firstInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstInput.focus();
+    }
+  }, 150);
+  showToast('🤝 Đã bật chế độ Giao lưu! Bạn có thể thêm nhiều CLB bạn (CLB XH, CLB A...).', 'info');
 }
 
 function disableExchangeClubMode() {
@@ -4849,33 +4993,79 @@ function disableExchangeClubMode() {
   showToast('Đã chuyển về chế độ Buổi cầu định kỳ.', 'info');
 }
 
-function promptChangeExchangeClubName() {
-  const current = activityState.exchangeClubName || '';
-  const val = prompt('Nhập tên CLB giao lưu (hoặc thêm tên CLB bạn):', current || 'CLB XH');
-  if (val !== null && val.trim()) {
-    activityState.exchangeClubName = val.trim();
-    const nameInput = document.getElementById('actExchangeClubNameInput');
-    if (nameInput) nameInput.value = activityState.exchangeClubName;
-    saveActivitySessionState();
-    renderExchangeClubUI();
-    recalculateActivitySplit();
-    showToast(`✓ Đã cập nhật CLB giao lưu: ${activityState.exchangeClubName}`, 'success');
+function addNewExchangeClub(name = '') {
+  if (!Array.isArray(activityState.exchangeClubs)) {
+    activityState.exchangeClubs = [];
+  }
+  const defaultLetter = String.fromCharCode(65 + activityState.exchangeClubs.length);
+  const clubName = (name && name.trim()) ? name.trim() : (`CLB ${defaultLetter}`);
+  activityState.exchangeClubs.push({
+    id: 'EXC_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    name: clubName,
+    members: []
+  });
+  syncExchangeClubsBackward();
+  saveActivitySessionState();
+  renderExchangeClubUI();
+  recalculateActivitySplit();
+
+  const newIdx = activityState.exchangeClubs.length - 1;
+  setTimeout(() => {
+    const newInp = document.getElementById(`actExClubInput_${newIdx}`);
+    if (newInp) {
+      newInp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      newInp.focus();
+    }
+  }, 100);
+  showToast(`✓ Đã thêm ${clubName}! Nhập thành viên tham gia của CLB này.`, 'success');
+}
+
+function promptAddNewExchangeClub() {
+  const currentCount = (activityState.exchangeClubs || []).length;
+  const defaultName = currentCount === 0 ? 'CLB XH' : ('CLB ' + String.fromCharCode(65 + currentCount));
+  const val = prompt('Nhập tên CLB giao lưu mới (VD: CLB XH, CLB A, CLB B...):', defaultName);
+  if (val !== null) {
+    addNewExchangeClub(val.trim() || defaultName);
   }
 }
 
-function onExchangeClubNameChanged(val) {
-  activityState.exchangeClubName = val.trim();
+function removeExchangeClub(clubIdx) {
+  if (!Array.isArray(activityState.exchangeClubs)) return;
+  if (clubIdx < 0 || clubIdx >= activityState.exchangeClubs.length) return;
+  const target = activityState.exchangeClubs[clubIdx];
+  if (target.members && target.members.length > 0) {
+    if (!confirm(`Xác nhận xóa "${target.name}" và toàn bộ ${target.members.length} thành viên của CLB này?`)) {
+      return;
+    }
+  }
+  activityState.exchangeClubs.splice(clubIdx, 1);
+  if (activityState.exchangeClubs.length === 0) {
+    activityState.exchangeClubs.push({
+      id: 'EXC_' + Date.now(),
+      name: 'CLB Giao lưu',
+      members: []
+    });
+  }
+  syncExchangeClubsBackward();
+  saveActivitySessionState();
+  renderExchangeClubUI();
+  recalculateActivitySplit();
+  showToast(`Đã xóa ${target.name}`, 'info');
+}
+
+function updateExchangeClubName(clubIdx, newName) {
+  if (!Array.isArray(activityState.exchangeClubs)) return;
+  if (clubIdx < 0 || clubIdx >= activityState.exchangeClubs.length) return;
+  activityState.exchangeClubs[clubIdx].name = newName.trim() || (`CLB #${clubIdx + 1}`);
+  syncExchangeClubsBackward();
   saveActivitySessionState();
   recalculateActivitySplit();
-  const shareText = document.getElementById('actExchangeClubShareText');
-  const members = Array.isArray(activityState.exchangeMembers) ? activityState.exchangeMembers : [];
-  if (shareText) {
-    shareText.textContent = `${activityState.exchangeClubName || 'CLB Giao lưu'} (${members.length} người)`;
-  }
 }
 
-function addExchangeMemberFromInput() {
-  const input = document.getElementById('actNewExchangeMemberInput');
+function addExchangeMemberFromClubInput(clubIdx) {
+  if (!Array.isArray(activityState.exchangeClubs)) return;
+  if (clubIdx < 0 || clubIdx >= activityState.exchangeClubs.length) return;
+  const input = document.getElementById(`actExClubInput_${clubIdx}`);
   if (!input) return;
   const raw = input.value.trim();
   if (!raw) return;
@@ -4883,49 +5073,73 @@ function addExchangeMemberFromInput() {
   const names = raw.split(/[,;\n\r]+/).map(s => s.trim().toUpperCase()).filter(Boolean);
   if (names.length === 0) return;
 
-  if (!Array.isArray(activityState.exchangeMembers)) {
-    activityState.exchangeMembers = [];
-  }
+  const club = activityState.exchangeClubs[clubIdx];
+  if (!Array.isArray(club.members)) club.members = [];
 
-  let addedCount = 0;
-  names.forEach(name => {
-    if (!activityState.exchangeMembers.includes(name)) {
-      activityState.exchangeMembers.push(name);
-      addedCount++;
+  let added = 0;
+  names.forEach(n => {
+    if (!club.members.includes(n)) {
+      club.members.push(n);
+      added++;
     }
   });
 
   input.value = '';
+  syncExchangeClubsBackward();
   saveActivitySessionState();
   renderExchangeClubUI();
   recalculateActivitySplit();
-  showToast(`✓ Đã thêm ${addedCount} thành viên CLB giao lưu!`, 'success');
+  showToast(`✓ Đã thêm ${added} thành viên vào ${club.name}!`, 'success');
 }
 
-function removeExchangeMember(index) {
-  if (!Array.isArray(activityState.exchangeMembers)) return;
-  if (index >= 0 && index < activityState.exchangeMembers.length) {
-    const removed = activityState.exchangeMembers.splice(index, 1);
+function removeExchangeMemberFromClub(clubIdx, memIdx) {
+  if (!Array.isArray(activityState.exchangeClubs)) return;
+  if (clubIdx < 0 || clubIdx >= activityState.exchangeClubs.length) return;
+  const club = activityState.exchangeClubs[clubIdx];
+  if (!Array.isArray(club.members)) return;
+  if (memIdx >= 0 && memIdx < club.members.length) {
+    const removed = club.members.splice(memIdx, 1);
+    syncExchangeClubsBackward();
     saveActivitySessionState();
     renderExchangeClubUI();
     recalculateActivitySplit();
-    showToast(`Đã xóa thành viên: ${removed[0]}`, 'info');
+    showToast(`Đã xóa ${removed[0]} khỏi ${club.name}`, 'info');
   }
 }
 
-function promptAddMultipleExchangeMembers() {
-  const defaultText = activityState.exchangeMembers && activityState.exchangeMembers.length > 0 ? activityState.exchangeMembers.join(', ') : 'HÀ, PHƯỢNG, TÙNG, THÁI, THANH';
-  const val = prompt('Dán hoặc nhập danh sách thành viên CLB giao lưu (phân cách bằng dấu phẩy):', defaultText);
+function promptAddMultipleExchangeMembers(clubIdx) {
+  if (!Array.isArray(activityState.exchangeClubs)) return;
+  if (clubIdx < 0 || clubIdx >= activityState.exchangeClubs.length) return;
+  const club = activityState.exchangeClubs[clubIdx];
+  const defaultText = (club.members && club.members.length > 0) ? club.members.join(', ') : 'HÀ, PHƯỢNG, TUẤN, MINH';
+  const val = prompt(`Dán hoặc nhập danh sách thành viên của ${club.name} (phân cách bằng dấu phẩy):`, defaultText);
   if (val === null) return;
 
   const names = val.split(/[,;\n\r]+/).map(s => s.trim().toUpperCase()).filter(Boolean);
   if (names.length === 0) return;
 
-  activityState.exchangeMembers = names;
+  club.members = names;
+  syncExchangeClubsBackward();
   saveActivitySessionState();
   renderExchangeClubUI();
   recalculateActivitySplit();
-  showToast(`✓ Đã cập nhật ${names.length} thành viên CLB giao lưu!`, 'success');
+  showToast(`✓ Đã cập nhật ${names.length} thành viên cho ${club.name}!`, 'success');
+}
+
+// Giữ lại các hàm cũ làm alias để tránh lỗi nếu có mã gọi
+function promptChangeExchangeClubName() {
+  promptAddNewExchangeClub();
+}
+function onExchangeClubNameChanged(val) {
+  if (activityState.exchangeClubs && activityState.exchangeClubs.length > 0) {
+    updateExchangeClubName(0, val);
+  }
+}
+function addExchangeMemberFromInput() {
+  addExchangeMemberFromClubInput(0);
+}
+function removeExchangeMember(index) {
+  removeExchangeMemberFromClub(0, index);
 }
 
 function setActivityLanguage(lang) {
@@ -4968,16 +5182,20 @@ function getCheckedInAttendees() {
       });
     }
   });
-  // Thành viên CLB giao lưu
-  if (activityState.type === 'Giao lưu' && Array.isArray(activityState.exchangeMembers)) {
-    const clubName = activityState.exchangeClubName || 'CLB Giao lưu';
-    activityState.exchangeMembers.forEach((memName, idx) => {
-      const exId = `EX_${idx}_${memName.replace(/\s+/g, '_')}`;
-      list.push({
-        id: exId,
-        name: `${memName} (${clubName})`,
-        chipName: memName,
-        type: 'EXCHANGE'
+  // Thành viên các CLB giao lưu (hỗ trợ nhiều CLB)
+  if (activityState.type === 'Giao lưu') {
+    const clubs = (typeof getNormalizedExchangeClubs === 'function') ? getNormalizedExchangeClubs() : [];
+    clubs.forEach((club, cIdx) => {
+      const cName = club.name || `CLB ${cIdx + 1}`;
+      (club.members || []).forEach((memName, mIdx) => {
+        const exId = `EX_${cIdx}_${mIdx}_${memName.replace(/\s+/g, '_')}`;
+        list.push({
+          id: exId,
+          name: `${memName} (${cName})`,
+          chipName: `${memName} (${cName})`,
+          clubName: cName,
+          type: 'EXCHANGE'
+        });
       });
     });
   }
@@ -4988,7 +5206,6 @@ function buildAttendeeOptions(selectedId, excludeIds = [], placeholder = '-- Ch�
   const attendees = getCheckedInAttendees();
   let html = `<option value="">${placeholder}</option>`;
   attendees.forEach(a => {
-    // Thành viên đã được chọn ở vị trí khác trong cùng trận sẽ không hiển thị ở lựa chọn này
     if (excludeIds.includes(a.id) && a.id !== selectedId) {
       return;
     }
@@ -5000,13 +5217,15 @@ function buildAttendeeOptions(selectedId, excludeIds = [], placeholder = '-- Ch�
 
 function getAttendeeDisplayName(id) {
   if (!id) return '';
+  const found = getCheckedInAttendees().find(a => a.id === id);
+  if (found) return found.chipName || found.name;
   if (typeof id === 'string' && id.startsWith('EX_')) {
     const parts = id.split('_');
-    return parts.slice(2).join(' ') || id;
+    return parts.slice(3).join(' ') || parts.slice(2).join(' ') || id;
   }
-  const found = AppState.members.find(m => m.id === id);
-  if (!found) return id;
-  return found.chipName || found.name.split(' ').pop().toUpperCase();
+  const m = AppState.members.find(x => x.id === id);
+  if (!m) return id;
+  return m.chipName || m.name.split(' ').pop().toUpperCase();
 }
 
 /**
@@ -5701,11 +5920,11 @@ function renderActivityMemberBreakdown(list, shuttleFeePerMember, totalMemberCou
   if (!container) return;
 
   const isExchange = (activityState.type === 'Giao lưu');
-  const exClubName = (activityState.exchangeClubName || '').trim() || 'CLB Giao lưu';
-  const exMembers = (isExchange && Array.isArray(activityState.exchangeMembers)) ? activityState.exchangeMembers : [];
-  const exCount = exMembers.length;
+  const clubs = isExchange ? ((typeof getNormalizedExchangeClubs === 'function') ? getNormalizedExchangeClubs() : []) : [];
+  const exCount = clubs.reduce((sum, c) => sum + (c.members ? c.members.length : 0), 0);
   const totalSplitParticipants = (list ? list.length : 0) + exCount;
   const exTotalPay = exCount * shuttleFeePerMember;
+  const exClubsName = clubs.map(c => c.name).filter(Boolean).join(', ') || 'CLB Giao lưu';
 
   if ((!list || list.length === 0) && exCount === 0) {
     container.innerHTML = `
@@ -5718,7 +5937,7 @@ function renderActivityMemberBreakdown(list, shuttleFeePerMember, totalMemberCou
           Tổng số cầu trừ khách = Số tiền chia đều cho tất cả người tham gia
         </p>
         <p class="text-[11px] text-slate-400 mt-0.5">
-          Chưa chọn người tham gia nào. Hãy tích chọn thành viên bên trên hoặc thêm thành viên CLB giao lưu để hệ thống tự động tính tiền cầu và chia đều.
+          Chưa chọn người tham gia nào. Hãy tích chọn thành viên bên trên hoặc thêm thành viên các CLB giao lưu để hệ thống tự động tính tiền cầu và chia đều.
         </p>
       </div>
     `;
@@ -5761,17 +5980,17 @@ function renderActivityMemberBreakdown(list, shuttleFeePerMember, totalMemberCou
           <span class="text-base">${isExchange ? '🤝' : '📋'}</span>
           <div>
             <h4 class="font-black text-slate-900 text-xs leading-tight">
-              ${isExchange && exCount > 0 ? `Dự Toán Tiền Cầu Buổi Giao Lưu Với ${escapeHtml(exClubName)}` : `Dự Toán Tiền Cầu Từng Người Điểm Danh`}
+              ${isExchange && exCount > 0 ? `Dự Toán Tiền Cầu Buổi Giao Lưu Với ${escapeHtml(exClubsName)}` : `Dự Toán Tiền Cầu Từng Người Điểm Danh`}
             </h4>
             <p class="text-[10px] text-emerald-800 font-bold leading-tight">
-              ${isExchange && exCount > 0 ? `Tổng ${totalSplitParticipants} người chia đều (${(list || []).length} TV chủ nhà + ${exCount} TV ${escapeHtml(exClubName)}) • Mỗi người đóng ${formatMoney(shuttleFeePerMember)}` : `Tổng số cầu trừ khách = Số tiền chia đều cho thành viên`}
+              ${isExchange && exCount > 0 ? `Tổng ${totalSplitParticipants} người chia đều (${(list || []).length} TV chủ nhà + ${exCount} TV bạn) • Mỗi người đóng ${formatMoney(shuttleFeePerMember)}` : `Tổng số cầu trừ khách = Số tiền chia đều cho thành viên`}
             </p>
             <p class="text-[10px] text-slate-500 leading-tight">Đơn giá theo quả = 28.333đ (1 hộp 12 quả = 340.000đ) • Tiền cầu chia đều • Cho phép ví âm</p>
           </div>
         </div>
         <div class="flex items-center gap-1.5 text-[10px] font-bold">
           <span class="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300">
-            ${isExchange && exCount > 0 ? `${(list || []).length} TV chủ nhà + ${exCount} TV ${escapeHtml(exClubName)}` : `${(list || []).length} thành viên`}
+            ${isExchange && exCount > 0 ? `${(list || []).length} TV chủ nhà + ${exCount} TV bạn` : `${(list || []).length} thành viên`}
           </span>
           ${negativeCount > 0 ? `<span class="px-2 py-0.5 rounded-lg bg-rose-100 text-rose-700 border border-rose-300">⚠️ ${negativeCount} ví âm</span>` : ''}
         </div>
@@ -5785,7 +6004,7 @@ function renderActivityMemberBreakdown(list, shuttleFeePerMember, totalMemberCou
         </div>
         <div>
           <span class="text-[10px] text-slate-500 block">
-            ${isExchange && exCount > 0 ? `🤝 ${escapeHtml(exClubName)} (${exCount} TV)` : `🎟️ Thu khách (${activityState.selectedGuestIds ? activityState.selectedGuestIds.size : 0} khách)`}
+            ${isExchange && exCount > 0 ? `🤝 ${escapeHtml(exClubsName)} (${exCount} TV)` : `🎟️ Thu khách (${activityState.selectedGuestIds ? activityState.selectedGuestIds.size : 0} khách)`}
           </span>
           <b class="text-slate-900 font-black text-xs sm:text-sm text-amber-800">
             -${formatMoney(isExchange && exCount > 0 ? (guestPaid + exTotalPay) : (guestPaid || 0))}
@@ -5797,25 +6016,34 @@ function renderActivityMemberBreakdown(list, shuttleFeePerMember, totalMemberCou
         </div>
       </div>
 
-      ${isExchange && exCount > 0 ? `
-      <!-- Thẻ CLB Giao lưu thanh toán -->
-      <div class="p-2.5 bg-amber-50/90 rounded-xl border border-amber-300 text-xs shadow-2xs">
-        <div class="flex items-center justify-between text-amber-950 font-bold mb-1.5">
-          <span class="flex items-center gap-1.5">
-            <span>🤝</span>
-            <span>CLB giao lưu: <b>${escapeHtml(exClubName)}</b> (${exCount} người)</span>
-          </span>
-          <span class="text-amber-900 font-black px-2 py-0.5 rounded-lg bg-amber-200 border border-amber-300">
-            Đóng: ${formatMoney(exTotalPay)} (${formatMoney(shuttleFeePerMember)}/người)
-          </span>
-        </div>
-        <div class="flex flex-wrap gap-1">
-          ${exMembers.map(m => `
-            <span class="px-2 py-0.5 bg-white border border-amber-300 text-amber-950 rounded-lg text-[11px] font-black shadow-2xs">
-              🤝 ${escapeHtml(m)}
-            </span>
-          `).join('')}
-        </div>
+      ${(isExchange && clubs.length > 0 && exCount > 0) ? `
+      <!-- Thẻ các CLB Giao lưu thanh toán -->
+      <div class="space-y-1.5">
+        ${clubs.map(c => {
+          const cMems = c.members || [];
+          const cCount = cMems.length;
+          const cTotalPay = cCount * shuttleFeePerMember;
+          return `
+          <div class="p-2.5 bg-amber-50/90 rounded-xl border border-amber-300 text-xs shadow-2xs">
+            <div class="flex items-center justify-between text-amber-950 font-bold mb-1.5 flex-wrap gap-1">
+              <span class="flex items-center gap-1.5">
+                <span>🤝</span>
+                <span>CLB giao lưu: <b>${escapeHtml(c.name)}</b> (${cCount} người)</span>
+              </span>
+              <span class="text-amber-900 font-black px-2 py-0.5 rounded-lg bg-amber-200 border border-amber-300">
+                Thanh toán: ${formatMoney(cTotalPay)} (${formatMoney(shuttleFeePerMember)}/người)
+              </span>
+            </div>
+            <div class="flex flex-wrap gap-1">
+              ${cMems.length > 0 ? cMems.map(m => `
+                <span class="px-2 py-0.5 bg-white border border-amber-300 text-amber-950 rounded-lg text-[11px] font-black shadow-2xs">
+                  🤝 ${escapeHtml(m)}
+                </span>
+              `).join('') : '<span class="text-[11px] text-amber-600 italic">Chưa có thành viên</span>'}
+            </div>
+          </div>
+          `;
+        }).join('')}
       </div>
       ` : ''}
 
@@ -5865,15 +6093,14 @@ function recalculateActivitySplit() {
     }
   });
 
-  // 3. Số người tham gia chia đều (Thành viên CLB chủ nhà + Thành viên CLB giao lưu)
+  // 3. Số người tham gia chia đều (Thành viên CLB chủ nhà + Thành viên tất cả các CLB giao lưu)
   const isExchange = (activityState.type === 'Giao lưu');
-  const exClubName = (activityState.exchangeClubName || '').trim() || 'CLB Giao lưu';
-  const exMembers = (isExchange && Array.isArray(activityState.exchangeMembers)) ? activityState.exchangeMembers : [];
-  const exCount = exMembers.length;
+  const clubs = isExchange ? ((typeof getNormalizedExchangeClubs === 'function') ? getNormalizedExchangeClubs() : []) : [];
+  const exCount = clubs.reduce((sum, c) => sum + (c.members ? c.members.length : 0), 0);
   const memberCount = (activityState.selectedMemberIds || new Set()).size;
   const totalSplitParticipants = memberCount + exCount;
 
-  // 4. Dự Toán Tiền Cầu Từng Người = Tổng số cầu trừ khách lẻ = số tiền chia đều cho tất cả thành viên (chủ nhà + CLB bạn)
+  // 4. Dự Toán Tiền Cầu Từng Người = Tổng số cầu trừ khách lẻ = số tiền chia đều cho tất cả thành viên (chủ nhà + các CLB bạn)
   const needSplit = Math.max(0, shuttleTotal - guestPaid);
   const shuttleFeePerMember = totalSplitParticipants > 0 ? Math.round(needSplit / totalSplitParticipants) : 0;
   const totalMemberShuttleFee = shuttleFeePerMember * memberCount;
@@ -5883,7 +6110,8 @@ function recalculateActivitySplit() {
   const shareTextEl = document.getElementById('actExchangeClubShareText');
   const exTotalPayEl = document.getElementById('actExchangeClubTotalPay');
   if (shareTextEl) {
-    shareTextEl.textContent = `${exClubName} (${exCount} người • ${formatMoney(shuttleFeePerMember)}/người)`;
+    const clubsSummary = clubs.map(c => `${c.name} (${(c.members || []).length}ng)`).join(' + ') || 'CLB Giao lưu';
+    shareTextEl.textContent = `${clubsSummary} • ${formatMoney(shuttleFeePerMember)}/người`;
   }
   if (exTotalPayEl) {
     exTotalPayEl.textContent = formatMoney(exchangeTotalPay);
@@ -5943,7 +6171,7 @@ function recalculateActivitySplit() {
     if (totalSplitParticipants > 0) {
       perPersonBadge.textContent = `${formatMoney(shuttleFeePerMember)} / người`;
       perPersonBadge.title = isExchange && exCount > 0 
-        ? `${totalSplitParticipants} người chia đều (${memberCount} TV chủ nhà + ${exCount} ${exClubName})` 
+        ? `${totalSplitParticipants} người chia đều (${memberCount} TV chủ nhà + ${exCount} TV bạn: ${clubs.map(c => c.name).join(', ')})` 
         : `Mỗi người đóng: ${formatMoney(shuttleFeePerMember)}`;
     } else {
       perPersonBadge.textContent = '0đ / người';
@@ -5964,9 +6192,9 @@ function saveAndSplitActivitySession() {
   const memberCount = (activityState.selectedMemberIds || new Set()).size;
   const guestCount = (activityState.selectedGuestIds || new Set()).size;
   const isExchange = (activityState.type === 'Giao lưu');
-  const exClubName = (activityState.exchangeClubName || '').trim() || 'CLB Giao lưu';
-  const exMembers = (isExchange && Array.isArray(activityState.exchangeMembers)) ? activityState.exchangeMembers : [];
-  const exCount = exMembers.length;
+  const clubs = isExchange ? ((typeof getNormalizedExchangeClubs === 'function') ? getNormalizedExchangeClubs() : []) : [];
+  const exCount = clubs.reduce((sum, c) => sum + (c.members ? c.members.length : 0), 0);
+  const exClubNames = clubs.map(c => c.name).filter(Boolean).join(', ') || 'CLB Giao lưu';
   const totalSplitParticipants = memberCount + exCount;
 
   if (memberCount === 0 && guestCount === 0 && exCount === 0) {
@@ -6029,16 +6257,21 @@ function saveAndSplitActivitySession() {
 
   if (isExchange && exCount > 0) {
     confirmTitle = isEditing ? `[CHẾ ĐỘ SỬA] Xác nhận CẬP NHẬT & CHỐT LẠI buổi GIAO LƯU ngày ${dateFormatted}?` : `Xác nhận lưu & chốt buổi GIAO LƯU ngày ${dateFormatted}?`;
+    const clubsBreakdownLines = clubs.map(c => {
+      const cCount = (c.members || []).length;
+      return `  ↳ ${c.name} (${cCount} người: ${(c.members || []).join(', ')}): Đóng ${formatMoney(cCount * shuttleFeePerMember)}`;
+    }).join('\n');
+
     confirmMsg = `${confirmTitle}\n` +
-      `• Đối tác giao lưu: ${exClubName} (${exCount} người: ${exMembers.join(', ')})\n` +
+      `• Đối tác giao lưu: ${exClubNames} (${exCount} người)\n` +
       `• CLB Lập Trí: ${memberCount} thành viên tham gia\n` +
       `• Tổng người chia đều: ${totalSplitParticipants} người (${memberCount} TV chủ nhà + ${exCount} TV bạn)\n` +
       `• Tổng tiền cầu: ${formatMoney(shuttleTotal)}\n` +
       (guestPaid > 0 ? `• Khách lẻ đóng: -${formatMoney(guestPaid)} (${guestCount} khách)\n` : '') +
       `• Số tiền chia đều: ${formatMoney(shuttleFeePerMember)} / người\n` +
-      `  ↳ CLB ${exClubName} thanh toán: ${formatMoney(exchangeTotalPay)} (${exCount} người × ${formatMoney(shuttleFeePerMember)})\n` +
+      clubsBreakdownLines + '\n' +
       `  ↳ Mỗi TV Lập Trí trừ ví: ${formatMoney(shuttleFeePerMember)}\n` +
-      (isEditing ? `• HỆ THỐNG SẼ HOÀN TÁC TOÀN BỘ SỐ TIỀN VÀ SỐ BUỔI CŨ CỦA NGÀY ${dateFormatted}, sau đó trừ ví và cập nhật lại theo số liệu mới.` : `• Tiền cầu TV chủ nhà được trừ trực tiếp vào ví, tiền CLB bạn được ghi vào Sổ Quỹ Tạm Ứng.`);
+      (isEditing ? `• HỆ THỐNG SẼ HOÀN TÁC TOÀN BỘ SỐ TIỀN VÀ SỐ BUỔI CŨ CỦA NGÀY ${dateFormatted}, sau đó trừ ví và cập nhật lại theo số liệu mới.` : `• Tiền cầu TV chủ nhà được trừ trực tiếp vào ví, tiền các CLB bạn được ghi vào Sổ Quỹ Tạm Ứng.`);
   } else {
     confirmMsg = `${confirmTitle}\n` +
       `• Tổng tiền cầu: ${formatMoney(shuttleTotal)}\n` +
@@ -6180,20 +6413,27 @@ function saveAndSplitActivitySession() {
     });
   }
 
-  if (isExchange && exchangeTotalPay > 0) {
-    AppState.transactions.push({
-      id: 'TX_' + Date.now() + '_EXCHANGE',
-      sessionId: targetSessionId,
-      date: nowTime,
-      categoryGroup: 'ADVANCE_GUEST_IN',
-      subType: 'GUEST_ADV_IN',
-      categoryName: 'Thu tiền giao lưu CLB',
-      amount: exchangeTotalPay,
-      walletImpact: 0,
-      fundImpact: exchangeTotalPay,
-      targetName: `${exClubName} (${exCount} người)`,
-      description: `Thu tiền buổi cầu giao lưu từ ${exClubName} (${exMembers.join(', ')}) ngày ${dateFormatted} (${formatMoney(shuttleFeePerMember)}/người × ${exCount} người)`,
-      operator: (AppState.auth && AppState.auth.user) ? AppState.auth.user.username : 'admin'
+  if (isExchange && clubs.length > 0) {
+    clubs.forEach((c, idx) => {
+      const cMems = c.members || [];
+      const cCount = cMems.length;
+      const cTotalPay = cCount * shuttleFeePerMember;
+      if (cTotalPay > 0) {
+        AppState.transactions.push({
+          id: 'TX_' + Date.now() + '_EXCHANGE_' + idx,
+          sessionId: targetSessionId,
+          date: nowTime,
+          categoryGroup: 'ADVANCE_GUEST_IN',
+          subType: 'GUEST_ADV_IN',
+          categoryName: 'Thu tiền giao lưu CLB',
+          amount: cTotalPay,
+          walletImpact: 0,
+          fundImpact: cTotalPay,
+          targetName: `${c.name} (${cCount} người)`,
+          description: `Thu tiền buổi cầu giao lưu từ ${c.name} (${cMems.join(', ')}) ngày ${dateFormatted} (${formatMoney(shuttleFeePerMember)}/người × ${cCount} người)`,
+          operator: (AppState.auth && AppState.auth.user) ? AppState.auth.user.username : 'admin'
+        });
+      }
     });
   }
 
@@ -6251,9 +6491,17 @@ function saveAndSplitActivitySession() {
     memberCount: memberCount,
     guestCount: guestCount,
     exchangeCount: exCount,
-    exchangeClub: (isExchange && (exClubName || exMembers.length > 0)) ? {
-      name: exClubName,
-      members: Array.from(exMembers),
+    exchangeClubs: (isExchange && clubs.length > 0) ? clubs.map(c => ({
+      id: c.id,
+      name: c.name,
+      members: Array.from(c.members || []),
+      count: (c.members || []).length,
+      feePerPerson: shuttleFeePerMember,
+      totalPay: (c.members || []).length * shuttleFeePerMember
+    })) : [],
+    exchangeClub: (isExchange && clubs.length > 0) ? {
+      name: exClubNames,
+      members: clubs.flatMap(c => c.members || []),
       count: exCount,
       feePerPerson: shuttleFeePerMember,
       totalPay: exchangeTotalPay
@@ -6422,26 +6670,24 @@ function generateActivityReportCanvas(targetSession = null) {
   }
   const memberCount = memberList.length;
 
-  // CLB Giao lưu (nếu có)
-  const exClub = session ? session.exchangeClub : (
-    activityState.type === 'Giao lưu' && Array.isArray(activityState.exchangeMembers) && activityState.exchangeMembers.length > 0
-      ? {
-          name: activityState.exchangeClubName || 'CLB Giao lưu',
-          members: Array.from(activityState.exchangeMembers),
-          count: activityState.exchangeMembers.length,
-          feePerPerson: 0,
-          totalPay: 0
-        }
-      : null
-  );
-  const exMembers = (exClub && Array.isArray(exClub.members)) ? exClub.members : [];
-  const exCount = exClub ? (exClub.count || exMembers.length) : 0;
-  const isExchange = !!(exClub && exCount > 0);
+  // CLB Giao lưu (nếu có - hỗ trợ nhiều CLB)
+  let exClubsList = [];
+  if (session) {
+    if (Array.isArray(session.exchangeClubs) && session.exchangeClubs.length > 0) {
+      exClubsList = session.exchangeClubs;
+    } else if (session.exchangeClub) {
+      exClubsList = [session.exchangeClub];
+    }
+  } else if (activityState.type === 'Giao lưu') {
+    exClubsList = (typeof getNormalizedExchangeClubs === 'function') ? getNormalizedExchangeClubs() : [];
+  }
+  const exCount = exClubsList.reduce((sum, c) => sum + ((c.members || []).length || c.count || 0), 0);
+  const isExchange = (exCount > 0);
   const totalSplitCount = memberCount + exCount;
 
   const needSplit = session ? (session.needSplit !== undefined ? session.needSplit : Math.max(0, totalCost - guestPaid)) : Math.max(0, totalCost - guestPaid);
   const perPerson = session ? (session.shuttleFeePerMember !== undefined ? session.shuttleFeePerMember : (totalSplitCount > 0 ? Math.round(needSplit / totalSplitCount) : 0)) : (totalSplitCount > 0 ? Math.round(needSplit / totalSplitCount) : 0);
-  const exTotalPay = exClub ? (exClub.totalPay !== undefined ? exClub.totalPay : (exCount * perPerson)) : 0;
+  const exTotalPay = session ? (session.exchangePaid !== undefined ? session.exchangePaid : exClubsList.reduce((sum, c) => sum + (c.totalPay || (((c.members || []).length || c.count || 0) * perPerson)), 0)) : (exCount * perPerson);
 
   // Người ứng tiền
   let frontText = null;
@@ -6471,11 +6717,15 @@ function generateActivityReportCanvas(targetSession = null) {
   estHeight += expenseH;
   estHeight += 16;  // khoảng cách
 
-  // Chiều cao khối CLB giao lưu
-  const exChipRows = Math.ceil(Math.max(1, exMembers.length) / 5);
-  const exBoxHeight = isExchange ? (44 + (exChipRows * 34) + 10) : 0;
+  // Chiều cao khối các CLB giao lưu
+  let exTotalBoxHeight = 0;
   if (isExchange) {
-    estHeight += exBoxHeight + 16;
+    exClubsList.forEach(c => {
+      const cMems = Array.isArray(c.members) ? c.members : [];
+      const rows = Math.ceil(Math.max(1, cMems.length) / 5);
+      exTotalBoxHeight += (44 + (rows * 34) + 12);
+    });
+    estHeight += exTotalBoxHeight + 16;
   }
 
   // Chiều cao khối điểm danh thành viên chủ nhà
@@ -6650,36 +6900,46 @@ function generateActivityReportCanvas(targetSession = null) {
 
   curY += expenseH + 16;
 
-  // 4A. KHỐI CLB GIAO LƯU (NẾU CÓ)
+  // 4A. KHỐI CÁC CLB GIAO LƯU (NẾU CÓ)
   if (isExchange) {
-    drawReportRoundedRect(ctx, PADDING, curY, CONTENT_WIDTH, exBoxHeight, 14, '#fffbeb', '#fcd34d', 1.2);
+    exClubsList.forEach(c => {
+      const cMems = Array.isArray(c.members) ? c.members : [];
+      const cCount = (cMems.length || c.count || 0);
+      const cPay = c.totalPay || (cCount * perPerson);
+      const cRows = Math.ceil(Math.max(1, cMems.length) / 5);
+      const cBoxHeight = 44 + (cRows * 34) + 10;
 
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#78350f';
-    ctx.font = '900 12px system-ui, -apple-system, sans-serif';
-    ctx.fillText(`🤝  CLB GIAO LƯU: ${(exClub.name || 'CLB BẠN').toUpperCase()} (${exCount} người • Đóng: ${formatMoney(exTotalPay)} • ${formatMoney(perPerson)}/người):`, PADDING + 16, curY + 25);
+      drawReportRoundedRect(ctx, PADDING, curY, CONTENT_WIDTH, cBoxHeight, 14, '#fffbeb', '#fcd34d', 1.2);
 
-    let exX = PADDING + 16;
-    let exY = curY + 40;
-    const exChipW = 135;
-    const exChipH = 26;
-    const exGapX = 8;
-    const exGapY = 6;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#78350f';
+      ctx.font = '900 12px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`🤝  CLB GIAO LƯU: ${(c.name || 'CLB BẠN').toUpperCase()} (${cCount} người • Đóng: ${formatMoney(cPay)} • ${formatMoney(perPerson)}/người):`, PADDING + 16, curY + 25);
 
-    exMembers.forEach((name) => {
-      if (exX + exChipW > PADDING + CONTENT_WIDTH - 16) {
-        exX = PADDING + 16;
-        exY += exChipH + exGapY;
-      }
-      drawReportRoundedRect(ctx, exX, exY, exChipW, exChipH, 7, '#ffffff', '#f59e0b', 1);
-      ctx.fillStyle = '#92400e';
-      ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`🤝 ${name}`, exX + exChipW / 2, exY + 17);
-      exX += exChipW + exGapX;
+      let exX = PADDING + 16;
+      let exY = curY + 40;
+      const exChipW = 135;
+      const exChipH = 26;
+      const exGapX = 8;
+      const exGapY = 6;
+
+      cMems.forEach((name) => {
+        if (exX + exChipW > PADDING + CONTENT_WIDTH - 16) {
+          exX = PADDING + 16;
+          exY += exChipH + exGapY;
+        }
+        drawReportRoundedRect(ctx, exX, exY, exChipW, exChipH, 7, '#ffffff', '#f59e0b', 1);
+        ctx.fillStyle = '#92400e';
+        ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`🤝 ${name}`, exX + exChipW / 2, exY + 17);
+        exX += exChipW + exGapX;
+      });
+
+      curY += cBoxHeight + 10;
     });
 
-    curY += exBoxHeight + 16;
+    curY += 6;
   }
 
   // 4B. DANH SÁCH ĐIỂM DANH THÀNH VIÊN LẬP TRÍ

@@ -4895,57 +4895,63 @@ function renderExchangeClubUI() {
     container.innerHTML = clubs.map((club, cIdx) => {
       const cMembers = Array.isArray(club.members) ? club.members : [];
       return `
-        <div class="p-2.5 bg-white/95 rounded-xl border border-amber-300 shadow-2xs space-y-2">
-          <!-- Club Header -->
-          <div class="flex items-center justify-between gap-2 flex-wrap">
-            <div class="flex items-center gap-1.5 min-w-0 flex-1">
-              <span class="text-[11px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
-                CLB #${cIdx + 1}
-              </span>
-              <input type="text"
-                     value="${escapeHtml(club.name)}" 
-                     onchange="updateExchangeClubName(${cIdx}, this.value)" 
-                     placeholder="Tên CLB bạn (VD: CLB XH, CLB A...)" 
-                     class="font-black text-xs text-amber-950 bg-amber-50/60 focus:bg-white border border-amber-200 focus:border-amber-400 rounded-lg px-2 py-1 w-full max-w-[200px] outline-none transition shadow-2xs" 
-                     title="Chạm vào để sửa tên CLB này" />
-              <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 shrink-0">
-                ${cMembers.length} người
-              </span>
-            </div>
-            <div class="flex items-center gap-1 shrink-0">
-              <button type="button" onclick="promptAddMultipleExchangeMembers(${cIdx})" class="text-[10px] text-amber-800 hover:text-amber-950 font-bold px-1.5 py-0.5 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 transition cursor-pointer" title="Dán danh sách nhiều thành viên">
-                📋 Dán DS
+        <div class="p-2.5 sm:p-3 bg-white/95 rounded-2xl border-2 border-amber-300 shadow-xs space-y-2 sm:space-y-2.5">
+          <!-- Hàng 1: Badge CLB # + Tên CLB (Rộng rãi, dễ gõ trên điện thoại) + Số lượng TV -->
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="text-xs font-black px-2 py-1.5 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
+              CLB #${cIdx + 1}
+            </span>
+            <input type="text"
+                   value="${escapeHtml(club.name)}" 
+                   onchange="updateExchangeClubName(${cIdx}, this.value)" 
+                   placeholder="Tên CLB (VD: CLB XH)" 
+                   class="font-black text-xs sm:text-sm text-slate-900 bg-amber-50/40 focus:bg-white border border-amber-300 focus:border-amber-500 rounded-xl px-2.5 py-1.5 flex-1 min-w-0 outline-none shadow-2xs transition" 
+                   title="Chạm vào để sửa tên CLB" />
+            <span class="text-xs font-black text-amber-900 bg-amber-100 px-2 py-1.5 rounded-xl border border-amber-300 shrink-0 whitespace-nowrap">
+              ${cMembers.length} người
+            </span>
+          </div>
+
+          <!-- Hàng 2: Toolbar thao tác (Dán DS nhiều người & Xóa CLB) -->
+          <div class="flex items-center justify-between gap-1.5 pt-0.5">
+            <span class="text-[11px] font-bold text-amber-900/80 flex items-center gap-1">
+              <span>👥</span>
+              <span>Thành viên (${cMembers.length}):</span>
+            </span>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="promptAddMultipleExchangeMembers(${cIdx})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 active:scale-95 text-amber-950 font-bold text-[11px] rounded-lg border border-amber-300 transition cursor-pointer flex items-center gap-1 shadow-2xs" title="Dán danh sách nhiều thành viên cách nhau dấu phẩy">
+                <span>📋</span> Dán DS
               </button>
               ${clubs.length > 1 ? `
-                <button type="button" onclick="removeExchangeClub(${cIdx})" class="text-[10px] text-rose-500 hover:text-rose-700 hover:bg-rose-50 font-bold px-1.5 py-0.5 rounded transition cursor-pointer" title="Xóa toàn bộ CLB này">
-                  ✕ Xóa CLB
+                <button type="button" onclick="removeExchangeClub(${cIdx})" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 font-bold text-[11px] rounded-lg border border-rose-200 transition cursor-pointer flex items-center gap-0.5" title="Xóa toàn bộ CLB này">
+                  <span>✕</span> Xóa CLB
                 </button>
               ` : ''}
             </div>
           </div>
 
-          <!-- Quick Add Member Row for this Club -->
+          <!-- Hàng 3: Ô nhập tên TV + Nút Thêm (Kích thước chuẩn chạm ngón tay trên điện thoại) -->
           <div class="flex items-center gap-1.5">
             <input type="text" 
                    id="actExClubInput_${cIdx}" 
-                   placeholder="Nhập tên TV ${escapeHtml(club.name)} (cách nhau dấu phẩy)..." 
+                   placeholder="Thêm tên TV (phẩy để thêm nhiều)..." 
                    onkeydown="if(event.key==='Enter'){event.preventDefault();addExchangeMemberFromClubInput(${cIdx});}"
-                   class="flex-1 px-2.5 py-1 text-xs font-semibold border border-amber-200 rounded-lg bg-amber-50/30 focus:bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-900 placeholder:text-slate-400" />
+                   class="flex-1 px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold border border-amber-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 placeholder:text-slate-400 shadow-2xs" />
             <button type="button" 
                     onclick="addExchangeMemberFromClubInput(${cIdx})" 
-                    class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-xs rounded-lg transition cursor-pointer shadow-2xs shrink-0">
-              + Thêm
+                    class="px-3.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-95 text-white font-black text-xs sm:text-sm rounded-xl transition cursor-pointer shadow-xs shrink-0 flex items-center gap-0.5">
+              <span>+</span> Thêm
             </button>
           </div>
 
-          <!-- Member Chips for this Club -->
-          <div class="flex flex-wrap gap-1 min-h-[24px]">
+          <!-- Hàng 4: Khung chứa Chip thành viên (Rõ ràng, nút xóa dễ bấm trên mobile) -->
+          <div class="p-1.5 sm:p-2 bg-amber-50/50 rounded-xl border border-amber-200/70 flex flex-wrap gap-1.5 min-h-[36px] items-center">
             ${cMembers.length > 0 ? cMembers.map((memName, mIdx) => `
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-50 border border-amber-200 text-amber-950 shadow-2xs">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-amber-300 text-amber-950 shadow-2xs hover:border-amber-400 transition">
                 <span>🤝 ${escapeHtml(memName)}</span>
-                <button type="button" onclick="removeExchangeMemberFromClub(${cIdx}, ${mIdx})" class="w-3.5 h-3.5 rounded-full hover:bg-rose-100 hover:text-rose-600 flex items-center justify-center text-[10px] text-slate-400 font-black transition cursor-pointer" title="Xóa người này">✕</button>
+                <button type="button" onclick="removeExchangeMemberFromClub(${cIdx}, ${mIdx})" class="w-4.5 h-4.5 -mr-0.5 rounded-full bg-amber-100 hover:bg-rose-500 hover:text-white text-amber-800 flex items-center justify-center text-[10px] font-black transition cursor-pointer active:scale-90" title="Xóa người này">✕</button>
               </span>
-            `).join('') : '<span class="text-[11px] text-amber-700/70 italic py-0.5">Chưa có thành viên nào. Nhập tên và bấm "+ Thêm".</span>'}
+            `).join('') : '<span class="text-[11px] text-amber-700/70 italic py-0.5 px-1">Chưa có thành viên nào. Nhập tên và bấm "+ Thêm".</span>'}
           </div>
         </div>
       `;

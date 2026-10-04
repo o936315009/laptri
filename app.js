@@ -6256,22 +6256,29 @@ function saveAndSplitActivitySession() {
   let confirmMsg = '';
 
   if (isExchange && exCount > 0) {
-    confirmTitle = isEditing ? `[CHẾ ĐỘ SỬA] Xác nhận CẬP NHẬT & CHỐT LẠI buổi GIAO LƯU ngày ${dateFormatted}?` : `Xác nhận lưu & chốt buổi GIAO LƯU ngày ${dateFormatted}?`;
+    confirmTitle = isEditing ? `[CHẾ ĐỘ SỬA] Xác nhận CẬP NHẬT & CHỐT LẠI buổi GIAO LƯU ngày ${dateFormatted}?` : `Xác nhận LƯU & CHỐT TIỀN buổi GIAO LƯU ngày ${dateFormatted}?`;
     const clubsBreakdownLines = clubs.map(c => {
-      const cCount = (c.members || []).length;
-      return `  ↳ ${c.name} (${cCount} người: ${(c.members || []).join(', ')}): Đóng ${formatMoney(cCount * shuttleFeePerMember)}`;
+      const cMems = (c.members || []);
+      const cCount = cMems.length;
+      return `  ↳ CLB ${c.name}: Thanh toán ${formatMoney(cCount * shuttleFeePerMember)} (${cCount} người: ${cMems.join(', ')})`;
     }).join('\n');
 
-    confirmMsg = `${confirmTitle}\n` +
-      `• Đối tác giao lưu: ${exClubNames} (${exCount} người)\n` +
-      `• CLB Lập Trí: ${memberCount} thành viên tham gia\n` +
-      `• Tổng người chia đều: ${totalSplitParticipants} người (${memberCount} TV chủ nhà + ${exCount} TV bạn)\n` +
+    confirmMsg = `${confirmTitle}\n\n` +
+      `🏸 TỔNG CHI PHÍ & ĐIỂM DANH:\n` +
       `• Tổng tiền cầu: ${formatMoney(shuttleTotal)}\n` +
       (guestPaid > 0 ? `• Khách lẻ đóng: -${formatMoney(guestPaid)} (${guestCount} khách)\n` : '') +
-      `• Số tiền chia đều: ${formatMoney(shuttleFeePerMember)} / người\n` +
+      `• Số TV Lập Trí điểm danh: ${memberCount} người\n` +
+      `• Số TV CLB giao lưu: ${exCount} người (${exClubNames})\n` +
+      `• Tổng số người chia đều: ${totalSplitParticipants} người (${memberCount} TV Lập Trí + ${exCount} TV bạn)\n` +
+      `• Chi phí mỗi người đóng: ${formatMoney(shuttleFeePerMember)} / người\n\n` +
+      `💰 PHÂN BỔ THU - CHI (CÂN ĐỐI 100%):\n` +
+      `  ↳ Mỗi TV Lập Trí: Trừ ví đúng ${formatMoney(shuttleFeePerMember)} (Tổng TV: ${formatMoney(totalMemberShuttleFee)})\n` +
       clubsBreakdownLines + '\n' +
-      `  ↳ Mỗi TV Lập Trí trừ ví: ${formatMoney(shuttleFeePerMember)}\n` +
-      (isEditing ? `• HỆ THỐNG SẼ HOÀN TÁC TOÀN BỘ SỐ TIỀN VÀ SỐ BUỔI CŨ CỦA NGÀY ${dateFormatted}, sau đó trừ ví và cập nhật lại theo số liệu mới.` : `• Tiền cầu TV chủ nhà được trừ trực tiếp vào ví, tiền các CLB bạn được ghi vào Sổ Quỹ Tạm Ứng.`);
+      (guestPaid > 0 ? `  ↳ Khách lẻ: Thu ${formatMoney(guestPaid)}\n` : '') +
+      `  ➤ Tổng thu bù đắp chi phí: ${formatMoney(totalMemberShuttleFee + exchangeTotalPay + guestPaid)} / ${formatMoney(shuttleTotal)} đ\n\n` +
+      (isEditing 
+        ? `⚠️ CHẾ ĐỘ SỬA: Hệ thống sẽ hoàn tác toàn bộ số tiền và số buổi cũ của ngày ${dateFormatted}, sau đó tính toán và trừ ví theo số liệu mới.` 
+        : `✓ Toàn bộ tổng chi phí buổi giao lưu được bù đắp cân đối 100%, không bị lệch quỹ.`);
   } else {
     confirmMsg = `${confirmTitle}\n` +
       `• Tổng tiền cầu: ${formatMoney(shuttleTotal)}\n` +
@@ -6388,7 +6395,7 @@ function saveAndSplitActivitySession() {
       subType: 'SHUTTLE_ADV_IN',
       categoryName: 'Tạm ứng tiền cầu',
       amount: totalMemberShuttleFee,
-      walletImpact: -totalMemberShuttleFee,
+      walletImpact: 0,
       fundImpact: totalMemberShuttleFee,
       targetName: 'Quỹ Tạm Ứng Tiền Cầu',
       description: `Thu tạm ứng tiền cầu ${memberCount} thành viên buổi ngày ${dateFormatted} (${formatMoney(shuttleFeePerMember)}/người)`,
@@ -6419,8 +6426,11 @@ function saveAndSplitActivitySession() {
       const cCount = cMems.length;
       const cTotalPay = cCount * shuttleFeePerMember;
       if (cTotalPay > 0) {
+        const txId = (clubs.length === 1) 
+          ? ('TX_' + Date.now() + '_EXCHANGE') 
+          : ('TX_' + Date.now() + '_EXCHANGE_' + idx);
         AppState.transactions.push({
-          id: 'TX_' + Date.now() + '_EXCHANGE_' + idx,
+          id: txId,
           sessionId: targetSessionId,
           date: nowTime,
           categoryGroup: 'ADVANCE_GUEST_IN',
@@ -6791,7 +6801,9 @@ function generateActivityReportCanvas(targetSession = null) {
 
   ctx.fillStyle = '#ffffff';
   ctx.font = '900 22px system-ui, -apple-system, sans-serif';
-  const mainBannerTitle = isExchange ? `BÁO CÁO GIAO LƯU: ${clubName.replace('CLB CẦU LÔNG ', '')} ⚔️ ${(exClub.name || 'CLB BẠN').toUpperCase()}` : 'BÁO CÁO TỔNG KẾT BUỔI CẦU';
+  const exNames = exClubsList.map(c => c.name).filter(Boolean).join(', ') || 'CLB BẠN';
+  const hostClubShort = clubName.replace(/CLB\s+CẦU\s+LÔNG\s+/i, '').replace(/CLB\s+/i, '').trim() || 'LẬP TRÍ';
+  const mainBannerTitle = isExchange ? `BÁO CÁO GIAO LƯU: ${hostClubShort.toUpperCase()} ⚔️ ${exNames.toUpperCase()}` : 'BÁO CÁO TỔNG KẾT BUỔI CẦU';
   ctx.fillText(mainBannerTitle, PADDING + 20, curY + 68);
 
   ctx.fillStyle = '#a7f3d0';
@@ -6831,7 +6843,7 @@ function generateActivityReportCanvas(targetSession = null) {
     ctx.fillText(formatMoney(guestPaid + exTotalPay), col2X + colW / 2, curY + 54);
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 10px system-ui, -apple-system, sans-serif';
-    ctx.fillText(`${exCount} TV ${exClub.name || 'CLB bạn'}${guestList.length > 0 ? ` + ${guestList.length} khách` : ''}`, col2X + colW / 2, curY + 75);
+    ctx.fillText(`${exCount} TV ${exNames}${guestList.length > 0 ? ` + ${guestList.length} khách` : ''}`, col2X + colW / 2, curY + 75);
   } else {
     ctx.fillText('KHÁCH ĐÓNG', col2X + colW / 2, curY + 26);
     ctx.fillStyle = '#0f172a';
@@ -6855,7 +6867,7 @@ function generateActivityReportCanvas(targetSession = null) {
   ctx.fillStyle = '#94a3b8';
   ctx.font = '500 10px system-ui, -apple-system, sans-serif';
   if (isExchange) {
-    ctx.fillText(`Chia đều ${totalSplitCount} người`, col3X + colW / 2, curY + 75);
+    ctx.fillText(`Chia đều tất cả (${totalSplitCount} người)`, col3X + colW / 2, curY + 75);
   } else {
     ctx.fillText(`Chia ${memberCount} thành viên`, col3X + colW / 2, curY + 75);
   }
@@ -7353,7 +7365,10 @@ function calculateAdvanceFundStats() {
 
     // 1. Tiền cầu thu từ TV
     if (tx.categoryGroup === 'ADVANCE_SHUTTLE_IN' || tx.subType === 'SHUTTLE_ADV_IN') {
-      stats.shuttle.collected += amt;
+      // Tránh cộng lặp giữa bản ghi trừ ví từng TV (có tx.sessionId & tx.memberId) và bản ghi tổng kết quỹ TX_..._SHUTTLE
+      if (!tx.sessionId || (tx.id && tx.id.endsWith('_SHUTTLE'))) {
+        stats.shuttle.collected += amt;
+      }
     }
     // 2. Tiền cầu đã chi/trả (mua cầu)
     else if (tx.categoryGroup === 'ADVANCE_SHUTTLE_OUT' || tx.subType === 'SHUTTLE_EXP_PAY') {

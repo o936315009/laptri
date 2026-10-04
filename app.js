@@ -3435,6 +3435,21 @@ function toggleNewActExchangeClubSection(type) {
   }
 }
 
+function enableNewActExchangeMode() {
+  const typeSelect = document.getElementById('newActSessionType');
+  if (typeSelect) {
+    typeSelect.value = 'Giao lưu';
+    toggleNewActExchangeClubSection('Giao lưu');
+  }
+  const clubNameInp = document.getElementById('newActExchangeClubName');
+  if (clubNameInp) {
+    clubNameInp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => {
+      clubNameInp.focus();
+    }, 120);
+  }
+}
+
 function openCreateActivityModal() {
   if (!isAttendanceManager()) {
     showToast('⚠️ Chỉ Ban Quản lý mới có quyền tạo buổi hoạt động mới!', 'warning');
@@ -4754,12 +4769,19 @@ function renderExchangeClubUI() {
   if (!section) return;
 
   const isExchange = (activityState.type === 'Giao lưu');
+  const quickBar = document.getElementById('actAddExchangeClubQuickBar');
+  const quickBtn = document.getElementById('btnQuickAddExchangeClub');
+
   if (!isExchange) {
     section.classList.add('hidden');
+    if (quickBar) quickBar.classList.remove('hidden');
+    if (quickBtn) quickBtn.classList.remove('hidden');
     return;
   }
 
   section.classList.remove('hidden');
+  if (quickBar) quickBar.classList.add('hidden');
+  if (quickBtn) quickBtn.classList.add('hidden');
 
   // Input Tên CLB
   const nameInput = document.getElementById('actExchangeClubNameInput');
@@ -4778,7 +4800,7 @@ function renderExchangeClubUI() {
   const container = document.getElementById('actExchangeMembersChipsContainer');
   if (container) {
     if (members.length === 0) {
-      container.innerHTML = `<span class="text-[11px] text-amber-800/80 italic">Chưa có thành viên CLB bạn. Nhập tên và bấm "+ Thêm" hoặc "Dán danh sách".</span>`;
+      container.innerHTML = '';
     } else {
       container.innerHTML = members.map((memName, idx) => `
         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black bg-white border border-amber-300 text-amber-950 shadow-2xs">
@@ -4794,6 +4816,50 @@ function renderExchangeClubUI() {
   const clubName = activityState.exchangeClubName || 'CLB Giao lưu';
   if (shareText) {
     shareText.textContent = `${clubName} (${members.length} người)`;
+  }
+}
+
+function enableExchangeClubMode() {
+  activityState.type = 'Giao lưu';
+  const typeSelect = document.getElementById('actTypeSelect');
+  if (typeSelect) typeSelect.value = 'Giao lưu';
+
+  saveActivitySessionState();
+  renderExchangeClubUI();
+  recalculateActivitySplit();
+
+  const clubInput = document.getElementById('actExchangeClubNameInput');
+  if (clubInput) {
+    clubInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => {
+      clubInput.focus();
+    }, 150);
+  }
+  showToast('🤝 Đã bật chế độ Giao lưu! Nhập tên CLB bạn và thành viên tham gia.', 'info');
+}
+
+function disableExchangeClubMode() {
+  activityState.type = 'Buổi cầu';
+  const typeSelect = document.getElementById('actTypeSelect');
+  if (typeSelect) typeSelect.value = 'Buổi cầu';
+
+  saveActivitySessionState();
+  renderExchangeClubUI();
+  recalculateActivitySplit();
+  showToast('Đã chuyển về chế độ Buổi cầu định kỳ.', 'info');
+}
+
+function promptChangeExchangeClubName() {
+  const current = activityState.exchangeClubName || '';
+  const val = prompt('Nhập tên CLB giao lưu (hoặc thêm tên CLB bạn):', current || 'CLB XH');
+  if (val !== null && val.trim()) {
+    activityState.exchangeClubName = val.trim();
+    const nameInput = document.getElementById('actExchangeClubNameInput');
+    if (nameInput) nameInput.value = activityState.exchangeClubName;
+    saveActivitySessionState();
+    renderExchangeClubUI();
+    recalculateActivitySplit();
+    showToast(`✓ Đã cập nhật CLB giao lưu: ${activityState.exchangeClubName}`, 'success');
   }
 }
 

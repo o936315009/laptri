@@ -7844,52 +7844,6 @@ function renderFinanceTab() {
   const expOm = document.getElementById('kpiExpOm');
   if (expOm) expOm.textContent = formatMoney(stats.expenseB.member.om);
 
-  // 4. Thẻ Ví Thành Viên & Công Nợ
-  const totalWalletEl = document.getElementById('kpiFinanceTotalWallet');
-  const negCountEl = document.getElementById('kpiFinanceNegativeCount');
-  const advEl = document.getElementById('kpiFinanceAdvance');
-  const walletTitleEl = document.getElementById('kpiFinanceWalletTitle');
-  const sublabel1El = document.getElementById('kpiFinanceSublabel1');
-  const sublabel2El = document.getElementById('kpiFinanceSublabel2');
-
-  const isMemberRoleFin = AppState.auth && AppState.auth.user && AppState.auth.user.role === 'MEMBER';
-  const currentUserIdFin = AppState.auth && AppState.auth.user ? AppState.auth.user.id : null;
-  const currentMemberFin = currentUserIdFin ? (AppState.members || []).find(m => m.id === currentUserIdFin) : null;
-
-  if (isMemberRoleFin && currentMemberFin) {
-    const memBreakdown = calculateMemberWalletBreakdown(currentMemberFin);
-    if (walletTitleEl) walletTitleEl.textContent = 'Ví Của Bạn';
-    if (totalWalletEl) {
-      totalWalletEl.textContent = formatMoney(memBreakdown.balance);
-      totalWalletEl.className = memBreakdown.balance < 0 ? 'text-xl font-black text-rose-600 mt-1' : 'text-xl font-black text-blue-700 mt-1';
-    }
-    if (sublabel1El) sublabel1El.textContent = 'Chủ tài khoản:';
-    if (negCountEl) {
-      negCountEl.textContent = currentMemberFin.name;
-      negCountEl.className = 'text-blue-700 font-bold';
-    }
-    if (sublabel2El) sublabel2El.textContent = 'Tháng này:';
-    if (advEl) {
-      advEl.textContent = `${memBreakdown.sessionsCount} buổi tham gia`;
-      advEl.className = 'text-slate-800 font-bold';
-    }
-  } else {
-    if (walletTitleEl) walletTitleEl.textContent = 'Ví Thành Viên';
-    if (totalWalletEl) {
-      totalWalletEl.textContent = formatMoney(stats.wallet.total);
-      totalWalletEl.className = 'text-xl font-black text-blue-700 mt-1';
-    }
-    if (sublabel1El) sublabel1El.textContent = 'Nợ ví / âm:';
-    if (negCountEl) {
-      negCountEl.textContent = `${stats.wallet.negativeCount} người`;
-      negCountEl.className = 'text-rose-600 font-bold';
-    }
-    if (sublabel2El) sublabel2El.textContent = 'Quỹ tạm ứng:';
-    if (advEl) {
-      advEl.textContent = formatMoney(advStats.totalAdvanceFund);
-      advEl.className = 'text-slate-800 font-bold';
-    }
-  }
 
   // 5. Thẻ & Thành Phần Quỹ Tạm Ứng Mới
   const kpiAdvTotalEl = document.getElementById('kpiCardAdvanceFundTotal');

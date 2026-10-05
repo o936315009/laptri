@@ -851,8 +851,8 @@
           <!-- Rendered via JS -->
         </div>
 
-        <!-- 1. BẢNG CHỈ SỐ CÔNG THỨC QUỸ CLB & ĐỐI SOÁT VÍ (DASHBOARD TÀI CHÍNH - GỌN GÀNG) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5">
+        <!-- 1. BẢNG CHỈ SỐ CÔNG THỨC QUỸ CLB (DASHBOARD TÀI CHÍNH - GỌN GÀNG) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-3.5">
           
           <!-- Thẻ 1: QUỸ CLB THỰC TẾ -->
           <div class="bg-gradient-to-br from-slate-900 to-emerald-950 text-white p-3.5 sm:p-4 rounded-xl border border-emerald-800/40 shadow-sm relative overflow-hidden flex flex-col justify-between">
@@ -951,30 +951,6 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Thẻ 4: VÍ THÀNH VIÊN & CÔNG NỢ -->
-          <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-2xs flex flex-col justify-between hover:shadow-xs transition">
-            <div>
-              <div class="flex items-center justify-between">
-                <span id="kpiFinanceWalletTitle" class="text-[10px] font-bold uppercase tracking-wider text-blue-700">Ví Thành Viên</span>
-                <span class="w-5 h-5 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-[10px]">💳</span>
-              </div>
-              <div id="kpiFinanceTotalWallet" class="text-xl font-black text-blue-700 mt-1">0 đ</div>
-              <div class="mt-2 text-[10px] text-slate-600 border-t border-slate-100 pt-1.5 space-y-0.5">
-                <div class="flex justify-between">
-                  <span id="kpiFinanceSublabel1" class="text-slate-500">Nợ ví / âm:</span>
-                  <b id="kpiFinanceNegativeCount" class="text-rose-600 font-bold">0 người</b>
-                </div>
-                <div class="flex justify-between">
-                  <span id="kpiFinanceSublabel2" class="text-slate-500">Quỹ tạm ứng:</span>
-                  <b id="kpiFinanceAdvance" class="text-slate-800 font-bold">0 đ</b>
-                </div>
-              </div>
-            </div>
-            <button onclick="openTopUpModal()" class="mt-2 w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
-              <span>💳</span> Nạp tiền vào ví
-            </button>
           </div>
 
         </div>
@@ -6664,6 +6640,6 @@ const firebaseConfig = {
   <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- Application Logic - Thực thi tức thì khi HTML đã dựng xong -->
-  <script defer src="app.js?v=7.6"></script>
+  <script defer src="app.js?v=7.7"></script>
 </body>
 </html>

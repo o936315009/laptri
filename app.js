@@ -548,9 +548,9 @@ function applyCustomLabels() {
 
   // 4. Tab Tài chính
   const finAdvCardTitle = document.getElementById('financeAdvanceFundCardTitle');
-  if (finAdvCardTitle) finAdvCardTitle.textContent = lblAdvanceFund;
+  if (finAdvCardTitle) finAdvCardTitle.textContent = (lblAdvanceFund && !lblAdvanceFund.toUpperCase().includes('SHOP')) ? lblAdvanceFund : 'Quỹ Tạm Ứng';
   const kpiCardAdvTotalLbl = document.getElementById('kpiCardAdvanceFundTotalLabel');
-  if (kpiCardAdvTotalLbl) kpiCardAdvTotalLbl.textContent = lblAdvanceFund;
+  if (kpiCardAdvTotalLbl) kpiCardAdvTotalLbl.textContent = (lblAdvanceFund && !lblAdvanceFund.toUpperCase().includes('SHOP')) ? lblAdvanceFund : 'Tổng Quỹ Tạm Ứng';
 
   // 5. Tab Quản lý thành viên: Tiêu đề danh sách hội viên
   const tabMemHeader = document.getElementById('tabMembersHeaderTitle');
@@ -1515,6 +1515,9 @@ function loadData() {
           AppState.config.customLabels = Object.assign({}, DEFAULT_CUSTOM_LABELS);
         } else {
           AppState.config.customLabels = Object.assign({}, DEFAULT_CUSTOM_LABELS, AppState.config.customLabels);
+        }
+        if (AppState.config.customLabels.advanceFund && AppState.config.customLabels.advanceFund.toUpperCase().includes('SHOP')) {
+          AppState.config.customLabels.advanceFund = 'Quỹ Tạm Ứng';
         }
       }
 
@@ -7790,9 +7793,12 @@ function calculateAdvanceFundStats() {
     }
   });
 
+  // 1. Quỹ Tạm Ứng Tiền Cầu = Tiền cầu thu từ TV - Tiền đã chi mua cầu
   stats.shuttle.balance = stats.shuttle.collected - stats.shuttle.paid;
+  // 2. Quỹ Tạm Ứng Tiền Sân = Tiền sân thu theo bậc - Tiền đã chi trả chủ sân
   stats.court.balance = stats.court.collected - stats.court.paid;
-  stats.totalAdvanceFund = stats.shuttle.balance + stats.court.balance + stats.guest.collected;
+  // Công thức: Tổng Quỹ = 1. Quỹ Tạm Ứng Tiền Cầu + 2. Quỹ Tạm Ứng Tiền Sân
+  stats.totalAdvanceFund = stats.shuttle.balance + stats.court.balance;
 
   // 1. Tính tổng số lượng cầu (từng ngày) và tổng tiền cầu (số cầu × đơn giá) từ các buổi hoạt động
   let totalShuttleCount = 0;
@@ -7834,8 +7840,8 @@ function calculateAdvanceFundStats() {
   });
 
   // Fallback an toàn: Nếu chưa có phiên trong activitySessions hoặc dữ liệu cũ chỉ có giao dịch
-  if (totalShuttleCount === 0 && (stats.shuttle.collected > 0 || stats.guest.collected > 0)) {
-    totalShuttleAmount = stats.shuttle.collected + stats.guest.collected;
+  if (totalShuttleCount === 0 && stats.shuttle.collected > 0) {
+    totalShuttleAmount = stats.shuttle.collected;
     totalShuttleCount = defaultUnitPrice > 0 ? Math.round(totalShuttleAmount / defaultUnitPrice) : 0;
     shuttleSessionCount = totalShuttleCount > 0 ? 1 : 0;
   }

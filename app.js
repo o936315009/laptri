@@ -840,6 +840,47 @@ function getBlankClubInitialData(club) {
   };
 }
 
+// ==========================================
+// HÀM TIỆN ÍCH SẮP XẾP CÁC BUỔI HOẠT ĐỘNG THEO THỨ TỰ NGÀY THÁNG GIẢM DẦN (MỚI NHẤT LÊN ĐẦU)
+// ==========================================
+function parseSessionDateToSortKey(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string') return '0000-00-00';
+  const str = dateStr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    return str; // YYYY-MM-DD
+  }
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
+    const parts = str.split('/');
+    const d = parts[0].padStart(2, '0');
+    const m = parts[1].padStart(2, '0');
+    const y = parts[2];
+    return `${y}-${m}-${d}`;
+  }
+  const parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) {
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth() + 1).padStart(2, '0');
+    const d = String(parsed.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  return str;
+}
+
+function sortActivitySessions(sessionsList) {
+  if (!Array.isArray(sessionsList)) return [];
+  return sessionsList.sort((a, b) => {
+    const keyA = parseSessionDateToSortKey(a.date);
+    const keyB = parseSessionDateToSortKey(b.date);
+    if (keyA !== keyB) {
+      return keyB.localeCompare(keyA); // Mới nhất lên đầu (giảm dần)
+    }
+    const timeA = a.timestamp || '';
+    const timeB = b.timestamp || '';
+    if (timeA !== timeB) return timeB.localeCompare(timeA);
+    return (b.id || '').localeCompare(a.id || '');
+  });
+}
+
 // --- DỮ LIỆU CÁC BUỔI HOẠT ĐỘNG MẪU (CHUẨN THEO GIAO DIỆN HOẠT ĐỘNG & THÁNG NÀY CỦA BẠN) ---
 const DEFAULT_ACTIVITY_SESSIONS = [
   {
@@ -1442,6 +1483,8 @@ function loadData() {
             });
           }
         });
+        // Luôn sắp xếp danh sách buổi hoạt động theo thứ tự ngày tháng mới nhất lên đầu
+        sortActivitySessions(AppState.activitySessions);
       }
       if (AppState.members && Array.isArray(AppState.members)) {
         AppState.members.forEach(m => {
@@ -2371,7 +2414,8 @@ function renderDashboardActivityStats() {
     }
   }
 
-  // 2. Render danh sách Hoạt động gần đây (lấy 4 buổi mới nhất theo đúng ảnh)
+  // 2. Render danh sách Hoạt động gần đây (luôn sắp xếp đúng thứ tự ngày tháng mới nhất lên đầu, lấy 4 buổi)
+  sortActivitySessions(AppState.activitySessions);
   const recentSessions = (AppState.activitySessions || []).slice(0, 4);
 
   if (recentSessions.length === 0) {
@@ -2489,6 +2533,9 @@ function openActivityHistoryModal() {
   if (!AppState.activitySessions) {
     AppState.activitySessions = [];
   }
+  // Luôn đảm bảo toàn bộ lịch sử buổi sinh hoạt được sắp xếp mới nhất lên đầu
+  sortActivitySessions(AppState.activitySessions);
+
   const badge = document.getElementById('activityHistoryTotalBadge');
   if (badge) badge.textContent = `${AppState.activitySessions.length} buổi`;
 
@@ -2532,8 +2579,11 @@ function openActivityHistoryModal() {
               </div>
             </div>
             <div class="flex items-center gap-1.5 shrink-0" onclick="event.stopPropagation()">
+              <button type="button" onclick="openActivityReportModal('${ses.id}')" class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow-2xs" title="Xuất ảnh báo cáo hoạt động buổi ngày ${dateFormatted}">
+                <span>📸</span> <span>Báo cáo</span>
+              </button>
               <button type="button" onclick="openSessionAttendanceView('${ses.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-2xs flex items-center gap-1">
-                <span>🏸</span> <span>Xem hoạt động</span>
+                <span>🏸</span> <span>Xem</span>
               </button>
               ${(isAttendanceManager() && !isMonthClosed(ses.date)) ? `
                 <button type="button" onclick="loadSessionIntoEditMode('${ses.id}')" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow-2xs">
@@ -2659,7 +2709,11 @@ function openActivitySessionDetailModal(sessionId) {
       ` : ''}
 
       <div class="pt-2 flex flex-col gap-2">
-        <button type="button" onclick="openSessionAttendanceView('${ses.id}')" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition cursor-pointer">
+        <button type="button" onclick="openActivityReportModal('${ses.id}')" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition cursor-pointer">
+          <span>📸</span>
+          <span>Xuất Ảnh Báo Cáo Buổi Này (Zalo / Facebook)</span>
+        </button>
+        <button type="button" onclick="openSessionAttendanceView('${ses.id}')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition cursor-pointer">
           <span>🏸</span>
           <span>Xem Giao Diện Hoạt Động Đã Điểm Danh</span>
         </button>
@@ -3328,7 +3382,10 @@ function renderSessionFinalizedBanner() {
             </div>
           </div>
         </div>
-        <div class="flex items-center gap-1.5 shrink-0">
+        <div class="flex items-center gap-1.5 shrink-0 flex-wrap">
+          <button type="button" onclick="openActivityReportModal('${existingSes.id}')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-2xs flex items-center gap-1" title="Xuất ảnh báo cáo hoạt động buổi ngày ${dateFormatted}">
+            <span>📸</span> <span>Xuất ảnh</span>
+          </button>
           <button type="button" onclick="openActivitySessionDetailModal('${existingSes.id}')" class="px-2.5 py-1.5 bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-100 rounded-xl text-xs font-bold transition cursor-pointer shadow-2xs">
             Chi tiết
           </button>
@@ -6548,6 +6605,9 @@ function saveAndSplitActivitySession() {
   } else {
     AppState.activitySessions.unshift(sessionData);
   }
+  // Luôn sắp xếp lại toàn bộ danh sách các buổi theo thứ tự ngày tháng mới nhất lên đầu
+  sortActivitySessions(AppState.activitySessions);
+  window.__currentReportSession = sessionData;
 
   // Cập nhật lại toàn bộ chỉ số quỹ tạm ứng và quỹ CLB
   calculateAdvanceFundStats();
@@ -7141,7 +7201,39 @@ function openActivityReportModal(targetSession = null) {
   if (loading) loading.classList.remove('hidden');
   if (previewImg) previewImg.classList.add('hidden');
 
-  const sessionToRender = targetSession || (AppState.activitySessions && AppState.activitySessions.length > 0 ? AppState.activitySessions[0] : null);
+  let sessionToRender = null;
+  if (targetSession) {
+    if (typeof targetSession === 'string') {
+      sessionToRender = (AppState.activitySessions || []).find(s => s.id === targetSession) || null;
+    } else if (typeof targetSession === 'object') {
+      sessionToRender = targetSession;
+    }
+  }
+
+  // Nếu không truyền targetSession cụ thể, xác định chính xác buổi đang xem hoặc buổi hôm đó
+  if (!sessionToRender) {
+    // 1. Kiểm tra session đang mở trong chế độ chỉnh sửa (editingSessionId)
+    if (activityState.editingSessionId) {
+      sessionToRender = (AppState.activitySessions || []).find(s => s.id === activityState.editingSessionId) || null;
+    }
+    // 2. Kiểm tra buổi đã chốt có ngày trùng với ngày đang chọn (actDateInput / activityState.date)
+    if (!sessionToRender) {
+      const selectedDate = activityState.date || document.getElementById('actDateInput')?.value;
+      if (selectedDate) {
+        sessionToRender = (AppState.activitySessions || []).find(s => s.date === selectedDate) || null;
+      }
+    }
+    // 3. Nếu đang ở tab Điểm danh và có danh sách đang nhập dở:
+    if (!sessionToRender && currentTab === 'attendance' && ((activityState.selectedMemberIds && activityState.selectedMemberIds.size > 0) || (activityState.selectedGuestIds && activityState.selectedGuestIds.size > 0))) {
+      sessionToRender = null; // generateActivityReportCanvas(null) sẽ lấy trực tiếp từ activityState của ngày đó
+    } else if (!sessionToRender) {
+      // 4. Fallback: lấy buổi mới nhất theo thứ tự ngày tháng đã sắp xếp
+      sortActivitySessions(AppState.activitySessions);
+      sessionToRender = (AppState.activitySessions && AppState.activitySessions.length > 0) ? AppState.activitySessions[0] : null;
+    }
+  }
+
+  window.__currentReportSession = sessionToRender;
 
   setTimeout(() => {
     try {
@@ -7171,14 +7263,16 @@ function downloadActivityReportImage() {
     showToast('Chưa có ảnh báo cáo để tải xuống!', 'warning');
     return;
   }
-  const dateStr = activityState.date || getTodayInputFormat();
+  const ses = window.__currentReportSession;
+  const dateStr = ses?.date || activityState.date || getTodayInputFormat();
+  const dateFormatted = dateStr.includes('-') ? dateStr.split('-').reverse().join('/') : dateStr;
   const link = document.createElement('a');
   link.download = `Bao_Cao_Buoi_Cau_${dateStr}.png`;
   link.href = canvas.toDataURL('image/png');
   document.body.appendChild(link);
   link.click();
   link.remove();
-  showToast('💾 Đã tải ảnh báo cáo buổi cầu (.PNG) thành công!', 'success');
+  showToast(`💾 Đã tải ảnh báo cáo buổi cầu ngày ${dateFormatted} (.PNG) thành công!`, 'success');
 }
 
 async function copyActivityReportImage() {
@@ -19013,6 +19107,9 @@ function applyCloudSnapshotToAppState(cloudData, cleanSlug, isForcedSync = false
   AppState.members = incomingMembers;
   AppState.funds = { ...AppState.funds, ...incomingFunds };
   AppState.activitySessions = incomingSessions;
+  if (Array.isArray(AppState.activitySessions)) {
+    sortActivitySessions(AppState.activitySessions);
+  }
   AppState.attendanceRecords = incomingAttRecords;
   AppState.closedMonths = incomingClosedMonths;
   AppState.transactions = incomingTransactions;

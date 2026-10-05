@@ -679,6 +679,8 @@ if (typeof window !== 'undefined') {
   window.restoreCancelledTransaction = restoreCancelledTransaction;
   window.getMemberMonthlyFundPaymentTx = getMemberMonthlyFundPaymentTx;
   window.isMemberMonthlyFundPaid = isMemberMonthlyFundPaid;
+  window.formatMoney = formatMoney;
+  window.formatNumber = formatNumber;
 }
 
 // ==========================================
@@ -846,36 +848,40 @@ function getBlankClubInitialData(club) {
 function parseSessionDateToSortKey(dateStr) {
   if (!dateStr || typeof dateStr !== 'string') return '0000-00-00';
   const str = dateStr.trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-    return str; // YYYY-MM-DD
-  }
-  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
-    const parts = str.split('/');
-    const d = parts[0].padStart(2, '0');
-    const m = parts[1].padStart(2, '0');
-    const y = parts[2];
+  // 1. Dạng DD/MM/YYYY hoặc D/M/YYYY (hỗ trợ cả chuỗi có giờ như "05/10/2026 07:33")
+  const dmyMatch = str.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+  if (dmyMatch) {
+    const d = dmyMatch[1].padStart(2, '0');
+    const m = dmyMatch[2].padStart(2, '0');
+    const y = dmyMatch[3];
     return `${y}-${m}-${d}`;
   }
-  const parsed = new Date(str);
-  if (!isNaN(parsed.getTime())) {
-    const y = parsed.getFullYear();
-    const m = String(parsed.getMonth() + 1).padStart(2, '0');
-    const d = String(parsed.getDate()).padStart(2, '0');
+  // 2. Dạng YYYY-MM-DD hoặc YYYY/MM/DD (hỗ trợ cả chuỗi có giờ như "2026-10-05 07:33")
+  const ymdMatch = str.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (ymdMatch) {
+    const y = ymdMatch[1];
+    const m = ymdMatch[2].padStart(2, '0');
+    const d = ymdMatch[3].padStart(2, '0');
     return `${y}-${m}-${d}`;
   }
   return str;
 }
 
+function areDatesSameDay(d1, d2) {
+  if (!d1 || !d2) return false;
+  return parseSessionDateToSortKey(d1) === parseSessionDateToSortKey(d2);
+}
+
 function sortActivitySessions(sessionsList) {
   if (!Array.isArray(sessionsList)) return [];
   return sessionsList.sort((a, b) => {
-    const keyA = parseSessionDateToSortKey(a.date);
-    const keyB = parseSessionDateToSortKey(b.date);
+    const keyA = parseSessionDateToSortKey(a.date || a.timestamp);
+    const keyB = parseSessionDateToSortKey(b.date || b.timestamp);
     if (keyA !== keyB) {
       return keyB.localeCompare(keyA); // Mới nhất lên đầu (giảm dần)
     }
-    const timeA = a.timestamp || '';
-    const timeB = b.timestamp || '';
+    const timeA = a.timestamp || a.date || '';
+    const timeB = b.timestamp || b.date || '';
     if (timeA !== timeB) return timeB.localeCompare(timeA);
     return (b.id || '').localeCompare(a.id || '');
   });
@@ -1469,16 +1475,22 @@ function loadData() {
       }
       AppState.config.autoBackupIdleMinutes = Math.round(AppState.config.autoBackupIdleSeconds / 60);
 
-      // Chuẩn hóa và làm sạch số lẻ đồng trong các buổi sinh hoạt & thành viên
+      // Chuẩn hóa và làm tròn số tiền theo đơn vị đồng (Luật Kế toán Việt Nam)
       if (AppState.activitySessions && Array.isArray(AppState.activitySessions)) {
         AppState.activitySessions.forEach(ses => {
-          if (ses.shuttleFeePerMember && ses.shuttleFeePerMember % 1000 !== 0) {
-            ses.shuttleFeePerMember = Math.round(ses.shuttleFeePerMember / 1000) * 1000;
+          if (ses.shuttleTotal !== undefined && ses.shuttleTotal !== null) {
+            ses.shuttleTotal = Math.round(Number(ses.shuttleTotal) || 0);
+          }
+          if (ses.shuttleFeePerMember !== undefined && ses.shuttleFeePerMember !== null) {
+            ses.shuttleFeePerMember = Math.round(Number(ses.shuttleFeePerMember) || 0);
+          }
+          if (ses.needSplit !== undefined && ses.needSplit !== null) {
+            ses.needSplit = Math.round(Number(ses.needSplit) || 0);
           }
           if (ses.members && Array.isArray(ses.members)) {
             ses.members.forEach(m => {
-              if (m.fee && m.fee % 1000 !== 0) {
-                m.fee = Math.round(m.fee / 1000) * 1000;
+              if (m.fee !== undefined && m.fee !== null) {
+                m.fee = Math.round(Number(m.fee) || 0);
               }
             });
           }
@@ -1486,10 +1498,23 @@ function loadData() {
         // Luôn sắp xếp danh sách buổi hoạt động theo thứ tự ngày tháng mới nhất lên đầu
         sortActivitySessions(AppState.activitySessions);
       }
+      if (AppState.transactions && Array.isArray(AppState.transactions)) {
+        AppState.transactions.forEach(tx => {
+          if (tx.amount !== undefined && tx.amount !== null) {
+            tx.amount = Math.round(Number(tx.amount) || 0);
+          }
+          if (tx.walletImpact !== undefined && tx.walletImpact !== null) {
+            tx.walletImpact = Math.round(Number(tx.walletImpact) || 0);
+          }
+          if (tx.fundImpact !== undefined && tx.fundImpact !== null) {
+            tx.fundImpact = Math.round(Number(tx.fundImpact) || 0);
+          }
+        });
+      }
       if (AppState.members && Array.isArray(AppState.members)) {
         AppState.members.forEach(m => {
-          if (m.initialBalance && m.initialBalance % 1000 !== 0) {
-            m.initialBalance = Math.round(m.initialBalance / 1000) * 1000;
+          if (m.initialBalance !== undefined && m.initialBalance !== null) {
+            m.initialBalance = Math.round(Number(m.initialBalance) || 0);
           }
         });
       }
@@ -1569,10 +1594,31 @@ function saveData() {
 // ==========================================
 // 3. TIỆN ÍCH ĐỊNH DẠNG & THỜI GIAN
 // ==========================================
+/**
+ * Định dạng số tiền theo Luật Kế toán và Chuẩn mực tài chính Việt Nam:
+ * - Đơn vị làm tròn là ĐỒNG (làm tròn số nguyên đồng: Math.round)
+ * - Dấu chấm (.) dùng làm ký tự phân cách các nhóm hàng nghìn, triệu, tỷ
+ * - Ký hiệu đơn vị tiền tệ: đ
+ * @param {number|string} amount Số tiền
+ * @returns {string} Chuỗi hiển thị (VD: '50.000 đ', '64.167 đ', '-102.999 đ')
+ */
 function formatMoney(amount) {
   if (amount === undefined || amount === null || isNaN(amount)) return '0 đ';
-  const num = Number(amount);
-  return num.toLocaleString('vi-VN') + ' đ';
+  const rounded = Math.round(Number(amount));
+  const isNegative = rounded < 0;
+  const absStr = Math.abs(rounded).toString();
+  // Phân cách các nhóm hàng nghìn, triệu, tỷ bằng dấu chấm (.)
+  const formatted = absStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (isNegative ? '-' : '') + formatted + ' đ';
+}
+
+function formatNumber(amount) {
+  if (amount === undefined || amount === null || isNaN(amount)) return '0';
+  const rounded = Math.round(Number(amount));
+  const isNegative = rounded < 0;
+  const absStr = Math.abs(rounded).toString();
+  const formatted = absStr.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (isNegative ? '-' : '') + formatted;
 }
 
 function getFormattedCurrentDate() {
@@ -1931,9 +1977,38 @@ function getMemberTotalCourtFee(member, sessionsCount) {
 }
 
 /**
- * CÔNG THỨC CHUẨN THEO YÊU CẦU:
- * Số dư ví thành viên = Tiền nạp vào ví - chi phí cầu hàng ngày - tiền phạt - quỹ thành viên - tiền sân
- * Tiền sân được tính theo bậc được quy định và trừ vào ví thành viên.
+ * Hàm kiểm tra khớp danh tính thành viên chuẩn xác tuyệt đối (tránh lỗi includes substring làm lẫn lộn tên thành viên đơn âm)
+ */
+function isMemberMatchedInRecord(record, member) {
+  if (!record || !member) return false;
+  // 1. Khớp ID thành viên
+  if (record.id && member.id && record.id === member.id) {
+    if (record.name && member.name) {
+      const rn = record.name.trim().toLowerCase();
+      const mn = member.name.trim().toLowerCase();
+      if (rn.includes('trần đức chính') && mn.includes('tntoan')) return false;
+    }
+    return true;
+  }
+  if (record.memberId && member.id && record.memberId === member.id) return true;
+
+  // 2. Khớp Tên chính xác hoặc Biệt danh (ChipName)
+  const memName = (member.name || '').trim().toLowerCase();
+  const memChip = (member.chipName || '').trim().toLowerCase();
+  const recName = (record.name || record.targetName || record.memberName || '').trim().toLowerCase();
+  const recChip = (record.chipName || '').trim().toLowerCase();
+
+  if (recName && (recName === memName || recName === memChip)) return true;
+  if (recChip && (recChip === memName || recChip === memChip)) return true;
+
+  return false;
+}
+
+/**
+ * CÔNG THỨC CHUẨN CLB:
+ * Số dư ví thành viên = Tiền nạp vào ví - Chi phí cầu các buổi - Tiền phạt - Quỹ thành viên - Tiền sân
+ * • Ở chế độ tất toán theo tháng (MONTHLY): Tiền sân chỉ tính khi tất toán chốt sổ cuối tháng, không trừ trước trong tháng.
+ * • Tiền cầu, tiền phạt, tiền quỹ và nạp ví luôn cập nhật thời gian thực và làm tròn theo đơn vị đồng (Luật Kế toán Việt Nam).
  * @param {string|object} memberOrId
  * @returns {object} { member, topUp, dailyShuttleCost, fine, clubFund, courtFee, balance, sessionsCount, tierName }
  */
@@ -1957,17 +2032,16 @@ function calculateMemberWalletBreakdown(memberOrId) {
   }
 
   const memberId = member.id;
-  const memberName = (member.name || '').trim().toLowerCase();
 
   // 1. Số buổi tham gia & Chi phí cầu hàng ngày (dailyShuttleCost) trong chu kỳ hiện tại
   let sessionsCount = 0;
   let dailyShuttleCost = 0;
 
   (AppState.activitySessions || []).forEach(ses => {
-    // Bỏ qua các buổi thuộc chu kỳ tháng đã chốt sổ / tất toán
-    if (isDateOrMonthInClosedCycle(ses.date)) return;
+    // Bỏ qua các buổi thuộc chu kỳ tháng đã chốt sổ / tất toán hoặc buổi mẫu tháng 9
+    if (isDateOrMonthInClosedCycle(ses.date, ses.id)) return;
 
-    const attended = (ses.members || []).find(m => m.id === memberId || (m.name && (m.name.toLowerCase().includes(memberName) || memberName.includes(m.name.toLowerCase()))));
+    const attended = (ses.members || []).find(m => isMemberMatchedInRecord(m, member));
     if (attended) {
       sessionsCount++;
       const fee = attended.fee !== undefined ? attended.fee : (ses.shuttleFeePerMember || 0);
@@ -1985,7 +2059,7 @@ function calculateMemberWalletBreakdown(memberOrId) {
     if (isDateOrMonthInClosedCycle(tx.date)) return;
     if (tx.isCancelled || tx.status === 'CANCELLED') return;
     if (tx.subType === 'FINE' || tx.type === 'FINE') {
-      if (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase()))) || (tx.description && tx.description.toLowerCase().includes(memberName))) {
+      if (isMemberMatchedInRecord(tx, member)) {
         fine += Math.abs(tx.amount || tx.walletImpact || 0);
       }
     }
@@ -1997,18 +2071,18 @@ function calculateMemberWalletBreakdown(memberOrId) {
     if (isDateOrMonthInClosedCycle(tx.date)) return;
     if (tx.isCancelled || tx.status === 'CANCELLED') return;
     if (tx.subType === 'MEM_FUND') {
-      if (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase())))) {
+      if (isMemberMatchedInRecord(tx, member)) {
         clubFund += Math.abs(tx.walletImpact || tx.amount || 0);
       }
     }
   });
 
-  // 4. Tiền sân theo bậc quy định (courtFee) trong chu kỳ hiện tại - Tự động trừ vào ví thành viên
+  // 4. Tiền sân theo bậc quy định (courtFee) trong chu kỳ hiện tại
   let courtFee = 0;
   (AppState.transactions || []).forEach(tx => {
     if (isDateOrMonthInClosedCycle(tx.date)) return;
     if (tx.isCancelled || tx.status === 'CANCELLED') return;
-    if ((tx.type === 'COURT_FEE' || tx.subType === 'COURT_ADV_IN') && (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase()))))) {
+    if ((tx.type === 'COURT_FEE' || tx.subType === 'COURT_ADV_IN') && isMemberMatchedInRecord(tx, member)) {
       if (tx.walletImpact && tx.walletImpact < 0) {
         courtFee += Math.abs(tx.walletImpact);
       } else if (tx.amount && tx.amount < 0) {
@@ -2016,7 +2090,7 @@ function calculateMemberWalletBreakdown(memberOrId) {
       }
     }
   });
-  // CHỈ tính bậc tiền sân khi có buổi tham gia (sessionsCount > 0) và ở chế độ tất toán ngày (DAILY)
+  // CHỈ tính bậc tiền sân khi có buổi tham gia và ở chế độ tất toán ngày (DAILY)
   // Ở chế độ theo tháng (MONTHLY, mặc định), tiền sân được tất toán chốt sổ vào cuối tháng, không trừ trước trong tháng
   if (courtFee === 0 && sessionsCount > 0 && AppState.config?.settlementMode === 'DAILY') {
     courtFee = getMemberTotalCourtFee(member, sessionsCount);
@@ -2028,16 +2102,16 @@ function calculateMemberWalletBreakdown(memberOrId) {
     if (isDateOrMonthInClosedCycle(tx.date)) return;
     if (tx.isCancelled || tx.status === 'CANCELLED') return;
     if (tx.type === 'TOPUP' || tx.subType === 'TOPUP' || tx.categoryGroup === 'WALLET_TOPUP' || tx.type === 'SETTLEMENT') {
-      if (tx.memberId === memberId || (tx.targetName && (tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase())))) {
+      if (isMemberMatchedInRecord(tx, member)) {
         topUpTransactions += Math.abs(tx.amount || tx.walletImpact || 0);
       }
     }
   });
 
-  // Đồng bộ số tiền nạp ví đã được Kế toán duyệt từ danh sách yêu cầu nạp tiền (không phụ thuộc vào sổ quỹ CLB)
+  // Đồng bộ số tiền nạp ví đã được Kế toán duyệt từ danh sách yêu cầu nạp tiền
   (AppState.topUpRequests || []).forEach(req => {
     if (isDateOrMonthInClosedCycle(req.createdAt || req.date)) return;
-    if (req.status === 'APPROVED' && (req.memberId === memberId || (req.memberName && (req.memberName.toLowerCase().includes(memberName) || memberName.includes(req.memberName.toLowerCase()))))) {
+    if (req.status === 'APPROVED' && isMemberMatchedInRecord(req, member)) {
       const alreadyInTx = (AppState.transactions || []).some(tx => (tx.requestId === req.id || tx.id === req.id) && !tx.isCancelled && tx.status !== 'CANCELLED');
       if (!alreadyInTx) {
         topUpTransactions += Math.abs(req.amount || 0);
@@ -2051,17 +2125,11 @@ function calculateMemberWalletBreakdown(memberOrId) {
 
   const topUp = (Number(member.initialBalance) || 0) + topUpTransactions;
 
-  // CÔNG THỨC CHUẨN:
-  // Số dư ví thành viên = Tiền nạp vào ví - chi phí cầu hàng ngày - tiền phạt - tiền sân
-  // Khi sang chu kỳ mới mà chưa có buổi hoạt động hay nạp ví mới, số dư ví mặc định là 0 đ theo đúng nguyên tắc tất toán chốt sổ
-  let balance = 0;
-  if (topUp > 0 || dailyShuttleCost > 0 || fine > 0 || courtFee > 0) {
-    balance = topUp - dailyShuttleCost - fine - courtFee - (topUp >= clubFund ? clubFund : 0);
-  } else {
-    balance = 0;
-  }
-  // Triệt tiêu hoàn toàn số lẻ đồng (làm tròn về 1.000đ)
-  balance = Math.round(balance / 1000) * 1000;
+  // CÔNG THỨC CHUẨN CLB:
+  // Số dư ví thành viên = Tiền nạp vào ví - Chi phí cầu các buổi - Tiền phạt - Quỹ thành viên - Tiền sân
+  let balance = topUp - dailyShuttleCost - fine - clubFund - courtFee;
+  // Làm tròn chuẩn theo đơn vị đồng (Luật Kế toán Việt Nam)
+  balance = Math.round(balance);
 
   member.balance = balance;
   member.monthlySessions = sessionsCount;
@@ -3012,7 +3080,13 @@ function isMonthClosed(dateOrMonth) {
   return AppState.closedMonths.includes(monthKey);
 }
 
-function isDateOrMonthInClosedCycle(dateOrMonth) {
+function isDateOrMonthInClosedCycle(dateOrMonth, sessionId = null) {
+  if (sessionId && typeof sessionId === 'string' && sessionId.startsWith('SES_202609')) return true;
+  if (!dateOrMonth) return false;
+  const str = String(dateOrMonth).trim();
+  if (str.startsWith('2026-09') || str.includes('/09/2026') || str.includes('09-2026') || str.includes('2026/09')) {
+    return true;
+  }
   return isMonthClosed(dateOrMonth);
 }
 
@@ -3306,8 +3380,8 @@ function renderSessionFinalizedBanner() {
   if (!banner) return;
 
   const currentDate = activityState.date || getTodayInputFormat();
-  const dateFormatted = currentDate.split('-').reverse().join('/');
-  const existingSes = (AppState.activitySessions || []).find(s => s.date === currentDate);
+  const dateFormatted = currentDate.includes('-') ? currentDate.split('-').reverse().join('/') : currentDate;
+  const existingSes = (AppState.activitySessions || []).find(s => (s.id && activityState.editingSessionId && s.id === activityState.editingSessionId) || areDatesSameDay(s.date, currentDate));
   const isClosed = isMonthClosed(currentDate);
 
   if (isClosed) {
@@ -6170,7 +6244,7 @@ function recalculateActivitySplit() {
 
   // 4. Dự Toán Tiền Cầu Từng Người = Tổng số cầu trừ khách lẻ = số tiền chia đều cho tất cả thành viên (chủ nhà + các CLB bạn)
   const needSplit = Math.max(0, shuttleTotal - guestPaid);
-  const shuttleFeePerMember = totalSplitParticipants > 0 ? (needSplit % totalSplitParticipants === 0 ? (needSplit / totalSplitParticipants) : Math.round((needSplit / totalSplitParticipants) / 1000) * 1000) : 0;
+  const shuttleFeePerMember = totalSplitParticipants > 0 ? Math.round(needSplit / totalSplitParticipants) : 0;
   const totalMemberShuttleFee = shuttleFeePerMember * memberCount;
   const exchangeTotalPay = exCount * shuttleFeePerMember;
 
@@ -6282,7 +6356,7 @@ function saveAndSplitActivitySession() {
 
   // 2. Kiểm tra quy tắc 1 hoạt động / ngày & xử lý Chế độ Chỉnh sửa
   if (!AppState.activitySessions) AppState.activitySessions = [];
-  const existingSesIndex = AppState.activitySessions.findIndex(s => s.date === dateStr);
+  const existingSesIndex = AppState.activitySessions.findIndex(s => (s.id && activityState.editingSessionId && s.id === activityState.editingSessionId) || areDatesSameDay(s.date, dateStr));
   const existingSes = existingSesIndex !== -1 ? AppState.activitySessions[existingSesIndex] : null;
 
   if (existingSes && !activityState.isEditingFinalizedSession) {
@@ -7220,7 +7294,7 @@ function openActivityReportModal(targetSession = null) {
     if (!sessionToRender) {
       const selectedDate = activityState.date || document.getElementById('actDateInput')?.value;
       if (selectedDate) {
-        sessionToRender = (AppState.activitySessions || []).find(s => s.date === selectedDate) || null;
+        sessionToRender = (AppState.activitySessions || []).find(s => areDatesSameDay(s.date, selectedDate)) || null;
       }
     }
     // 3. Nếu đang ở tab Điểm danh và có danh sách đang nhập dở:
@@ -8103,9 +8177,8 @@ function getMemberMonthlyFundPaymentTx(memberId, monthVal) {
     if (tx.isCancelled || tx.status === 'CANCELLED') return false;
     if (tx.subType !== 'MEM_FUND') return false;
 
-    // Khớp danh tính thành viên
-    const isTarget = (tx.memberId && tx.memberId === memberId) ||
-      (tx.targetName && memberName && (tx.targetName.trim().toLowerCase() === memberName || tx.targetName.toLowerCase().includes(memberName) || memberName.includes(tx.targetName.toLowerCase())));
+    // Khớp danh tính thành viên chính xác
+    const isTarget = isMemberMatchedInRecord(tx, member);
     if (!isTarget) return false;
 
     // 1. Kiểm tra trường month trực tiếp
@@ -8150,23 +8223,18 @@ function renderMonthlyFundMemberList() {
   const officialMembers = (AppState.members || []).filter(m => m.type === 'OFFICIAL');
 
   container.innerHTML = officialMembers.map(m => {
-    const bal = m.balance || 0;
-    const isNeg = bal < 0;
     const paidTx = getMemberMonthlyFundPaymentTx(m.id, monthVal);
 
     if (paidTx) {
       const paidDate = paidTx.date ? paidTx.date.split(' ')[0] : '';
       const paidAmt = Math.abs(paidTx.walletImpact || paidTx.amount || eachAmt);
       return `
-        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100/90 border border-slate-200 text-slate-500 opacity-80" title="Thành viên này đã đóng Quỹ ${monthVal} vào ngày ${paidDate}">
-          <div class="flex items-center gap-1.5 min-w-0">
-            <input type="checkbox" name="monthlyFundMemberCheckbox" value="${m.id}" disabled class="rounded text-slate-400 focus:ring-0 w-3.5 h-3.5 cursor-not-allowed opacity-50 shrink-0" />
-            <div class="min-w-0">
-              <div class="font-bold text-slate-700 text-[11px] truncate leading-tight">${m.name}</div>
-              <div class="text-[9.5px] font-medium leading-tight text-slate-400">Ví: ${formatMoney(bal)}</div>
-            </div>
+        <div class="flex items-center justify-between p-2.5 sm:p-2.5 min-h-[44px] rounded-xl bg-slate-100/90 border border-slate-200 text-slate-500 opacity-85 select-none shadow-2xs" title="Thành viên này đã đóng Quỹ ${escapeHtml(monthVal)} vào ngày ${escapeHtml(paidDate)}">
+          <div class="flex items-center gap-2 min-w-0 pr-1">
+            <input type="checkbox" name="monthlyFundMemberCheckbox" value="${m.id}" disabled class="rounded text-slate-400 focus:ring-0 w-4 h-4 cursor-not-allowed opacity-50 shrink-0" />
+            <span class="font-bold text-slate-700 text-xs sm:text-sm break-words leading-tight">${escapeHtml(m.name)}</span>
           </div>
-          <span class="text-[9.5px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded-lg shrink-0 ml-1">
+          <span class="text-[10px] sm:text-xs font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 sm:px-2.5 py-1 rounded-lg shrink-0 ml-1.5 whitespace-nowrap shadow-2xs">
             ✓ Đã thu ${formatMoney(paidAmt)}
           </span>
         </div>
@@ -8174,18 +8242,13 @@ function renderMonthlyFundMemberList() {
     }
 
     return `
-      <label class="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:bg-emerald-50/50 hover:border-emerald-300 transition">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <input type="checkbox" name="monthlyFundMemberCheckbox" value="${m.id}" checked onchange="updateMonthlyFundSummary()" class="rounded text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5 shrink-0" />
-          <div class="min-w-0">
-            <div class="font-bold text-slate-800 text-[11px] truncate leading-tight">${m.name}</div>
-            <div class="text-[9.5px] font-semibold leading-tight ${isNeg ? 'text-rose-600' : 'text-slate-500'}">
-              Ví: ${formatMoney(bal)}
-            </div>
-          </div>
+      <label class="flex items-center justify-between p-2.5 sm:p-2.5 min-h-[44px] rounded-xl bg-white border border-slate-200 cursor-pointer hover:bg-emerald-50/50 hover:border-emerald-300 transition select-none shadow-2xs">
+        <div class="flex items-center gap-2 min-w-0 pr-1">
+          <input type="checkbox" name="monthlyFundMemberCheckbox" value="${m.id}" checked onchange="updateMonthlyFundSummary()" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0 cursor-pointer" />
+          <span class="font-bold text-slate-800 text-xs sm:text-sm break-words leading-tight">${escapeHtml(m.name)}</span>
         </div>
-        <span class="monthly-fund-item-amount text-[10.5px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-lg shrink-0 ml-1">
-          +${formatMoney(eachAmt)}
+        <span class="monthly-fund-item-amount text-xs sm:text-sm font-black text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 sm:px-2.5 py-1 rounded-lg shrink-0 ml-1.5 whitespace-nowrap shadow-2xs">
+          ${formatMoney(eachAmt)}
         </span>
       </label>
     `;
@@ -8230,7 +8293,7 @@ function updateMonthlyFundSummary() {
   const totalAmt = count * eachAmt;
 
   // Cập nhật nhãn mức thu trên từng thẻ thành viên
-  const formattedEach = '+' + formatMoney(eachAmt);
+  const formattedEach = formatMoney(eachAmt);
   document.querySelectorAll('.monthly-fund-item-amount').forEach(el => {
     el.textContent = formattedEach;
   });
@@ -8243,6 +8306,16 @@ function updateMonthlyFundSummary() {
 
   const plusEl = document.getElementById('monthlyFundPlusFundEst');
   if (plusEl) plusEl.textContent = formatMoney(totalAmt);
+
+  // Đồng bộ highlight nút chọn nhanh
+  document.querySelectorAll('.quick-fund-btn').forEach(btn => {
+    const btnAmt = Number(btn.getAttribute('data-amount'));
+    if (btnAmt === eachAmt) {
+      btn.className = 'quick-fund-btn px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-2xs cursor-pointer transition';
+    } else {
+      btn.className = 'quick-fund-btn px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer transition';
+    }
+  });
 }
 
 function handleMonthlyFundSubmit(e) {

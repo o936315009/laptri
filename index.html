@@ -1180,11 +1180,33 @@
                     <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
                       <span>🏸</span> 1. Quỹ Tạm Ứng Tiền Cầu
                     </span>
-                    <span class="text-[9px] font-bold text-slate-400">Số dư cầu</span>
+                    <span id="kpiAdvShuttleSessionBadge" class="text-[9px] font-bold text-emerald-300 bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-800/50">0 buổi</span>
                   </div>
-                  <div id="kpiAdvShuttleBalance" class="text-lg font-black text-white mt-1">0 đ</div>
-                  <p class="text-[9px] text-slate-400 mt-0.5">Thu từ TV các buổi chơi − Đã mua cầu</p>
-                  
+
+                  <!-- 2 CỘT THỐNG KÊ: 1. TỔNG CẦU (Số lượng cầu từng ngày) | 2. TỔNG TIỀN (Số cầu × Đơn giá) -->
+                  <div class="grid grid-cols-2 gap-2 mt-2 p-2 bg-slate-900/90 rounded-lg border border-slate-700/80">
+                    <!-- Cột 1: 1. Tổng Cầu -->
+                    <div class="border-r border-slate-700/80 pr-1">
+                      <div class="flex items-center gap-1">
+                        <span class="text-[11px]">🏸</span>
+                        <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-tight">1. Tổng Cầu</span>
+                      </div>
+                      <div id="kpiAdvShuttleTotalCount" class="text-base sm:text-lg font-black text-white mt-0.5">0 quả</div>
+                      <span class="text-[9px] text-slate-400 block truncate" title="Số lượng cầu của từng ngày">Cầu từng ngày</span>
+                    </div>
+
+                    <!-- Cột 2: 2. Tổng Tiền -->
+                    <div class="pl-1">
+                      <div class="flex items-center gap-1">
+                        <span class="text-[11px]">💰</span>
+                        <span class="text-[10px] font-bold text-amber-400 uppercase tracking-tight">2. Tổng Tiền</span>
+                      </div>
+                      <div id="kpiAdvShuttleTotalAmount" class="text-base sm:text-lg font-black text-amber-300 mt-0.5">0 đ</div>
+                      <span class="text-[9px] text-slate-400 block truncate" title="Số cầu nhân đơn giá">Số cầu × Đơn giá</span>
+                    </div>
+                  </div>
+
+                  <!-- Thông tin chi tiết thu chi & số dư -->
                   <div class="mt-2 pt-1.5 border-t border-slate-700 space-y-0.5 text-[10px]">
                     <div class="flex justify-between text-slate-300">
                       <span class="text-slate-400">Đã thu từ TV:</span>
@@ -1193,6 +1215,10 @@
                     <div class="flex justify-between text-slate-300">
                       <span class="text-slate-400">Đã chi mua cầu:</span>
                       <b id="kpiAdvShuttlePaid" class="text-rose-400 font-bold">-0 đ</b>
+                    </div>
+                    <div class="flex justify-between text-slate-300 pt-0.5 border-t border-slate-700/50">
+                      <span class="text-slate-400">Số dư quỹ cầu:</span>
+                      <b id="kpiAdvShuttleBalance" class="text-white font-bold">0 đ</b>
                     </div>
                   </div>
                 </div>
@@ -6640,6 +6666,6 @@ const firebaseConfig = {
   <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- Application Logic - Thực thi tức thì khi HTML đã dựng xong -->
-  <script defer src="app.js?v=7.7"></script>
+  <script defer src="app.js?v=7.9"></script>
 </body>
 </html>

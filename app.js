@@ -133,7 +133,7 @@ function initSecondClubDataIfMissing() {
           dailyRateTitle: 'ĐƠN GIÁ THEO NGÀY 12',
           shuttleBillingMode: 'BY_SHUTTLE',
           shuttleUnitPrice: 29167,
-          defaultShuttlesPerSession: 6,
+          defaultShuttlesPerSession: 0,
           viceLeaderId: 'M002',
           permissions: {
             allowViceLeaderAttendance: true,
@@ -795,7 +795,7 @@ function getBlankClubInitialData(club) {
       dailyRateTitle: 'ĐƠN GIÁ THEO NGÀY 12',
       shuttleBillingMode: 'BY_SHUTTLE',
       shuttleUnitPrice: 28333,
-      defaultShuttlesPerSession: 6,
+      defaultShuttlesPerSession: 0,
       viceLeaderId: '',
       permissions: {
         allowViceLeaderAttendance: true,
@@ -1167,7 +1167,7 @@ const DEFAULT_INITIAL_DATA = {
     dailyRateTitle: 'ĐƠN GIÁ THEO NGÀY 12',
     shuttleBillingMode: 'BY_SHUTTLE',
     shuttleUnitPrice: 28333,
-    defaultShuttlesPerSession: 6,
+    defaultShuttlesPerSession: 0,
     viceLeaderId: 'M002',
     permissions: {
       allowViceLeaderAttendance: true,
@@ -1470,7 +1470,7 @@ function loadData() {
           const sc = AppState.config.shuttlecocksPerBox || 12;
           AppState.config.shuttleUnitPrice = Math.round(bp / sc) || 28333;
         }
-        if (AppState.config.defaultShuttlesPerSession === undefined || AppState.config.defaultShuttlesPerSession === null) AppState.config.defaultShuttlesPerSession = 6;
+        if (AppState.config.defaultShuttlesPerSession === undefined || AppState.config.defaultShuttlesPerSession === null || AppState.config.defaultShuttlesPerSession === 6) AppState.config.defaultShuttlesPerSession = 0;
         if (AppState.config.monthlyClubFund === undefined || AppState.config.monthlyClubFund === null) AppState.config.monthlyClubFund = 50000;
         if (!AppState.config.viceLeaderId) AppState.config.viceLeaderId = isMainClub ? 'M002' : '';
         if (!AppState.config.permissions) {
@@ -3066,14 +3066,28 @@ function applyLiveSessionFromCloud(data) {
 
 function loadActivitySessionState() {
   try {
+    const today = getTodayInputFormat();
+    let data = null;
     if (AppState && AppState.currentSession) {
-      return applyLiveSessionFromCloud(AppState.currentSession);
+      data = AppState.currentSession;
+    } else {
+      const clubId = getActiveClubId();
+      const sessionKey = 'CLB_SESSION_' + clubId;
+      const raw = localStorage.getItem(sessionKey);
+      if (raw) data = JSON.parse(raw);
     }
-    const clubId = getActiveClubId();
-    const sessionKey = 'CLB_SESSION_' + clubId;
-    const raw = localStorage.getItem(sessionKey);
-    if (!raw) return false;
-    const data = JSON.parse(raw);
+    if (!data) return false;
+
+    // Khi ngày mới bắt đầu: Nếu session lưu tạm thuộc ngày cũ (khác ngày hôm nay),
+    // tự động xóa phiên cũ để bắt đầu ngày mới hoàn toàn mới:
+    // - Loại hoạt động: "Buổi cầu"
+    // - Danh sách điểm danh: làm mới (0 người)
+    // - Số quả cầu: mặc định 0 quả
+    if (data.date && data.date !== today) {
+      clearActivitySessionState();
+      return false;
+    }
+
     return applyLiveSessionFromCloud(data);
   } catch (e) {
     return false;
@@ -3096,12 +3110,14 @@ function initActivitySessionData(forceReset = false) {
     return;
   }
 
-  activityState.date = getTodayInputFormat();
-  activityState.type = 'Buổi cầu';
+  const today = getTodayInputFormat();
+  activityState.date = today;
+  activityState.type = 'Buổi cầu'; // Mặc định loại buổi cầu
   activityState.lang = 'VI';
   activityState.exchangeClubName = '';
   activityState.exchangeMembers = [];
   activityState.exchangeClubs = [];
+  // Danh sách được làm mới hoàn toàn (0 người điểm danh)
   activityState.selectedMemberIds = new Set();
   activityState.selectedGuestIds = new Set();
   activityState.saveGuestDebt = false;
@@ -3110,26 +3126,18 @@ function initActivitySessionData(forceReset = false) {
   const count = AppState.config?.shuttlecocksPerBox || 12;
   const unitPrice = count > 0 ? Math.round(boxPrice / count) : 28333;
   const mode = AppState.config?.shuttleBillingMode || 'BY_SHUTTLE';
-  const defaultShuttleCount = (AppState.config?.defaultShuttlesPerSession !== undefined && AppState.config?.defaultShuttlesPerSession !== null && !isNaN(Number(AppState.config.defaultShuttlesPerSession))) 
-    ? Number(AppState.config.defaultShuttlesPerSession) 
-    : 6;
+
+  // Số quả cầu mặc định: 0 quả
+  const defaultShuttleCount = 0;
 
   activityState.dailyBoxPrice = boxPrice;
   activityState.shuttleBillingMode = mode;
   activityState.shuttleCount = defaultShuttleCount;
 
-  if (mode === 'BY_SHUTTLE') {
-    const qty = defaultShuttleCount;
-    const amount = (qty === count) ? boxPrice : (qty * unitPrice);
-    activityState.expenses = [
-      { id: 1, title: 'Tiền cầu', qty: qty, unitPrice: unitPrice, amount: amount, isCombo: false, isShuttleRow: true }
-    ];
-  } else {
-    const title = AppState.config?.dailyRateTitle || `ĐƠN GIÁ THEO NGÀY ${count}`;
-    activityState.expenses = [
-      { id: 1, title: title, qty: 1, unitPrice: boxPrice, amount: boxPrice, isCombo: false, isShuttleRow: true }
-    ];
-  }
+  activityState.expenses = [
+    { id: 1, title: 'Tiền cầu', qty: 0, unitPrice: unitPrice, amount: 0, isCombo: false, isShuttleRow: true }
+  ];
+
   activityState.frontPersonId = 'NONE';
   activityState.frontAmount = 0;
   activityState.isFrontAll = false;
@@ -3138,7 +3146,7 @@ function initActivitySessionData(forceReset = false) {
   // Thống kê các trận cầu chỉ hiển thị khi người dùng bấm nút "+ Thêm trận", mặc định để rỗng
   activityState.matches = [];
 
-  // Mặc định CHƯA ĐIỂM DANH thành viên nào theo yêu cầu người dùng (luôn hiển thị chưa điểm danh: 0/27)
+  // Mặc định CHƯA ĐIỂM DANH thành viên nào theo yêu cầu người dùng (danh sách làm mới: 0 người)
   activityState.selectedMemberIds = new Set();
   activityState.selectedGuestIds = new Set();
   activityState.temporaryAttendanceSaved = false;
@@ -4283,12 +4291,14 @@ function memberSelfCancel(memberId) {
 }
 
 function renderAttendanceTab() {
-  if (!activityState.initialized) {
-    initActivitySessionData();
+  const today = getTodayInputFormat();
+  // Nếu ngày mới bắt đầu (activityState.date khác ngày hôm nay) và không phải đang cố ý mở sửa buổi đã chốt:
+  if (!activityState.initialized || (!activityState.isEditingFinalizedSession && activityState.date !== today)) {
+    initActivitySessionData(activityState.date !== today);
   }
 
   const dateInp = document.getElementById('actDateInput');
-  if (dateInp) dateInp.value = activityState.date || getTodayInputFormat();
+  if (dateInp) dateInp.value = activityState.date || today;
 
   const typeSel = document.getElementById('actTypeSelect');
   if (typeSel) typeSel.value = activityState.type;
@@ -5022,7 +5032,8 @@ function applyDailyRatePreset(rate) {
 
   if (activityState.expenses.length > 0) {
     if (mode === 'BY_SHUTTLE') {
-      const qty = activityState.expenses[0].qty || count;
+      const currentQty = (activityState.expenses[0].qty !== undefined && activityState.expenses[0].qty !== null) ? Number(activityState.expenses[0].qty) : 0;
+      const qty = isNaN(currentQty) ? 0 : currentQty;
       activityState.expenses[0].title = 'Tiền cầu';
       activityState.expenses[0].unitPrice = unitPrice;
       activityState.expenses[0].qty = qty;
@@ -5041,9 +5052,9 @@ function applyDailyRatePreset(rate) {
       activityState.expenses.push({
         id: Date.now(),
         title: 'Tiền cầu',
-        qty: count,
+        qty: 0,
         unitPrice: unitPrice,
-        amount: boxPrice,
+        amount: 0,
         isCombo: false,
         isShuttleRow: true
       });
@@ -5114,13 +5125,35 @@ function onActivityDateChanged(val) {
     showToast(`ℹ️ Ngày ${dateFormatted} đã có buổi hoạt động được chốt. Đã tải thông tin!`, 'info');
     return;
   }
+  // Khi chọn ngày mới chưa có buổi chốt: Làm mới toàn bộ, loại mặc định "Buổi cầu", số quả cầu = 0
   activityState.date = val;
+  activityState.type = 'Buổi cầu';
+  activityState.selectedMemberIds = new Set();
+  activityState.selectedGuestIds = new Set();
+  activityState.temporaryAttendanceSaved = false;
+  activityState.savedAttendanceTime = null;
+  activityState.isEditingAttendance = false;
   activityState.isEditingFinalizedSession = false;
   activityState.editingSessionId = null;
+  activityState.exchangeClubName = '';
+  activityState.exchangeMembers = [];
+  activityState.exchangeClubs = [];
+  activityState.frontPersonId = 'NONE';
+  activityState.frontAmount = 0;
+  activityState.isFrontAll = false;
+  activityState.tipAmount = 0;
+  activityState.matches = [];
+
+  const boxPrice = activityState.dailyBoxPrice || AppState.config?.dailyBoxPrice || 340000;
+  const count = AppState.config?.shuttlecocksPerBox || 12;
+  const unitPrice = count > 0 ? Math.round(boxPrice / count) : 28333;
+  activityState.shuttleCount = 0;
+  activityState.expenses = [
+    { id: 1, title: 'Tiền cầu', qty: 0, unitPrice: unitPrice, amount: 0, isCombo: false, isShuttleRow: true }
+  ];
+
   saveActivitySessionState();
-  renderSelfAttendanceBanner();
-  renderActivityMemberChips();
-  renderSessionFinalizedBanner();
+  renderAttendanceTab();
 }
 
 function onActivityTypeChanged(val) {
@@ -7705,7 +7738,10 @@ function calculateAdvanceFundStats() {
     shuttle: {
       collected: 0,
       paid: 0,
-      balance: 0
+      balance: 0,
+      totalCount: 0,
+      totalAmount: 0,
+      sessionCount: 0
     },
     court: {
       collected: 0,
@@ -7758,6 +7794,56 @@ function calculateAdvanceFundStats() {
   stats.court.balance = stats.court.collected - stats.court.paid;
   stats.totalAdvanceFund = stats.shuttle.balance + stats.court.balance + stats.guest.collected;
 
+  // 1. Tính tổng số lượng cầu (từng ngày) và tổng tiền cầu (số cầu × đơn giá) từ các buổi hoạt động
+  let totalShuttleCount = 0;
+  let totalShuttleAmount = 0;
+  let shuttleSessionCount = 0;
+
+  const defaultBoxPrice = AppState.config?.dailyBoxPrice || 340000;
+  const countPerBox = AppState.config?.shuttlecocksPerBox || 12;
+  const defaultUnitPrice = countPerBox > 0 ? Math.round(defaultBoxPrice / countPerBox) : 28333;
+
+  (AppState.activitySessions || []).forEach(ses => {
+    if (typeof isDateOrMonthInClosedCycle === 'function' && isDateOrMonthInClosedCycle(ses.date)) return;
+
+    let sQty = 0;
+    let sAmt = 0;
+
+    if (Array.isArray(ses.expenses) && ses.expenses.length > 0) {
+      const sExp = ses.expenses.find(e => e.isShuttleRow || (e.title && e.title.toLowerCase().includes('cầu'))) || ses.expenses[0];
+      if (sExp) {
+        sQty = Number(sExp.qty) || 0;
+        const uPrice = Number(sExp.unitPrice) || Math.round((ses.dailyBoxPrice || defaultBoxPrice) / countPerBox);
+        sAmt = (sExp.amount !== undefined && sExp.amount !== null && Number(sExp.amount) > 0)
+          ? Number(sExp.amount)
+          : (sQty * uPrice);
+      }
+    }
+
+    if (sQty === 0 && (ses.shuttleTotal || ses.shuttleFeePerMember)) {
+      const uPrice = ses.dailyBoxPrice ? Math.round(ses.dailyBoxPrice / countPerBox) : defaultUnitPrice;
+      sAmt = ses.shuttleTotal || ((ses.members || []).length * (ses.shuttleFeePerMember || 0) + (ses.guestPaid || 0));
+      sQty = uPrice > 0 ? Math.round(sAmt / uPrice) : 0;
+    }
+
+    if (sQty > 0 || sAmt > 0) {
+      totalShuttleCount += sQty;
+      totalShuttleAmount += sAmt;
+      shuttleSessionCount++;
+    }
+  });
+
+  // Fallback an toàn: Nếu chưa có phiên trong activitySessions hoặc dữ liệu cũ chỉ có giao dịch
+  if (totalShuttleCount === 0 && (stats.shuttle.collected > 0 || stats.guest.collected > 0)) {
+    totalShuttleAmount = stats.shuttle.collected + stats.guest.collected;
+    totalShuttleCount = defaultUnitPrice > 0 ? Math.round(totalShuttleAmount / defaultUnitPrice) : 0;
+    shuttleSessionCount = totalShuttleCount > 0 ? 1 : 0;
+  }
+
+  stats.shuttle.totalCount = totalShuttleCount;
+  stats.shuttle.totalAmount = totalShuttleAmount;
+  stats.shuttle.sessionCount = shuttleSessionCount;
+
   if (AppState.funds) {
     AppState.funds.advanceFund = stats.totalAdvanceFund;
     AppState.funds.shuttleAdvanceFund = stats.shuttle.balance;
@@ -7765,6 +7851,8 @@ function calculateAdvanceFundStats() {
     AppState.funds.guestAdvanceIncome = stats.guest.collected;
     AppState.funds.shuttlePaidTotal = stats.shuttle.paid;
     AppState.funds.courtPaidTotal = stats.court.paid;
+    AppState.funds.shuttleTotalCount = stats.shuttle.totalCount;
+    AppState.funds.shuttleTotalAmount = stats.shuttle.totalAmount;
   }
 
   return stats;
@@ -7849,6 +7937,15 @@ function renderFinanceTab() {
   const kpiAdvTotalEl = document.getElementById('kpiCardAdvanceFundTotal');
   if (kpiAdvTotalEl) kpiAdvTotalEl.textContent = formatMoney(advStats.totalAdvanceFund);
 
+  const kpiShuttleCountEl = document.getElementById('kpiAdvShuttleTotalCount');
+  if (kpiShuttleCountEl) kpiShuttleCountEl.textContent = `${advStats.shuttle.totalCount || 0} quả`;
+
+  const kpiShuttleAmtEl = document.getElementById('kpiAdvShuttleTotalAmount');
+  if (kpiShuttleAmtEl) kpiShuttleAmtEl.textContent = formatMoney(advStats.shuttle.totalAmount || 0);
+
+  const kpiShuttleBadgeEl = document.getElementById('kpiAdvShuttleSessionBadge');
+  if (kpiShuttleBadgeEl) kpiShuttleBadgeEl.textContent = `${advStats.shuttle.sessionCount || 0} buổi`;
+
   const kpiShuttleBalEl = document.getElementById('kpiAdvShuttleBalance');
   if (kpiShuttleBalEl) kpiShuttleBalEl.textContent = formatMoney(advStats.shuttle.balance);
 
@@ -7889,7 +7986,7 @@ function renderFinanceTab() {
 
   // Đồng bộ lên thanh tóm tắt thu gọn của Quỹ Tạm Ứng
   const miniShuttle = document.getElementById('kpiAdvShuttleBalanceMini');
-  if (miniShuttle) miniShuttle.textContent = formatMoney(advStats.shuttle.balance);
+  if (miniShuttle) miniShuttle.textContent = `${advStats.shuttle.totalCount || 0} quả (${formatMoney(advStats.shuttle.totalAmount || advStats.shuttle.balance)})`;
 
   const miniCourt = document.getElementById('kpiAdvCourtBalanceMini');
   if (miniCourt) miniCourt.textContent = formatMoney(advStats.court.balance);

@@ -4103,10 +4103,10 @@ function renderActivityMemberChips() {
 
     return `
       <button type="button" onclick="toggleActivityMember('${m.id}')"
-        class="py-1.5 px-0.5 sm:px-1 rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-2xs select-none min-h-[36px] flex items-center justify-center cursor-pointer leading-tight ${
+        class="py-1.5 px-0.5 sm:px-1 rounded-xl text-xs sm:text-[12.5px] font-black transition-all shadow-2xs select-none min-h-[38px] flex items-center justify-center cursor-pointer leading-tight ${
           isSel 
-            ? 'bg-emerald-700 hover:bg-emerald-800 text-white font-black shadow-emerald-900/15 ring-1 ring-emerald-600 active:scale-95' 
-            : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 active:scale-95'
+            ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-sm ring-2 ring-emerald-500 active:scale-95' 
+            : 'bg-slate-50 hover:bg-white text-slate-800 border border-slate-300 hover:border-emerald-400 active:scale-95'
         } ${isSelf ? 'ring-2 ring-amber-400 ring-offset-1 font-black' : ''}" title="${m.name}${titleExtra} (${formatMoney(m.balance || 0)})">
         <span class="whitespace-nowrap tracking-tight font-black">${isSel ? '✓ ' : ''}${label}${isSelf ? ' ⭐' : ''}</span>
       </button>
@@ -4130,10 +4130,10 @@ function renderActivityMemberChips() {
 
     return `
       <button type="button" onclick="toggleActivityMember('${m.id}')"
-        class="py-1.5 px-0.5 sm:px-1 rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-2xs select-none min-h-[36px] flex items-center justify-center cursor-pointer leading-tight ${
+        class="py-1.5 px-0.5 sm:px-1 rounded-xl text-xs sm:text-[12.5px] font-black transition-all shadow-2xs select-none min-h-[38px] flex items-center justify-center cursor-pointer leading-tight ${
           isSel 
-            ? 'bg-emerald-700 hover:bg-emerald-800 text-white font-black shadow-emerald-900/15 ring-1 ring-emerald-600 active:scale-95' 
-            : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 hover:border-slate-300 active:scale-95'
+            ? 'bg-purple-700 hover:bg-purple-800 text-white font-black shadow-sm ring-2 ring-purple-500 active:scale-95' 
+            : 'bg-purple-50/40 hover:bg-white text-slate-800 border border-purple-200 hover:border-purple-400 active:scale-95'
         } ${isSelf ? 'ring-2 ring-amber-400 ring-offset-1 font-black' : ''}" title="${m.name}${titleExtra} (${formatMoney(m.balance || 0)})">
         <span class="whitespace-nowrap tracking-tight font-black">${isSel ? '✓ ' : ''}${label}${isSelf ? ' ⭐' : ''}</span>
       </button>
@@ -4285,10 +4285,10 @@ function renderActivityGuestChips() {
             const displayName = g.chipName || g.name;
             return `
               <button type="button" onclick="toggleActivityGuest('${g.id}')"
-                class="px-2 py-0.5 rounded-lg text-[11px] font-bold transition shadow-2xs select-none whitespace-nowrap cursor-pointer flex items-center gap-0.5 shrink-0 ${
+                class="px-2.5 py-1 rounded-lg text-xs font-black transition shadow-2xs select-none whitespace-nowrap cursor-pointer flex items-center gap-0.5 shrink-0 ${
                   isSel 
-                    ? 'bg-emerald-700 text-white shadow-emerald-900/15 ring-1 ring-emerald-600 font-black' 
-                    : 'bg-white text-slate-800 border border-slate-200 hover:border-slate-300'
+                    ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-500 font-black' 
+                    : 'bg-white text-slate-800 border border-slate-300 hover:border-emerald-400 font-black'
                 }">
                 <span>${isSel ? '✓ ' : ''}${displayName}</span>
               </button>
@@ -4857,19 +4857,13 @@ function renderExchangeClubUI() {
   if (!section) return;
 
   const isExchange = (activityState.type === 'Giao lưu');
-  const quickBar = document.getElementById('actAddExchangeClubQuickBar');
-  const quickBtn = document.getElementById('btnQuickAddExchangeClub');
 
   if (!isExchange) {
     section.classList.add('hidden');
-    if (quickBar) quickBar.classList.remove('hidden');
-    if (quickBtn) quickBtn.classList.remove('hidden');
     return;
   }
 
   section.classList.remove('hidden');
-  if (quickBar) quickBar.classList.add('hidden');
-  if (quickBtn) quickBtn.classList.add('hidden');
 
   const clubs = getNormalizedExchangeClubs();
   if (clubs.length === 0) {
@@ -4895,63 +4889,47 @@ function renderExchangeClubUI() {
     container.innerHTML = clubs.map((club, cIdx) => {
       const cMembers = Array.isArray(club.members) ? club.members : [];
       return `
-        <div class="p-2.5 sm:p-3 bg-white/95 rounded-2xl border-2 border-amber-300 shadow-xs space-y-2 sm:space-y-2.5">
-          <!-- Hàng 1: Badge CLB # + Tên CLB (Rộng rãi, dễ gõ trên điện thoại) + Số lượng TV -->
+        <div class="p-2 sm:p-2.5 bg-white/95 rounded-xl border border-amber-300 shadow-2xs space-y-1.5">
+          <!-- Hàng 1: Tên CLB + Số lượng người + Nút Xóa CLB (Gọn gàng trên 1 dòng) -->
           <div class="flex items-center gap-1.5 min-w-0">
-            <span class="text-xs font-black px-2 py-1.5 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
-              CLB #${cIdx + 1}
-            </span>
             <input type="text"
                    value="${escapeHtml(club.name)}" 
                    onchange="updateExchangeClubName(${cIdx}, this.value)" 
                    placeholder="Tên CLB (VD: CLB XH)" 
-                   class="font-black text-xs sm:text-sm text-slate-900 bg-amber-50/40 focus:bg-white border border-amber-300 focus:border-amber-500 rounded-xl px-2.5 py-1.5 flex-1 min-w-0 outline-none shadow-2xs transition" 
+                   class="font-bold text-xs text-slate-900 bg-amber-50/40 focus:bg-white border border-amber-300 focus:border-amber-500 rounded-lg px-2 py-1 flex-1 min-w-0 outline-none shadow-2xs transition" 
                    title="Chạm vào để sửa tên CLB" />
-            <span class="text-xs font-black text-amber-900 bg-amber-100 px-2 py-1.5 rounded-xl border border-amber-300 shrink-0 whitespace-nowrap">
+            <span class="text-[10.5px] font-bold text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded-md border border-amber-200 shrink-0 whitespace-nowrap">
               ${cMembers.length} người
             </span>
-          </div>
-
-          <!-- Hàng 2: Toolbar thao tác (Dán DS nhiều người & Xóa CLB) -->
-          <div class="flex items-center justify-between gap-1.5 pt-0.5">
-            <span class="text-[11px] font-bold text-amber-900/80 flex items-center gap-1">
-              <span>👥</span>
-              <span>Thành viên (${cMembers.length}):</span>
-            </span>
-            <div class="flex items-center gap-1.5">
-              <button type="button" onclick="promptAddMultipleExchangeMembers(${cIdx})" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 active:scale-95 text-amber-950 font-bold text-[11px] rounded-lg border border-amber-300 transition cursor-pointer flex items-center gap-1 shadow-2xs" title="Dán danh sách nhiều thành viên cách nhau dấu phẩy">
-                <span>📋</span> Dán DS
+            ${clubs.length > 1 ? `
+              <button type="button" onclick="removeExchangeClub(${cIdx})" class="text-[10px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-1.5 py-0.5 rounded-md transition cursor-pointer shrink-0" title="Xóa toàn bộ CLB này">
+                ✕ Xóa CLB
               </button>
-              ${clubs.length > 1 ? `
-                <button type="button" onclick="removeExchangeClub(${cIdx})" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 font-bold text-[11px] rounded-lg border border-rose-200 transition cursor-pointer flex items-center gap-0.5" title="Xóa toàn bộ CLB này">
-                  <span>✕</span> Xóa CLB
-                </button>
-              ` : ''}
-            </div>
+            ` : ''}
           </div>
 
-          <!-- Hàng 3: Ô nhập tên TV + Nút Thêm (Kích thước chuẩn chạm ngón tay trên điện thoại) -->
-          <div class="flex items-center gap-1.5">
+          <!-- Hàng 2: Ô nhập tên TV + Nút + Thêm (Gọn gàng, hỗ trợ dán nhiều tên cách nhau dấu phẩy) -->
+          <div class="flex items-center gap-1">
             <input type="text" 
                    id="actExClubInput_${cIdx}" 
-                   placeholder="Thêm tên TV (phẩy để thêm nhiều)..." 
+                   placeholder="Nhập tên TV (cách nhau dấu phẩy)..." 
                    onkeydown="if(event.key==='Enter'){event.preventDefault();addExchangeMemberFromClubInput(${cIdx});}"
-                   class="flex-1 px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold border border-amber-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 placeholder:text-slate-400 shadow-2xs" />
+                   class="flex-1 px-2.5 py-1 text-xs font-medium border border-amber-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 text-slate-900 placeholder:text-slate-400 shadow-2xs" />
             <button type="button" 
                     onclick="addExchangeMemberFromClubInput(${cIdx})" 
-                    class="px-3.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-95 text-white font-black text-xs sm:text-sm rounded-xl transition cursor-pointer shadow-xs shrink-0 flex items-center gap-0.5">
-              <span>+</span> Thêm
+                    class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-xs rounded-lg transition cursor-pointer shadow-2xs shrink-0">
+              + Thêm
             </button>
           </div>
 
-          <!-- Hàng 4: Khung chứa Chip thành viên (Rõ ràng, nút xóa dễ bấm trên mobile) -->
-          <div class="p-1.5 sm:p-2 bg-amber-50/50 rounded-xl border border-amber-200/70 flex flex-wrap gap-1.5 min-h-[36px] items-center">
+          <!-- Hàng 3: Khung Chip thành viên (Cỡ chữ nhỏ gọn, thoáng mắt) -->
+          <div class="flex flex-wrap gap-1 min-h-[24px] items-center pt-0.5">
             ${cMembers.length > 0 ? cMembers.map((memName, mIdx) => `
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-amber-300 text-amber-950 shadow-2xs hover:border-amber-400 transition">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50/80 border border-amber-200 text-amber-950 shadow-2xs">
                 <span>🤝 ${escapeHtml(memName)}</span>
-                <button type="button" onclick="removeExchangeMemberFromClub(${cIdx}, ${mIdx})" class="w-4.5 h-4.5 -mr-0.5 rounded-full bg-amber-100 hover:bg-rose-500 hover:text-white text-amber-800 flex items-center justify-center text-[10px] font-black transition cursor-pointer active:scale-90" title="Xóa người này">✕</button>
+                <button type="button" onclick="removeExchangeMemberFromClub(${cIdx}, ${mIdx})" class="w-3.5 h-3.5 rounded-full hover:bg-rose-100 hover:text-rose-600 text-slate-400 font-bold flex items-center justify-center text-[10px] transition cursor-pointer" title="Xóa người này">✕</button>
               </span>
-            `).join('') : '<span class="text-[11px] text-amber-700/70 italic py-0.5 px-1">Chưa có thành viên nào. Nhập tên và bấm "+ Thêm".</span>'}
+            `).join('') : '<span class="text-[10px] text-amber-700/70 italic py-0.5">Chưa có thành viên. Nhập tên và bấm "+ Thêm".</span>'}
           </div>
         </div>
       `;
@@ -6739,14 +6717,14 @@ function generateActivityReportCanvas(targetSession = null) {
     exClubsList.forEach(c => {
       const cMems = Array.isArray(c.members) ? c.members : [];
       const rows = Math.ceil(Math.max(1, cMems.length) / 5);
-      exTotalBoxHeight += (44 + (rows * 34) + 12);
+      exTotalBoxHeight += (52 + (rows * 40) + 4);
     });
     estHeight += exTotalBoxHeight + 16;
   }
 
   // Chiều cao khối điểm danh thành viên chủ nhà
   const chipRows = Math.ceil(Math.max(1, memberList.length) / 5);
-  const attBoxHeight = 44 + (chipRows * 34) + (guestList.length > 0 ? 38 : 0) + 12;
+  const attBoxHeight = 52 + (chipRows * 40) + (guestList.length > 0 ? 44 : 0);
   estHeight += attBoxHeight;
   estHeight += 16;  // khoảng cách
 
@@ -6925,32 +6903,42 @@ function generateActivityReportCanvas(targetSession = null) {
       const cCount = (cMems.length || c.count || 0);
       const cPay = c.totalPay || (cCount * perPerson);
       const cRows = Math.ceil(Math.max(1, cMems.length) / 5);
-      const cBoxHeight = 44 + (cRows * 34) + 10;
+      const cBoxHeight = 52 + (cRows * 40);
 
-      drawReportRoundedRect(ctx, PADDING, curY, CONTENT_WIDTH, cBoxHeight, 14, '#fffbeb', '#fcd34d', 1.2);
+      drawReportRoundedRect(ctx, PADDING, curY, CONTENT_WIDTH, cBoxHeight, 14, '#fffbeb', '#f59e0b', 1.5);
 
       ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
       ctx.fillStyle = '#78350f';
-      ctx.font = '900 12px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`🤝  CLB GIAO LƯU: ${(c.name || 'CLB BẠN').toUpperCase()} (${cCount} người • Đóng: ${formatMoney(cPay)} • ${formatMoney(perPerson)}/người):`, PADDING + 16, curY + 25);
+      ctx.font = '900 13px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`🤝  CLB GIAO LƯU: ${(c.name || 'CLB BẠN').toUpperCase()} (${cCount} người • Đóng: ${formatMoney(cPay)} • ${formatMoney(perPerson)}/người):`, PADDING + 16, curY + 26);
 
       let exX = PADDING + 16;
-      let exY = curY + 40;
-      const exChipW = 135;
-      const exChipH = 26;
+      let exY = curY + 44;
+      const exChipW = 136;
+      const exChipH = 32;
       const exGapX = 8;
-      const exGapY = 6;
+      const exGapY = 8;
+
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
 
       cMems.forEach((name) => {
-        if (exX + exChipW > PADDING + CONTENT_WIDTH - 16) {
+        if (exX + exChipW > PADDING + CONTENT_WIDTH - 12) {
           exX = PADDING + 16;
           exY += exChipH + exGapY;
         }
-        drawReportRoundedRect(ctx, exX, exY, exChipW, exChipH, 7, '#ffffff', '#f59e0b', 1);
-        ctx.fillStyle = '#92400e';
-        ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(`🤝 ${name}`, exX + exChipW / 2, exY + 17);
+        drawReportRoundedRect(ctx, exX, exY, exChipW, exChipH, 8, '#fef3c7', '#d97706', 1.5);
+        ctx.fillStyle = '#78350f';
+        ctx.font = '900 13px system-ui, -apple-system, sans-serif';
+        const tag = `🤝 ${name}`;
+        if (ctx.measureText(tag).width > exChipW - 14) {
+          ctx.font = '900 12px system-ui, -apple-system, sans-serif';
+        }
+        if (ctx.measureText(tag).width > exChipW - 14) {
+          ctx.font = '900 11px system-ui, -apple-system, sans-serif';
+        }
+        ctx.fillText(tag, exX + exChipW / 2, exY + exChipH / 2);
         exX += exChipW + exGapX;
       });
 
@@ -6961,62 +6949,81 @@ function generateActivityReportCanvas(targetSession = null) {
   }
 
   // 4B. DANH SÁCH ĐIỂM DANH THÀNH VIÊN LẬP TRÍ
-  drawReportRoundedRect(ctx, PADDING, curY, CONTENT_WIDTH, attBoxHeight, 14, '#ffffff', '#e2e8f0', 1);
+  drawReportRoundedRect(ctx, PADDING, curY, CONTENT_WIDTH, attBoxHeight, 14, '#ffffff', '#cbd5e1', 1.2);
 
-  ctx.fillStyle = '#0f172a';
-  ctx.font = '900 12px system-ui, -apple-system, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#064e3b';
+  ctx.font = '900 13px system-ui, -apple-system, sans-serif';
   const attTitle = isExchange
     ? `👥  DANH SÁCH THÀNH VIÊN LẬP TRÍ (${memberCount} người${guestList.length > 0 ? ` + ${guestList.length} khách lẻ` : ''} • ${formatMoney(perPerson)}/người):`
     : `👥  DANH SÁCH ĐIỂM DANH (${memberCount + guestList.length} người: ${memberCount} thành viên, ${guestList.length} khách):`;
-  ctx.fillText(attTitle, PADDING + 16, curY + 25);
+  ctx.fillText(attTitle, PADDING + 16, curY + 26);
 
   let chipX = PADDING + 16;
-  let chipY = curY + 40;
-  const chipW = 135;
-  const chipH = 26;
+  let chipY = curY + 44;
+  const chipW = 136;
+  const chipH = 32;
   const chipGapX = 8;
-  const chipGapY = 6;
+  const chipGapY = 8;
 
   if (memberList.length === 0) {
     ctx.fillStyle = '#94a3b8';
-    ctx.font = 'italic 11px system-ui, -apple-system, sans-serif';
+    ctx.font = 'italic 12px system-ui, -apple-system, sans-serif';
     ctx.fillText('Chưa có thành viên nào được chọn điểm danh', chipX, chipY + 16);
-    chipY += 30;
+    chipY += 32;
   } else {
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+
     memberList.forEach((name) => {
-      if (chipX + chipW > PADDING + CONTENT_WIDTH - 16) {
+      if (chipX + chipW > PADDING + CONTENT_WIDTH - 12) {
         chipX = PADDING + 16;
         chipY += chipH + chipGapY;
       }
-      drawReportRoundedRect(ctx, chipX, chipY, chipW, chipH, 7, '#ecfdf5', '#a7f3d0', 1);
-      ctx.fillStyle = '#065f46';
-      ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`✓ ${name}`, chipX + chipW / 2, chipY + 17);
+      // Nền xanh tươi sáng #dcfce7, viền xanh ngọc đậm #059669 nét dày 1.5px, bo góc r=8
+      drawReportRoundedRect(ctx, chipX, chipY, chipW, chipH, 8, '#dcfce7', '#059669', 1.5);
+      
+      // Chữ màu xanh rừng sâu #064e3b, độ đậm tối đa 900, cỡ chữ 13px cực kỳ sắc nét
+      ctx.fillStyle = '#064e3b';
+      ctx.font = '900 13px system-ui, -apple-system, sans-serif';
+      const tag = `✓ ${name}`;
+      if (ctx.measureText(tag).width > chipW - 14) {
+        ctx.font = '900 12px system-ui, -apple-system, sans-serif';
+      }
+      if (ctx.measureText(tag).width > chipW - 14) {
+        ctx.font = '900 11px system-ui, -apple-system, sans-serif';
+      }
+      ctx.fillText(tag, chipX + chipW / 2, chipY + chipH / 2);
       chipX += chipW + chipGapX;
     });
-    chipY += chipH + 8;
+    chipY += chipH + 10;
   }
 
   // Dòng khách mời
   if (guestList.length > 0) {
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
-    ctx.fillText('Khách mời:', PADDING + 16, chipY + 17);
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#9a3412';
+    ctx.font = '900 12px system-ui, -apple-system, sans-serif';
+    ctx.fillText('Khách mời:', PADDING + 16, chipY + 14);
 
-    let gX = PADDING + 84;
+    let gX = PADDING + 92;
     guestList.forEach(g => {
       const gTag = `${g.name} (${formatMoney(g.fee)})`;
-      ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
-      const tw = ctx.measureText(gTag).width + 16;
-      drawReportRoundedRect(ctx, gX, chipY + 1, tw, 24, 6, '#fef3c7', '#fde68a', 1);
-      ctx.fillStyle = '#92400e';
+      ctx.font = '900 12px system-ui, -apple-system, sans-serif';
+      const tw = ctx.measureText(gTag).width + 18;
+      drawReportRoundedRect(ctx, gX, chipY, tw, 28, 7, '#ffedd5', '#ea580c', 1.5);
+      ctx.fillStyle = '#7c2d12';
       ctx.textAlign = 'center';
-      ctx.fillText(gTag, gX + tw / 2, chipY + 17);
+      ctx.fillText(gTag, gX + tw / 2, chipY + 14);
       gX += tw + 8;
     });
   }
+
+  // Khôi phục textBaseline về mặc định để không ảnh hưởng các khối vẽ bên dưới
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
 
   curY += attBoxHeight + 16;
 

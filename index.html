@@ -510,12 +510,7 @@
               </div>
 
               <div>
-                <div class="flex items-center justify-between mb-0.5">
-                  <label class="block text-xs font-bold text-slate-700">Loại</label>
-                  <button type="button" id="btnQuickAddExchangeClub" onclick="enableExchangeClubMode()" class="text-[9.5px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-1.5 py-0.2 rounded-md flex items-center gap-0.5 transition cursor-pointer shadow-2xs" title="Thêm CLB giao lưu">
-                    <span>🤝</span> + Thêm CLB
-                  </button>
-                </div>
+                <label class="block text-xs font-bold text-slate-700 mb-0.5">Loại</label>
                 <div class="relative">
                   <select id="actTypeSelect" onchange="onActivityTypeChanged(this.value)" class="w-full text-xs font-semibold border border-slate-200 rounded-xl px-2.5 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition appearance-none">
                     <option value="Buổi cầu" selected>Buổi cầu</option>
@@ -528,41 +523,33 @@
               </div>
             </div>
 
-            <!-- NÚT BẬT NHANH THÊM CLB GIAO LƯU (HIỂN THỊ KHI CHƯA CHỌN GIAO LƯU) -->
-            <div id="actAddExchangeClubQuickBar" class="pt-0.5">
-              <button type="button" onclick="enableExchangeClubMode()" class="w-full py-1.5 px-3 rounded-xl border border-dashed border-amber-400 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-amber-900 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs active:scale-[0.99]" title="Bấm để thêm CLB giao lưu vào buổi hoạt động">
-                <span>🤝</span>
-                <span>+ Thêm CLB giao lưu</span>
-              </button>
-            </div>
-
             <!-- 2B. KHỐI CÁC CLB GIAO LƯU & THÀNH VIÊN THAM GIA (HỖ TRỢ THÊM NHIỀU CLB BẠN: CLB XH, CLB A, CLB B...) -->
-            <div id="actExchangeClubSection" class="hidden p-2.5 sm:p-3.5 bg-gradient-to-br from-amber-50/90 to-orange-50/70 border-2 border-amber-300 rounded-2xl space-y-2 sm:space-y-2.5 shadow-2xs animate-in fade-in duration-150">
-              <div class="flex items-center justify-between pb-1.5 border-b border-amber-200/80 gap-1.5 flex-wrap">
-                <div class="flex items-center gap-1.5 font-black text-amber-950 text-xs sm:text-sm">
-                  <span class="text-base">🤝</span>
+            <div id="actExchangeClubSection" class="hidden p-2 sm:p-2.5 bg-gradient-to-br from-amber-50/90 to-orange-50/70 border border-amber-300 rounded-xl space-y-2 shadow-2xs animate-in fade-in duration-150">
+              <div class="flex items-center justify-between pb-1 border-b border-amber-200/80 gap-1.5 flex-wrap">
+                <div class="flex items-center gap-1 font-bold text-amber-950 text-xs">
+                  <span class="text-sm">🤝</span>
                   <span>CÁC CLB GIAO LƯU & THÀNH VIÊN</span>
                 </div>
-                <div class="flex items-center gap-1 sm:gap-1.5 shrink-0 ml-auto">
-                  <span id="actExchangeClubMemberCountBadge" class="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black bg-amber-200 text-amber-950 border border-amber-300 shadow-2xs">
+                <div class="flex items-center gap-1 shrink-0 ml-auto">
+                  <span id="actExchangeClubMemberCountBadge" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-300 shadow-2xs">
                     0 người • 1 CLB
                   </span>
-                  <button type="button" onclick="promptAddNewExchangeClub()" class="text-[10px] sm:text-[11px] font-black text-amber-950 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2 py-0.5 rounded-lg transition cursor-pointer shadow-2xs active:scale-95 flex items-center gap-0.5" title="Thêm CLB giao lưu mới">
+                  <button type="button" onclick="promptAddNewExchangeClub()" class="text-[10px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-1.5 py-0.5 rounded transition cursor-pointer shadow-2xs active:scale-95 flex items-center gap-0.5" title="Thêm CLB giao lưu mới">
                     <span>➕</span> Thêm CLB
                   </button>
-                  <button type="button" onclick="disableExchangeClubMode()" class="text-[10px] sm:text-[11px] text-slate-500 hover:text-rose-600 font-bold px-1.5 py-0.5 rounded-md hover:bg-white/80 transition cursor-pointer" title="Đóng / Hủy CLB giao lưu">✕ Đóng</button>
+                  <button type="button" onclick="disableExchangeClubMode()" class="text-[10px] text-slate-500 hover:text-rose-600 font-medium px-1 py-0.5 rounded hover:bg-white/80 transition cursor-pointer" title="Đóng / Hủy CLB giao lưu">✕ Đóng</button>
                 </div>
               </div>
 
               <!-- Danh sách các CLB giao lưu (Render động từng thẻ CLB có tên riêng và thành viên riêng) -->
-              <div id="actExchangeClubsListContainer" class="space-y-2 sm:space-y-2.5">
+              <div id="actExchangeClubsListContainer" class="space-y-1.5">
                 <!-- Rendered dynamically via renderExchangeClubUI() -->
               </div>
 
               <!-- Nút Thêm CLB giao lưu khác -->
               <div class="pt-0.5">
-                <button type="button" onclick="promptAddNewExchangeClub()" class="w-full py-2 sm:py-2.5 px-3 rounded-xl border-2 border-dashed border-amber-400 bg-amber-100/70 hover:bg-amber-200/80 active:scale-[0.99] text-amber-950 font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs" title="Bấm để thêm thêm một CLB bạn khác tham gia cùng buổi">
-                  <span class="text-sm">➕</span>
+                <button type="button" onclick="promptAddNewExchangeClub()" class="w-full py-1.5 px-2 rounded-lg border border-dashed border-amber-400 bg-amber-100/60 hover:bg-amber-100/90 active:scale-[0.99] text-amber-950 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 transition cursor-pointer shadow-2xs" title="Bấm để thêm thêm một CLB bạn khác tham gia cùng buổi">
+                  <span>➕</span>
                   <span>Thêm CLB giao lưu khác (VD: CLB A, CLB B...)</span>
                 </button>
               </div>
@@ -615,7 +602,6 @@
                   <span class="text-slate-400">·</span>
                   <span id="actGuestCountBadge" class="text-emerald-700 font-extrabold text-base">0</span>
                 </div>
-                <span class="text-[11px] text-slate-400 font-semibold bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">1 dòng mỗi Level</span>
               </div>
 
               <!-- Danh sách khách hiển thị 1 dòng mỗi Level (Level A : THẾ ANH , PHONG , QUANG-Q) -->

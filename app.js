@@ -3081,14 +3081,14 @@ function loadActivitySessionState() {
     }
     if (!data) return false;
 
-    // Khi ngày mới bắt đầu: Nếu session lưu tạm thuộc ngày cũ (khác ngày hôm nay),
-    // tự động xóa phiên cũ để bắt đầu ngày mới hoàn toàn mới:
-    // - Loại hoạt động: "Buổi cầu"
-    // - Danh sách điểm danh: làm mới (0 người)
-    // - Số quả cầu: mặc định 0 quả
-    if (data.date && data.date !== today) {
-      clearActivitySessionState();
-      return false;
+    // Chỉ tự động xóa nếu phiên lưu tạm là phiên cũ bị bỏ quên từ các ngày trước (> 24h)
+    // KHÔNG xóa nếu phiên vừa được tạo/cập nhật gần đây hoặc Quản lý đang chủ động thao tác trên ngày đó (kể cả ngày quá khứ như 01/10, 04/10):
+    if (data.date && data.date !== today && !data.isEditingFinalizedSession) {
+      const isStale = data.updatedAt && (Date.now() - data.updatedAt > 24 * 60 * 60 * 1000);
+      if (isStale) {
+        clearActivitySessionState();
+        return false;
+      }
     }
 
     return applyLiveSessionFromCloud(data);
@@ -3108,13 +3108,15 @@ function clearActivitySessionState() {
   } catch (e) {}
 }
 
-function initActivitySessionData(forceReset = false) {
+function initActivitySessionData(forceReset = false, targetDate = null) {
   if (!forceReset && loadActivitySessionState()) {
     return;
   }
 
   const today = getTodayInputFormat();
-  activityState.date = today;
+  // Ưu tiên targetDate được chỉ định (hoặc activityState.date hiện tại nếu có), ngược lại lấy today
+  const chosenDate = targetDate || activityState.date || today;
+  activityState.date = chosenDate;
   activityState.type = 'Buổi cầu'; // Mặc định loại buổi cầu
   activityState.lang = 'VI';
   activityState.exchangeClubName = '';
@@ -3875,13 +3877,14 @@ function submitCreateActivitySession(e) {
   const unitPrice = count > 0 ? Math.round(chosenBoxPrice / count) : 28333;
 
   if (shouldReset) {
-    initActivitySessionData(true);
+    initActivitySessionData(true, chosenDate);
   }
   activityState.date = chosenDate;
   activityState.type = chosenType;
   activityState.dailyBoxPrice = chosenBoxPrice;
   activityState.isEditingFinalizedSession = false;
   activityState.editingSessionId = null;
+  activityState.initialized = true;
 
   if (chosenType === 'Giao lưu') {
     const rawClubName = document.getElementById('newActExchangeClubName')?.value.trim() || 'CLB Giao lưu';
@@ -4295,13 +4298,16 @@ function memberSelfCancel(memberId) {
 
 function renderAttendanceTab() {
   const today = getTodayInputFormat();
-  // Nếu ngày mới bắt đầu (activityState.date khác ngày hôm nay) và không phải đang cố ý mở sửa buổi đã chốt:
-  if (!activityState.initialized || (!activityState.isEditingFinalizedSession && activityState.date !== today)) {
-    initActivitySessionData(activityState.date !== today);
+  // Chỉ khởi tạo nếu chưa được khởi tạo lần nào
+  if (!activityState.initialized) {
+    initActivitySessionData();
+  }
+  if (!activityState.date) {
+    activityState.date = today;
   }
 
   const dateInp = document.getElementById('actDateInput');
-  if (dateInp) dateInp.value = activityState.date || today;
+  if (dateInp) dateInp.value = activityState.date;
 
   const typeSel = document.getElementById('actTypeSelect');
   if (typeSel) typeSel.value = activityState.type;
@@ -5155,8 +5161,11 @@ function onActivityDateChanged(val) {
     { id: 1, title: 'Tiền cầu', qty: 0, unitPrice: unitPrice, amount: 0, isCombo: false, isShuttleRow: true }
   ];
 
+  activityState.initialized = true;
   saveActivitySessionState();
   renderAttendanceTab();
+  const dateFormatted = val ? val.split('-').reverse().join('/') : '';
+  showToast(`📅 Đã chuyển sang buổi hoạt động ngày ${dateFormatted}!`, 'info');
 }
 
 function onActivityTypeChanged(val) {

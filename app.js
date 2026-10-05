@@ -4426,63 +4426,60 @@ function deselectAllActivityMembers() {
   renderSelfAttendanceBanner();
 }
 
-// --- 4. KHÁCH (HIỂN THỊ MỖI LEVEL TRÊN 1 DÒNG: Level A : THẾ ANH , PHONG , QUANG-Q) ---
+// --- 4. KHÁCH (LƯỚI ĐIỂM DANH 4 CỘT GIỐNG THÀNH VIÊN CHÍNH THỨC & DANH DỰ) ---
 function renderActivityGuestChips() {
-  const container = document.getElementById('actGuestLevelsContainer') || document.getElementById('actGuestMemberGrid');
+  const grid = document.getElementById('actGuestMemberGrid') || document.getElementById('actGuestLevelsContainer');
   const countBadge = document.getElementById('actGuestCountBadge');
-  if (!container) return;
+  if (!grid) return;
 
-  if (countBadge) countBadge.textContent = activityState.selectedGuestIds.size;
+  const guests = (AppState.members || []).filter(m => m.type && m.type.startsWith('GUEST'));
+  const selCount = activityState.selectedGuestIds ? activityState.selectedGuestIds.size : 0;
 
-  const guests = AppState.members.filter(m => m.type && m.type.startsWith('GUEST'));
+  if (countBadge) {
+    countBadge.textContent = `${selCount}/${guests.length}`;
+  }
 
   if (guests.length === 0) {
-    container.innerHTML = `<span class="text-slate-400 text-xs italic py-1">Chưa có khách nào trong danh sách.</span>`;
+    grid.innerHTML = `<div class="col-span-4 xs:col-span-5 text-slate-400 text-xs italic py-2 text-center">Chưa có khách nào trong danh sách. Nhập tên ở dưới để thêm nhanh.</div>`;
     return;
   }
 
   const pA = AppState.config?.guestPrices?.GUEST_A || 90000;
   const pB = AppState.config?.guestPrices?.GUEST_B || 70000;
   const pC = AppState.config?.guestPrices?.GUEST_C || 50000;
-  const levels = [
-    { key: 'GUEST_A', label: 'Level A', price: pA, color: 'text-emerald-800' },
-    { key: 'GUEST_B', label: 'Level B', price: pB, color: 'text-amber-800' },
-    { key: 'GUEST_C', label: 'Level C', price: pC, color: 'text-blue-800' }
-  ];
 
-  container.className = "space-y-1";
+  // Sắp xếp khách theo thứ tự: Level A -> Level B -> Level C, và theo tên
+  const sortedGuests = [...guests].sort((a, b) => {
+    const order = { 'GUEST_A': 1, 'GUEST_B': 2, 'GUEST_C': 3 };
+    const oA = order[a.type] || 4;
+    const oB = order[b.type] || 4;
+    if (oA !== oB) return oA - oB;
+    return (a.name || '').localeCompare(b.name || '', 'vi');
+  });
 
-  container.innerHTML = levels.map(lvl => {
-    const groupGuests = guests.filter(g => g.type === lvl.key || g.level === lvl.label.replace('Level ', ''));
-    if (groupGuests.length === 0) return '';
+  grid.innerHTML = sortedGuests.map(g => {
+    const isSel = activityState.selectedGuestIds && activityState.selectedGuestIds.has(g.id);
+    const displayName = g.chipName || g.name;
+    const lvlKey = g.type || 'GUEST_C';
+    const lvlLetter = g.level || (lvlKey === 'GUEST_A' ? 'A' : (lvlKey === 'GUEST_B' ? 'B' : 'C'));
+    const fee = g.fee || (lvlKey === 'GUEST_A' ? pA : (lvlKey === 'GUEST_B' ? pB : pC));
+
+    const badgeClass = lvlLetter === 'A'
+      ? (isSel ? 'bg-white/25 text-white' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')
+      : (lvlLetter === 'B'
+          ? (isSel ? 'bg-white/25 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300')
+          : (isSel ? 'bg-white/25 text-white' : 'bg-blue-100 text-blue-800 border border-blue-300'));
 
     return `
-      <div class="flex items-center gap-1.5 py-0.5 flex-nowrap overflow-x-auto mobile-scroll">
-        <!-- Nhãn Level trên cùng 1 dòng: thu nhỏ min-width & text -->
-        <div class="shrink-0 flex items-center gap-0.5 font-black text-[11px] min-w-[50px]">
-          <span class="${lvl.color} font-black">${lvl.label}</span>
-          <span class="text-slate-400 font-bold">:</span>
-        </div>
-
-        <!-- Danh sách khách dạng chip thu nhỏ khoảng cách và padding gọn gàng -->
-        <div class="flex items-center gap-1 flex-nowrap shrink-0">
-          ${groupGuests.map((g, idx) => {
-            const isSel = activityState.selectedGuestIds.has(g.id);
-            const displayName = g.chipName || g.name;
-            return `
-              <button type="button" onclick="toggleActivityGuest('${g.id}')"
-                class="px-2.5 py-1 rounded-lg text-xs font-black transition shadow-2xs select-none whitespace-nowrap cursor-pointer flex items-center gap-0.5 shrink-0 ${
-                  isSel 
-                    ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-500 font-black' 
-                    : 'bg-white text-slate-800 border border-slate-300 hover:border-emerald-400 font-black'
-                }">
-                <span>${isSel ? '✓ ' : ''}${displayName}</span>
-              </button>
-              ${idx < groupGuests.length - 1 ? '<span class="text-slate-300 font-bold text-[10px] select-none -ml-0.5">,</span>' : ''}
-            `;
-          }).join('')}
-        </div>
-      </div>
+      <button type="button" onclick="toggleActivityGuest('${g.id}')"
+        class="py-1 px-1 sm:px-1.5 rounded-lg text-xs font-black transition-all shadow-2xs select-none min-h-[32px] flex items-center justify-center gap-1 cursor-pointer leading-tight ${
+          isSel
+            ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-sm ring-2 ring-emerald-500 active:scale-95'
+            : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-emerald-400 active:scale-95'
+        }" title="${escapeHtml(g.name)} (Khách Hạng ${lvlLetter} • ${formatMoney(fee)})">
+        <span class="truncate tracking-tight font-black">${isSel ? '✓ ' : ''}${escapeHtml(displayName)}</span>
+        <span class="text-[9px] font-black px-1 py-0.2 rounded shrink-0 ${badgeClass}">${lvlLetter}</span>
+      </button>
     `;
   }).join('');
 }

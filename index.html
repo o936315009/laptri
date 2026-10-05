@@ -594,32 +594,43 @@
               </div>
             </div>
 
-            <!-- 4. KHÁCH (HIỂN THỊ MỖI LEVEL TRÊN 1 DÒNG NHƯ TRƯỚC) -->
-            <div class="pt-2 border-t border-slate-100">
-              <div class="flex items-center justify-between mb-1.5">
-                <div class="flex items-center gap-1.5 font-black text-slate-900 text-sm">
+            <!-- 4. KHÁCH (CHIP DẠNG LƯỚI GIỐNG THÀNH VIÊN CHÍNH THỨC & DANH DỰ) -->
+            <div class="mt-2 pt-2 border-t border-slate-100">
+              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+                <div class="flex items-center gap-1.5 font-black text-slate-900 text-sm normal-case">
                   <span>Khách</span>
-                  <span class="text-slate-400">·</span>
-                  <span id="actGuestCountBadge" class="text-emerald-700 font-extrabold text-base">0</span>
+                  <span class="text-slate-400 font-normal">·</span>
+                  <span id="actGuestCountBadge" class="text-emerald-700 font-extrabold text-xs sm:text-sm">0/0</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                  <span class="text-emerald-800 font-black">A: 90k</span>
+                  <span class="text-slate-300">•</span>
+                  <span class="text-amber-800 font-black">B: 70k</span>
+                  <span class="text-slate-300">•</span>
+                  <span class="text-blue-800 font-black">C: 50k</span>
                 </div>
               </div>
 
-              <!-- Danh sách khách hiển thị 1 dòng mỗi Level (Level A : THẾ ANH , PHONG , QUANG-Q) -->
-              <div id="actGuestLevelsContainer" class="space-y-1.5">
-                <!-- Rendered dynamically: Level A : THẾ ANH , PHONG , QUANG-Q -->
+              <!-- Lưới chip khách: 4 cột trên điện thoại nhỏ, 5 cột trên màn hình rộng giống Thành viên chính thức & Danh dự -->
+              <div id="actGuestMemberGrid" class="grid grid-cols-4 xs:grid-cols-5 gap-1 sm:gap-1.5 text-center">
+                <!-- Rendered dynamically -->
               </div>
+              <div id="actGuestLevelsContainer" class="hidden"></div>
 
-              <!-- Thêm khách mới inline -->
-              <div class="mt-2 flex items-center gap-1.5">
-                <input type="text" id="newGuestNameInput" oninput="validateInlineGuestName()" placeholder="Khách mới" class="flex-1 text-xs border border-slate-200 rounded-xl px-2.5 py-1.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium" />
-                <select id="newGuestLevelSelect" class="text-xs border border-slate-200 rounded-xl px-2 py-1.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold">
-                  <option value="UNRANKED">Chưa xếp hạng</option>
-                  <option value="GUEST_A">Khách Loại A (Level A · 90.000đ)</option>
-                  <option value="GUEST_B">Khách Loại B (Level B · 70.000đ)</option>
-                  <option value="GUEST_C">Khách Loại C (Level C · 50.000đ)</option>
+              <!-- Thêm khách mới & Hạng khách (Thu gọn 1 dòng duy nhất gọn gàng đầy đủ) -->
+              <div class="mt-2 flex items-center gap-1 sm:gap-1.5">
+                <input type="text" id="newGuestNameInput" oninput="validateInlineGuestName()" onkeydown="if(event.key==='Enter'){event.preventDefault();addNewGuestInline();}" placeholder="Khách mới..." class="flex-1 min-w-0 text-xs border border-slate-200 rounded-xl px-2.5 py-1.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800 placeholder:text-slate-400" />
+                
+                <select id="newGuestLevelSelect" class="w-24 sm:w-28 shrink-0 text-[11px] sm:text-xs border border-slate-200 rounded-xl px-1.5 sm:px-2 py-1.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-700">
+                  <option value="GUEST_C" selected>Hạng C (50k)</option>
+                  <option value="GUEST_B">Hạng B (70k)</option>
+                  <option value="GUEST_A">Hạng A (90k)</option>
+                  <option value="UNRANKED">Chưa xếp</option>
                 </select>
-                <button type="button" onclick="addNewGuestInline()" class="w-8 h-8 shrink-0 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 font-black rounded-xl flex items-center justify-center text-base transition shadow-xs cursor-pointer">
-                  +
+
+                <button type="button" onclick="addNewGuestInline()" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-0.5 transition shadow-2xs cursor-pointer shrink-0" title="Thêm khách này">
+                  <span>+</span>
+                  <span class="text-[11px] font-bold">Thêm</span>
                 </button>
               </div>
 
@@ -6653,6 +6664,6 @@ const firebaseConfig = {
   <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- Application Logic - Thực thi tức thì khi HTML đã dựng xong -->
-  <script defer src="app.js?v=7.4"></script>
+  <script defer src="app.js?v=7.5"></script>
 </body>
 </html>

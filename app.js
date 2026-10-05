@@ -1427,6 +1427,30 @@ function loadData() {
         AppState.config.autoBackupIdleSeconds = 15;
       }
       AppState.config.autoBackupIdleMinutes = Math.round(AppState.config.autoBackupIdleSeconds / 60);
+
+      // Chuẩn hóa và làm sạch số lẻ đồng trong các buổi sinh hoạt & thành viên
+      if (AppState.activitySessions && Array.isArray(AppState.activitySessions)) {
+        AppState.activitySessions.forEach(ses => {
+          if (ses.shuttleFeePerMember && ses.shuttleFeePerMember % 1000 !== 0) {
+            ses.shuttleFeePerMember = Math.round(ses.shuttleFeePerMember / 1000) * 1000;
+          }
+          if (ses.members && Array.isArray(ses.members)) {
+            ses.members.forEach(m => {
+              if (m.fee && m.fee % 1000 !== 0) {
+                m.fee = Math.round(m.fee / 1000) * 1000;
+              }
+            });
+          }
+        });
+      }
+      if (AppState.members && Array.isArray(AppState.members)) {
+        AppState.members.forEach(m => {
+          if (m.initialBalance && m.initialBalance % 1000 !== 0) {
+            m.initialBalance = Math.round(m.initialBalance / 1000) * 1000;
+          }
+        });
+      }
+
       refreshAllMembersWalletBreakdown();
       saveLocalDataOnly();
     } else {
@@ -1949,8 +1973,9 @@ function calculateMemberWalletBreakdown(memberOrId) {
       }
     }
   });
-  // CHỈ tính bậc tiền sân khi có buổi tham gia (sessionsCount > 0)
-  if (courtFee === 0 && sessionsCount > 0) {
+  // CHỈ tính bậc tiền sân khi có buổi tham gia (sessionsCount > 0) và ở chế độ tất toán ngày (DAILY)
+  // Ở chế độ theo tháng (MONTHLY, mặc định), tiền sân được tất toán chốt sổ vào cuối tháng, không trừ trước trong tháng
+  if (courtFee === 0 && sessionsCount > 0 && AppState.config?.settlementMode === 'DAILY') {
     courtFee = getMemberTotalCourtFee(member, sessionsCount);
   }
 
@@ -1992,6 +2017,8 @@ function calculateMemberWalletBreakdown(memberOrId) {
   } else {
     balance = 0;
   }
+  // Triệt tiêu hoàn toàn số lẻ đồng (làm tròn về 1.000đ)
+  balance = Math.round(balance / 1000) * 1000;
 
   member.balance = balance;
   member.monthlySessions = sessionsCount;
@@ -6086,7 +6113,7 @@ function recalculateActivitySplit() {
 
   // 4. Dự Toán Tiền Cầu Từng Người = Tổng số cầu trừ khách lẻ = số tiền chia đều cho tất cả thành viên (chủ nhà + các CLB bạn)
   const needSplit = Math.max(0, shuttleTotal - guestPaid);
-  const shuttleFeePerMember = totalSplitParticipants > 0 ? Math.round(needSplit / totalSplitParticipants) : 0;
+  const shuttleFeePerMember = totalSplitParticipants > 0 ? (needSplit % totalSplitParticipants === 0 ? (needSplit / totalSplitParticipants) : Math.round((needSplit / totalSplitParticipants) / 1000) * 1000) : 0;
   const totalMemberShuttleFee = shuttleFeePerMember * memberCount;
   const exchangeTotalPay = exCount * shuttleFeePerMember;
 
@@ -6228,9 +6255,9 @@ function saveAndSplitActivitySession() {
     }
   });
 
-  // Dự Toán Tiền Cầu Từng Người = Tổng số cầu trừ khách lẻ = số tiền chia đều cho tất cả thành viên (làm tròn 1đ)
+  // Dự Toán Tiền Cầu Từng Người = Tổng số cầu trừ khách lẻ = số tiền chia đều cho tất cả thành viên (làm tròn nghìn đồng)
   const needSplit = Math.max(0, shuttleTotal - guestPaid);
-  const shuttleFeePerMember = totalSplitParticipants > 0 ? Math.round(needSplit / totalSplitParticipants) : 0;
+  const shuttleFeePerMember = totalSplitParticipants > 0 ? (needSplit % totalSplitParticipants === 0 ? (needSplit / totalSplitParticipants) : Math.round((needSplit / totalSplitParticipants) / 1000) * 1000) : 0;
   const totalMemberShuttleFee = shuttleFeePerMember * memberCount;
   const exchangeTotalPay = exCount * shuttleFeePerMember;
   const totalMemberCourtFee = 0;
@@ -8022,6 +8049,8 @@ function renderMonthlyFundMemberList() {
 
   const monthInput = document.getElementById('monthlyFundMonth');
   const monthVal = monthInput ? monthInput.value : '';
+  const amtInput = document.getElementById('monthlyFundAmount');
+  const eachAmt = Math.max(0, Number(amtInput?.value) || (AppState.config?.monthlyClubFund || 50000));
 
   // CHỈ ÁP DỤNG CHO THÀNH VIÊN CHÍNH THỨC
   const officialMembers = (AppState.members || []).filter(m => m.type === 'OFFICIAL');
@@ -8033,27 +8062,36 @@ function renderMonthlyFundMemberList() {
 
     if (paidTx) {
       const paidDate = paidTx.date ? paidTx.date.split(' ')[0] : '';
+      const paidAmt = Math.abs(paidTx.walletImpact || paidTx.amount || eachAmt);
       return `
         <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100/90 border border-slate-200 text-slate-500 opacity-80" title="Thành viên này đã đóng Quỹ ${monthVal} vào ngày ${paidDate}">
           <div class="flex items-center gap-1.5 min-w-0">
-            <input type="checkbox" name="monthlyFundMemberCheckbox" value="${m.id}" disabled class="rounded text-slate-400 focus:ring-0 w-3.5 h-3.5 cursor-not-allowed opacity-50" />
-            <span class="font-bold text-slate-700 text-[11px] truncate">${m.name}</span>
+            <input type="checkbox" name="monthlyFundMemberCheckbox" value="${m.id}" disabled class="rounded text-slate-400 focus:ring-0 w-3.5 h-3.5 cursor-not-allowed opacity-50 shrink-0" />
+            <div class="min-w-0">
+              <div class="font-bold text-slate-700 text-[11px] truncate leading-tight">${m.name}</div>
+              <div class="text-[9.5px] font-medium leading-tight text-slate-400">Ví: ${formatMoney(bal)}</div>
+            </div>
           </div>
-          <span class="text-[9px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded-full shrink-0 ml-1">
-            ✓ Đã thu
+          <span class="text-[9.5px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded-lg shrink-0 ml-1">
+            ✓ Đã thu ${formatMoney(paidAmt)}
           </span>
         </div>
       `;
     }
 
     return `
-      <label class="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:bg-emerald-50/50 transition">
+      <label class="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:bg-emerald-50/50 hover:border-emerald-300 transition">
         <div class="flex items-center gap-1.5 min-w-0">
-          <input type="checkbox" name="monthlyFundMemberCheckbox" value="${m.id}" checked onchange="updateMonthlyFundSummary()" class="rounded text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5" />
-          <span class="font-bold text-slate-800 text-[11px] truncate">${m.name}</span>
+          <input type="checkbox" name="monthlyFundMemberCheckbox" value="${m.id}" checked onchange="updateMonthlyFundSummary()" class="rounded text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5 shrink-0" />
+          <div class="min-w-0">
+            <div class="font-bold text-slate-800 text-[11px] truncate leading-tight">${m.name}</div>
+            <div class="text-[9.5px] font-semibold leading-tight ${isNeg ? 'text-rose-600' : 'text-slate-500'}">
+              Ví: ${formatMoney(bal)}
+            </div>
+          </div>
         </div>
-        <span class="text-[10px] font-semibold shrink-0 ml-1 ${isNeg ? 'text-rose-600' : 'text-slate-400'}">
-          ${formatMoney(bal)}
+        <span class="monthly-fund-item-amount text-[10.5px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-lg shrink-0 ml-1">
+          +${formatMoney(eachAmt)}
         </span>
       </label>
     `;
@@ -8096,6 +8134,12 @@ function updateMonthlyFundSummary() {
   const amtInput = document.getElementById('monthlyFundAmount');
   const eachAmt = Math.max(0, Number(amtInput?.value) || 0);
   const totalAmt = count * eachAmt;
+
+  // Cập nhật nhãn mức thu trên từng thẻ thành viên
+  const formattedEach = '+' + formatMoney(eachAmt);
+  document.querySelectorAll('.monthly-fund-item-amount').forEach(el => {
+    el.textContent = formattedEach;
+  });
 
   const totalEl = document.getElementById('monthlyFundTotalEst');
   if (totalEl) totalEl.textContent = formatMoney(totalAmt);

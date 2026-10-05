@@ -1231,7 +1231,21 @@ const DEFAULT_INITIAL_DATA = {
     { id: 'H001', name: 'HIẾU', chipName: 'HIẾU', phone: '0902000001', type: 'HONORARY', username: 'hieu', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
     { id: 'H002', name: 'NGUYÊN', chipName: 'NGUYÊN', phone: '0902000002', type: 'HONORARY', username: 'nguyen', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
     { id: 'H003', name: 'ĐẠT', chipName: 'ĐẠT', phone: '0902000003', type: 'HONORARY', username: 'dat', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
-    { id: 'H004', name: 'DŨNG', chipName: 'DŨNG', phone: '0902000004', type: 'HONORARY', username: 'dung', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
+    { id: 'H004', name: 'DŨNG', chipName: 'DŨNG', phone: '0902000004', type: 'HONORARY', username: 'dung', password: '123', hasChangedPassword: false, mustChangePassword: true, balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+
+    // --- DANH SÁCH KHÁCH GIAO LƯU TIÊU BIỂU CLB CẦU LÔNG LẬP TRÍ ---
+    // Hạng A: Quang.Q, Tuân
+    // Hạng B: Cha.Phó, Quang.VB, Hà.1, Hà.2
+    // Hạng C: Khoai, Như.Anh, Linh
+    { id: 'G_Quang_Q', name: 'Quang.Q', chipName: 'Quang.Q', phone: '', type: 'GUEST_A', level: 'A', fee: 90000, username: '', password: '', balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'G_Tuan', name: 'Tuân', chipName: 'Tuân', phone: '', type: 'GUEST_A', level: 'A', fee: 90000, username: '', password: '', balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'G_Cha_Pho', name: 'Cha.Phó', chipName: 'Cha.Phó', phone: '', type: 'GUEST_B', level: 'B', fee: 70000, username: '', password: '', balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'G_Quang_VB', name: 'Quang.VB', chipName: 'Quang.VB', phone: '', type: 'GUEST_B', level: 'B', fee: 70000, username: '', password: '', balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'G_Ha_1', name: 'Hà.1', chipName: 'Hà.1', phone: '', type: 'GUEST_B', level: 'B', fee: 70000, username: '', password: '', balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'G_Ha_2', name: 'Hà.2', chipName: 'Hà.2', phone: '', type: 'GUEST_B', level: 'B', fee: 70000, username: '', password: '', balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'G_Khoai', name: 'Khoai', chipName: 'Khoai', phone: '', type: 'GUEST_C', level: 'C', fee: 50000, username: '', password: '', balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'G_Nhu_Anh', name: 'Như.Anh', chipName: 'Như.Anh', phone: '', type: 'GUEST_C', level: 'C', fee: 50000, username: '', password: '', balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') },
+    { id: 'G_Linh', name: 'Linh', chipName: 'Linh', phone: '', type: 'GUEST_C', level: 'C', fee: 50000, username: '', password: '', balance: 0, monthlySessions: 0, role: 'MEMBER', status: 'ACTIVE', permissions: getRoleDefaultPermissions('MEMBER') }
   ],
   attendanceRecords: [],
   activitySessions: [],
@@ -1242,6 +1256,67 @@ const DEFAULT_INITIAL_DATA = {
     user: null
   }
 };
+
+// Chuẩn hóa danh sách khách giao lưu theo yêu cầu chuẩn CLB:
+// Hạng A: Quang.Q, Tuân
+// Hạng B: Cha.Phó, Quang.VB, Hà.1, Hà.2
+// Hạng C: Khoai, Như.Anh, Linh
+const STANDARD_GUESTS_LIST = [
+  { name: 'Quang.Q', chipName: 'Quang.Q', type: 'GUEST_A', level: 'A', fee: 90000 },
+  { name: 'Tuân', chipName: 'Tuân', type: 'GUEST_A', level: 'A', fee: 90000 },
+  { name: 'Cha.Phó', chipName: 'Cha.Phó', type: 'GUEST_B', level: 'B', fee: 70000 },
+  { name: 'Quang.VB', chipName: 'Quang.VB', type: 'GUEST_B', level: 'B', fee: 70000 },
+  { name: 'Hà.1', chipName: 'Hà.1', type: 'GUEST_B', level: 'B', fee: 70000 },
+  { name: 'Hà.2', chipName: 'Hà.2', type: 'GUEST_B', level: 'B', fee: 70000 },
+  { name: 'Khoai', chipName: 'Khoai', type: 'GUEST_C', level: 'C', fee: 50000 },
+  { name: 'Như.Anh', chipName: 'Như.Anh', type: 'GUEST_C', level: 'C', fee: 50000 },
+  { name: 'Linh', chipName: 'Linh', type: 'GUEST_C', level: 'C', fee: 50000 }
+];
+
+function ensureStandardGuests(membersList) {
+  if (!Array.isArray(membersList)) return;
+  STANDARD_GUESTS_LIST.forEach(sg => {
+    let matching = membersList.filter(m =>
+      (m.chipName && m.chipName.toLowerCase() === sg.chipName.toLowerCase()) ||
+      (m.name && m.name.toLowerCase() === sg.name.toLowerCase()) ||
+      (sg.name === 'Cha.Phó' && (m.name?.toUpperCase().startsWith('CHA') || m.chipName?.toUpperCase().startsWith('CHA'))) ||
+      (sg.name === 'Quang.Q' && (m.name?.toUpperCase().includes('QUANG-Q') || m.name?.toUpperCase().includes('QUANG - Q') || m.name?.toUpperCase().includes('QUANG.Q'))) ||
+      (sg.name === 'Quang.VB' && (m.name?.toUpperCase().includes('QUANG-VB') || m.name?.toUpperCase().includes('QUANG - VB') || m.name?.toUpperCase().includes('QUANG.VB') || m.name?.toUpperCase().includes('QUANG VB'))) ||
+      (sg.name === 'Như.Anh' && (m.name?.toUpperCase().includes('NHƯ') || m.name?.toUpperCase().includes('NHU')))
+    );
+    if (matching.length > 0) {
+      let primary = matching[0];
+      primary.name = sg.name;
+      primary.chipName = sg.chipName;
+      primary.type = sg.type;
+      primary.level = sg.level;
+      primary.fee = sg.fee;
+      if (matching.length > 1) {
+        const dupIds = new Set(matching.slice(1).map(d => d.id));
+        for (let i = membersList.length - 1; i >= 0; i--) {
+          if (dupIds.has(membersList[i].id)) membersList.splice(i, 1);
+        }
+      }
+    } else {
+      membersList.push({
+        id: 'G_' + sg.chipName.replace(/[^a-zA-Z0-9]/g, '_'),
+        name: sg.name,
+        chipName: sg.chipName,
+        phone: '',
+        type: sg.type,
+        level: sg.level,
+        fee: sg.fee,
+        username: '',
+        password: '',
+        balance: 0,
+        monthlySessions: 0,
+        role: 'MEMBER',
+        status: 'ACTIVE',
+        permissions: getRoleDefaultPermissions('MEMBER')
+      });
+    }
+  });
+}
 
 // ==========================================
 // 2. STATE MANAGEMENT & LOCAL STORAGE
@@ -1305,6 +1380,12 @@ function loadData() {
             AppState.members.push(JSON.parse(JSON.stringify(req)));
           }
         });
+
+        // Chuẩn hóa danh sách khách giao lưu theo yêu cầu chuẩn CLB:
+        // Hạng A: Quang.Q, Tuân
+        // Hạng B: Cha.Phó, Quang.VB, Hà.1, Hà.2
+        // Hạng C: Khoai, Như.Anh, Linh
+        ensureStandardGuests(AppState.members);
 
         if (AppState.auth && AppState.auth.isLoggedIn && (!AppState.auth.user || AppState.auth.user.username === 'chinh')) {
           AppState.auth.user = {
@@ -1551,6 +1632,7 @@ function loadData() {
       saveLocalDataOnly();
     } else {
       AppState = isMainClub ? JSON.parse(JSON.stringify(DEFAULT_INITIAL_DATA)) : getBlankClubInitialData(activeClub);
+      if (AppState.members) ensureStandardGuests(AppState.members);
       refreshAllMembersWalletBreakdown();
       saveLocalDataOnly();
     }
@@ -1559,6 +1641,7 @@ function loadData() {
     const activeClub = getActiveClub();
     const isMainClub = activeClub.id === 'club_laptri' || activeClub.id === 'club_smash' || activeClub.accessSlug === 'lap-tri' || activeClub.accessSlug === 'smash';
     AppState = isMainClub ? JSON.parse(JSON.stringify(DEFAULT_INITIAL_DATA)) : getBlankClubInitialData(activeClub);
+    if (AppState.members) ensureStandardGuests(AppState.members);
     refreshAllMembersWalletBreakdown();
     saveLocalDataOnly();
   }
@@ -4426,11 +4509,15 @@ function deselectAllActivityMembers() {
   renderSelfAttendanceBanner();
 }
 
-// --- 4. KHÁCH (LƯỚI ĐIỂM DANH 4 CỘT GIỐNG THÀNH VIÊN CHÍNH THỨC & DANH DỰ) ---
+// --- 4. KHÁCH (HIỂN THỊ THEO DÒNG: HẠNG A, HẠNG B, HẠNG C) ---
 function renderActivityGuestChips() {
-  const grid = document.getElementById('actGuestMemberGrid') || document.getElementById('actGuestLevelsContainer');
+  const container = document.getElementById('actGuestLevelsContainer') || document.getElementById('actGuestMemberGrid');
   const countBadge = document.getElementById('actGuestCountBadge');
-  if (!grid) return;
+  if (!container) return;
+
+  if (!AppState.members.some(m => m.type && m.type.startsWith('GUEST'))) {
+    ensureStandardGuests(AppState.members);
+  }
 
   const guests = (AppState.members || []).filter(m => m.type && m.type.startsWith('GUEST'));
   const selCount = activityState.selectedGuestIds ? activityState.selectedGuestIds.size : 0;
@@ -4440,7 +4527,7 @@ function renderActivityGuestChips() {
   }
 
   if (guests.length === 0) {
-    grid.innerHTML = `<div class="col-span-4 xs:col-span-5 text-slate-400 text-xs italic py-2 text-center">Chưa có khách nào trong danh sách. Nhập tên ở dưới để thêm nhanh.</div>`;
+    container.innerHTML = `<div class="text-slate-400 text-xs italic py-2 text-center">Chưa có khách nào trong danh sách. Nhập tên ở dưới để thêm nhanh.</div>`;
     return;
   }
 
@@ -4448,38 +4535,64 @@ function renderActivityGuestChips() {
   const pB = AppState.config?.guestPrices?.GUEST_B || 70000;
   const pC = AppState.config?.guestPrices?.GUEST_C || 50000;
 
-  // Sắp xếp khách theo thứ tự: Level A -> Level B -> Level C, và theo tên
-  const sortedGuests = [...guests].sort((a, b) => {
-    const order = { 'GUEST_A': 1, 'GUEST_B': 2, 'GUEST_C': 3 };
-    const oA = order[a.type] || 4;
-    const oB = order[b.type] || 4;
-    if (oA !== oB) return oA - oB;
-    return (a.name || '').localeCompare(b.name || '', 'vi');
-  });
+  const levels = [
+    { key: 'GUEST_A', label: 'Hạng A', price: pA, labelColor: 'text-emerald-800' },
+    { key: 'GUEST_B', label: 'Hạng B', price: pB, labelColor: 'text-amber-800' },
+    { key: 'GUEST_C', label: 'Hạng C', price: pC, labelColor: 'text-blue-800' }
+  ];
 
-  grid.innerHTML = sortedGuests.map(g => {
-    const isSel = activityState.selectedGuestIds && activityState.selectedGuestIds.has(g.id);
-    const displayName = g.chipName || g.name;
-    const lvlKey = g.type || 'GUEST_C';
-    const lvlLetter = g.level || (lvlKey === 'GUEST_A' ? 'A' : (lvlKey === 'GUEST_B' ? 'B' : 'C'));
-    const fee = g.fee || (lvlKey === 'GUEST_A' ? pA : (lvlKey === 'GUEST_B' ? pB : pC));
+  const GUEST_ORDER = ['Quang.Q', 'Tuân', 'Cha.Phó', 'Quang.VB', 'Hà.1', 'Hà.2', 'Khoai', 'Như.Anh', 'Linh'];
 
-    const badgeClass = lvlLetter === 'A'
-      ? (isSel ? 'bg-white/25 text-white' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')
-      : (lvlLetter === 'B'
-          ? (isSel ? 'bg-white/25 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300')
-          : (isSel ? 'bg-white/25 text-white' : 'bg-blue-100 text-blue-800 border border-blue-300'));
+  container.className = "space-y-1.5";
+
+  container.innerHTML = levels.map(lvl => {
+    const groupGuests = guests.filter(g => {
+      const gLvl = (g.level || (g.type ? g.type.replace('GUEST_', '') : '') || '').toUpperCase();
+      if (lvl.key === 'GUEST_A') return g.type === 'GUEST_A' || gLvl === 'A';
+      if (lvl.key === 'GUEST_B') return g.type === 'GUEST_B' || gLvl === 'B';
+      if (lvl.key === 'GUEST_C') return g.type === 'GUEST_C' || gLvl === 'C' || (!['A', 'B'].includes(gLvl));
+      return false;
+    });
+
+    if (groupGuests.length === 0) return '';
+
+    groupGuests.sort((a, b) => {
+      const nameA = a.chipName || a.name || '';
+      const nameB = b.chipName || b.name || '';
+      const idxA = GUEST_ORDER.findIndex(o => o.toLowerCase() === nameA.toLowerCase());
+      const idxB = GUEST_ORDER.findIndex(o => o.toLowerCase() === nameB.toLowerCase());
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return nameA.localeCompare(nameB, 'vi');
+    });
 
     return `
-      <button type="button" onclick="toggleActivityGuest('${g.id}')"
-        class="py-1 px-1 sm:px-1.5 rounded-lg text-xs font-black transition-all shadow-2xs select-none min-h-[32px] flex items-center justify-center gap-1 cursor-pointer leading-tight ${
-          isSel
-            ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-sm ring-2 ring-emerald-500 active:scale-95'
-            : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-emerald-400 active:scale-95'
-        }" title="${escapeHtml(g.name)} (Khách Hạng ${lvlLetter} • ${formatMoney(fee)})">
-        <span class="truncate tracking-tight font-black">${isSel ? '✓ ' : ''}${escapeHtml(displayName)}</span>
-        <span class="text-[9px] font-black px-1 py-0.2 rounded shrink-0 ${badgeClass}">${lvlLetter}</span>
-      </button>
+      <div class="flex items-start sm:items-center gap-1.5 py-0.5">
+        <!-- Nhãn Hạng A : / Hạng B : / Hạng C : -->
+        <div class="shrink-0 flex items-center gap-0.5 font-black text-xs sm:text-[13px] py-1 min-w-[58px]">
+          <span class="${lvl.labelColor} font-black whitespace-nowrap">${lvl.label}</span>
+          <span class="text-slate-400 font-bold">:</span>
+        </div>
+
+        <!-- Danh sách nút khách (flex-wrap để xuống dòng mượt mà nếu dài, không bao giờ bị cắt chữ) -->
+        <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap flex-1 min-w-0">
+          ${groupGuests.map(g => {
+            const isSel = activityState.selectedGuestIds && activityState.selectedGuestIds.has(g.id);
+            const displayName = g.chipName || g.name;
+            return `
+              <button type="button" onclick="toggleActivityGuest('${g.id}')"
+                class="py-1 px-2.5 rounded-lg text-xs font-black transition-all shadow-2xs select-none min-h-[32px] flex items-center justify-center cursor-pointer leading-tight active:scale-95 ${
+                  isSel
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-sm ring-2 ring-emerald-500'
+                    : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-emerald-400 font-black'
+                }" title="${escapeHtml(g.name)} (${lvl.label} • ${formatMoney(lvl.price)})">
+                <span class="whitespace-nowrap tracking-tight font-black">${isSel ? '✓ ' : ''}${escapeHtml(displayName)}</span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
     `;
   }).join('');
 }
@@ -4583,6 +4696,22 @@ function addNewGuestInline() {
 function toggleSaveGuestDebt(checked) {
   activityState.saveGuestDebt = checked;
   saveActivitySessionState();
+}
+
+function validateInlineGuestName() {
+  const input = document.getElementById('newGuestNameInput');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) {
+    input.classList.remove('border-red-500', 'bg-red-50');
+    return;
+  }
+  const dup = typeof findDuplicateMemberName === 'function' ? findDuplicateMemberName(val, null) : null;
+  if (dup) {
+    input.classList.add('border-red-500', 'bg-red-50');
+  } else {
+    input.classList.remove('border-red-500', 'bg-red-50');
+  }
 }
 
 // --- 4C. DÒNG LƯU VÀ SỬA ĐIỂM DANH TẠM THỜI (ÁP DỤNG CHO THỐNG KÊ TRẬN CẦU) ---

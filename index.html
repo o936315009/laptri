@@ -603,19 +603,19 @@
                   <span id="actGuestCountBadge" class="text-emerald-700 font-extrabold text-xs sm:text-sm">0/0</span>
                 </div>
                 <div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
-                  <span class="text-emerald-800 font-black">A: 90k</span>
+                  <span class="text-emerald-800 font-black">Hạng A: 90k</span>
                   <span class="text-slate-300">•</span>
-                  <span class="text-amber-800 font-black">B: 70k</span>
+                  <span class="text-amber-800 font-black">Hạng B: 70k</span>
                   <span class="text-slate-300">•</span>
-                  <span class="text-blue-800 font-black">C: 50k</span>
+                  <span class="text-blue-800 font-black">Hạng C: 50k</span>
                 </div>
               </div>
 
-              <!-- Lưới chip khách: 4 cột trên điện thoại nhỏ, 5 cột trên màn hình rộng giống Thành viên chính thức & Danh dự -->
-              <div id="actGuestMemberGrid" class="grid grid-cols-4 xs:grid-cols-5 gap-1 sm:gap-1.5 text-center">
+              <!-- Danh sách khách hiển thị từng dòng: Hạng A, Hạng B, Hạng C -->
+              <div id="actGuestLevelsContainer" class="space-y-1.5">
                 <!-- Rendered dynamically -->
               </div>
-              <div id="actGuestLevelsContainer" class="hidden"></div>
+              <div id="actGuestMemberGrid" class="hidden"></div>
 
               <!-- Thêm khách mới & Hạng khách (Thu gọn 1 dòng duy nhất gọn gàng đầy đủ) -->
               <div class="mt-2 flex items-center gap-1 sm:gap-1.5">
@@ -6664,6 +6664,6 @@ const firebaseConfig = {
   <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- Application Logic - Thực thi tức thì khi HTML đã dựng xong -->
-  <script defer src="app.js?v=7.5"></script>
+  <script defer src="app.js?v=7.6"></script>
 </body>
 </html>

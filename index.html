@@ -3133,7 +3133,7 @@
             </div>
             <span class="px-2.5 py-1 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-full text-xs font-black flex items-center gap-1">
               <span>🏸</span>
-              <span id="dailyRateFormulaBadge">1 hộp = 12 quả (340.000 VNĐ)</span>
+              <span id="dailyRateFormulaBadge">1 hộp = 12 quả (340.000 VNĐ · 28.333,3333... VNĐ/quả)</span>
             </span>
           </div>
 
@@ -3172,7 +3172,7 @@
               <div class="flex items-center gap-4 text-xs font-semibold text-slate-700 flex-wrap">
                 <label class="flex items-center gap-1.5 cursor-pointer">
                   <input type="radio" name="configShuttleModeRadio" id="configModeByShuttle" value="BY_SHUTTLE" checked onchange="updateDailyRateCalculatedPreview()" class="text-brand-600 focus:ring-brand-500 cursor-pointer" />
-                  <span>🏸 <b>Tính theo số quả cầu</b> (<span id="configPreviewPerShuttleBadge" class="text-emerald-700 font-bold">28.333đ</span>/quả)</span>
+                  <span>🏸 <b>Tính theo số quả cầu</b> (<span id="configPreviewPerShuttleBadge" class="text-emerald-700 font-bold">28.333,3333... đ</span>/quả)</span>
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer">
                   <input type="radio" name="configShuttleModeRadio" id="configModeByBox" value="BY_BOX" onchange="updateDailyRateCalculatedPreview()" class="text-brand-600 focus:ring-brand-500 cursor-pointer" />
@@ -3193,10 +3193,10 @@
             <div class="space-y-1 text-xs">
               <div class="font-extrabold text-emerald-950 flex items-center gap-1.5">
                 <span>⚡</span>
-                <span id="dailyRateFormulaSummaryText">Công thức: 1 hộp cầu = 12 quả ➔ Đơn giá: 340.000 VNĐ</span>
+                <span id="dailyRateFormulaSummaryText">Phép chia tính đơn giá 1 quả cầu: Đơn giá thực tế = 340.000 / 12 = 28.333,3333... VNĐ</span>
               </div>
               <div class="text-[11px] text-emerald-800">
-                Tương đương: <b id="dailyRatePerShuttleText" class="text-emerald-950 font-black">28.333 VNĐ</b> / quả cầu thi đấu. Tự động áp dụng vào dòng Chi phí buổi sinh hoạt.
+                Đơn giá gốc tuyệt đối không làm tròn: <b id="dailyRatePerShuttleText" class="text-emerald-950 font-black">28.333,3333... VNĐ</b> / quả cầu thi đấu. Tự động áp dụng vào dòng Chi phí buổi sinh hoạt.
               </div>
             </div>
 
@@ -4905,15 +4905,15 @@
               Đơn giá 1 hộp cầu (tuỳ chỉnh theo ngày):
             </label>
             <span id="newActUnitPricePreview" class="text-[11px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-              28.333 đ / quả
+              340.000 / 12 = 28.333,3333... đ / quả
             </span>
           </div>
           <div class="flex items-center gap-2">
             <input type="number" id="newActDailyBoxPrice" min="0" step="any" value="340000" oninput="updateNewActBoxPricePreview(this.value)" class="w-full px-3 py-2 text-xs font-bold text-emerald-800 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-right" />
             <span class="text-xs font-semibold text-slate-500 shrink-0">VNĐ/hộp</span>
           </div>
-          <p class="text-[10px] text-slate-400 mt-1">
-            ⚡ Công thức: 1 hộp (12 quả) = 340.000 đ ➔ Đơn giá 1 quả làm tròn đơn vị đồng.
+          <p class="text-[10px] text-slate-500 mt-1">
+            ⚡ Phép chia tính đơn giá 1 quả: Đơn giá thực tế = 340.000 / 12 = 28.333,3333... VNĐ (không làm tròn số lẻ).
           </p>
         </div>
 
@@ -6666,6 +6666,6 @@ const firebaseConfig = {
   <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <!-- Application Logic - Thực thi tức thì khi HTML đã dựng xong -->
-  <script defer src="app.js?v=8.3"></script>
+  <script defer src="app.js?v=8.4"></script>
 </body>
 </html>

@@ -1475,29 +1475,56 @@ function loadData() {
       }
       AppState.config.autoBackupIdleMinutes = Math.round(AppState.config.autoBackupIdleSeconds / 60);
 
-      // Chuẩn hóa và làm tròn số tiền theo đơn vị đồng (Luật Kế toán Việt Nam)
+      // Chuẩn hóa và bảo toàn chính xác từng đồng cho các buổi sinh hoạt & giao dịch theo Luật Kế toán Việt Nam
       if (AppState.activitySessions && Array.isArray(AppState.activitySessions)) {
         AppState.activitySessions.forEach(ses => {
-          if (ses.shuttleTotal !== undefined && ses.shuttleTotal !== null) {
-            ses.shuttleTotal = Math.round(Number(ses.shuttleTotal) || 0);
-          }
-          if (ses.shuttleFeePerMember !== undefined && ses.shuttleFeePerMember !== null) {
-            ses.shuttleFeePerMember = Math.round(Number(ses.shuttleFeePerMember) || 0);
-          }
-          if (ses.needSplit !== undefined && ses.needSplit !== null) {
-            ses.needSplit = Math.round(Number(ses.needSplit) || 0);
-          }
-          if (ses.members && Array.isArray(ses.members)) {
-            ses.members.forEach(m => {
-              if (m.fee !== undefined && m.fee !== null) {
-                m.fee = Math.round(Number(m.fee) || 0);
+          // 1. Khôi phục chính xác từng đồng gốc từ DEFAULT_ACTIVITY_SESSIONS (nếu trước đó bị làm tròn nhầm thành hàng nghìn)
+          const defaultSes = DEFAULT_ACTIVITY_SESSIONS.find(ds => ds.id === ses.id);
+          if (defaultSes) {
+            ses.shuttleTotal = defaultSes.shuttleTotal;
+            ses.shuttleFeePerMember = defaultSes.shuttleFeePerMember;
+            if (defaultSes.courtFee !== undefined) ses.courtFee = defaultSes.courtFee;
+            if (defaultSes.guestPaid !== undefined) ses.guestPaid = defaultSes.guestPaid;
+            if (ses.members && Array.isArray(ses.members) && defaultSes.members) {
+              ses.members.forEach(m => {
+                const dm = defaultSes.members.find(x => x.id === m.id || x.name === m.name);
+                if (dm && dm.fee !== undefined) {
+                  m.fee = dm.fee;
+                }
+              });
+            }
+          } else {
+            // 2. Với các buổi khác: đơn vị làm tròn là ĐỒNG (Math.round)
+            if (ses.shuttleTotal !== undefined && ses.shuttleTotal !== null) {
+              ses.shuttleTotal = Math.round(Number(ses.shuttleTotal) || 0);
+            }
+            if (ses.guestPaid !== undefined && ses.guestPaid !== null) {
+              ses.guestPaid = Math.round(Number(ses.guestPaid) || 0);
+            }
+            const need = Math.max(0, (Number(ses.shuttleTotal) || 0) - (Number(ses.guestPaid) || 0));
+            const splitCount = (ses.memberCount || (ses.members ? ses.members.length : 0)) + (ses.exchangeCount || 0);
+            if (splitCount > 0 && need > 0) {
+              ses.shuttleFeePerMember = Math.round(need / splitCount);
+              ses.needSplit = need;
+              if (ses.members && Array.isArray(ses.members)) {
+                ses.members.forEach(m => {
+                  m.fee = ses.shuttleFeePerMember;
+                });
               }
-            });
+            } else {
+              if (ses.shuttleFeePerMember !== undefined) ses.shuttleFeePerMember = Math.round(Number(ses.shuttleFeePerMember) || 0);
+              if (ses.members && Array.isArray(ses.members)) {
+                ses.members.forEach(m => {
+                  if (m.fee !== undefined) m.fee = Math.round(Number(m.fee) || 0);
+                });
+              }
+            }
           }
         });
         // Luôn sắp xếp danh sách buổi hoạt động theo thứ tự ngày tháng mới nhất lên đầu
         sortActivitySessions(AppState.activitySessions);
       }
+
       if (AppState.transactions && Array.isArray(AppState.transactions)) {
         AppState.transactions.forEach(tx => {
           if (tx.amount !== undefined && tx.amount !== null) {
@@ -1511,6 +1538,7 @@ function loadData() {
           }
         });
       }
+
       if (AppState.members && Array.isArray(AppState.members)) {
         AppState.members.forEach(m => {
           if (m.initialBalance !== undefined && m.initialBalance !== null) {
@@ -6386,9 +6414,9 @@ function saveAndSplitActivitySession() {
     }
   });
 
-  // Dự Toán Tiền Cầu Từng Người = Tổng số cầu trừ khách lẻ = số tiền chia đều cho tất cả thành viên (làm tròn nghìn đồng)
+  // Dự Toán Tiền Cầu Từng Người = Tổng số cầu trừ khách lẻ = số tiền chia đều cho tất cả thành viên (làm tròn theo đơn vị đồng)
   const needSplit = Math.max(0, shuttleTotal - guestPaid);
-  const shuttleFeePerMember = totalSplitParticipants > 0 ? (needSplit % totalSplitParticipants === 0 ? (needSplit / totalSplitParticipants) : Math.round((needSplit / totalSplitParticipants) / 1000) * 1000) : 0;
+  const shuttleFeePerMember = totalSplitParticipants > 0 ? Math.round(needSplit / totalSplitParticipants) : 0;
   const totalMemberShuttleFee = shuttleFeePerMember * memberCount;
   const exchangeTotalPay = exCount * shuttleFeePerMember;
   const totalMemberCourtFee = 0;
@@ -8248,7 +8276,7 @@ function renderMonthlyFundMemberList() {
           <span class="font-bold text-slate-800 text-xs sm:text-sm break-words leading-tight">${escapeHtml(m.name)}</span>
         </div>
         <span class="monthly-fund-item-amount text-xs sm:text-sm font-black text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 sm:px-2.5 py-1 rounded-lg shrink-0 ml-1.5 whitespace-nowrap shadow-2xs">
-          ${formatMoney(eachAmt)}
+          +${formatMoney(eachAmt)}
         </span>
       </label>
     `;
@@ -8292,8 +8320,8 @@ function updateMonthlyFundSummary() {
   const eachAmt = Math.max(0, Number(amtInput?.value) || 0);
   const totalAmt = count * eachAmt;
 
-  // Cập nhật nhãn mức thu trên từng thẻ thành viên
-  const formattedEach = formatMoney(eachAmt);
+  // Cập nhật nhãn mức thu trên từng thẻ thành viên (+50.000 đ)
+  const formattedEach = '+' + formatMoney(eachAmt);
   document.querySelectorAll('.monthly-fund-item-amount').forEach(el => {
     el.textContent = formattedEach;
   });

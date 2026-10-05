@@ -1412,8 +1412,8 @@ function loadData() {
       AppState.funds.courtPaidTotal = 0;
 
       // Khởi tạo số dư Quỹ CLB nếu chưa có
-      if (AppState.funds.clubFund === undefined || AppState.funds.clubFund === null) {
-        AppState.funds.clubFund = 6700000;
+      if (AppState.funds.clubFund === undefined || AppState.funds.clubFund === null || AppState.funds.clubFund === 6700000) {
+        AppState.funds.clubFund = 5550000;
       }
 
       if (!AppState.settlementSnapshots) AppState.settlementSnapshots = {};
@@ -17443,34 +17443,34 @@ let currentSettlementReportDataSource = 'LIVE'; // Mặc định từ dữ liệ
 const SETTLEMENT_REPORT_PRESET = {
   monthText: 'Tháng 09/2026',
   official: [
-    { stt: 1, name: 'Nguyễn Văn A', sessions: 12, total: 1200000, rate: 100000, court: 900000, fund: 200000, fine: 100000 },
-    { stt: 2, name: 'Trần Văn B', sessions: 10, total: 950000, rate: 100000, court: 750000, fund: 200000, fine: 0 },
-    { stt: 3, name: 'Lê Văn C', sessions: 8, total: 800000, rate: 100000, court: 600000, fund: 200000, fine: 0 },
-    { stt: 4, name: 'Phạm Văn D', sessions: 8, total: 800000, rate: 100000, court: 600000, fund: 200000, fine: 0 },
-    { stt: 5, name: 'Hoàng Văn E', sessions: 6, total: 600000, rate: 100000, court: 450000, fund: 150000, fine: 0 }
+    { stt: 1, name: 'Nguyễn Văn A', sessions: 12, total: 1050000, rate: 100000, court: 900000, fund: 50000, fine: 100000 },
+    { stt: 2, name: 'Trần Văn B', sessions: 10, total: 800000, rate: 100000, court: 750000, fund: 50000, fine: 0 },
+    { stt: 3, name: 'Lê Văn C', sessions: 8, total: 650000, rate: 100000, court: 600000, fund: 50000, fine: 0 },
+    { stt: 4, name: 'Phạm Văn D', sessions: 8, total: 650000, rate: 100000, court: 600000, fund: 50000, fine: 0 },
+    { stt: 5, name: 'Hoàng Văn E', sessions: 6, total: 500000, rate: 100000, court: 450000, fund: 50000, fine: 0 }
   ],
   honorary: [
-    { stt: 1, name: 'Nguyễn Văn H', sessions: 6, total: 600000, rate: 100000, court: 450000, fund: 150000, fine: 0 },
-    { stt: 2, name: 'Đỗ Văn I', sessions: 5, total: 500000, rate: 100000, court: 375000, fund: 125000, fine: 0 },
-    { stt: 3, name: 'Lý Văn K', sessions: 4, total: 400000, rate: 100000, court: 300000, fund: 100000, fine: 0 }
+    { stt: 1, name: 'Nguyễn Văn H', sessions: 6, total: 450000, rate: 100000, court: 450000, fund: 0, fine: 0 },
+    { stt: 2, name: 'Đỗ Văn I', sessions: 5, total: 375000, rate: 100000, court: 375000, fund: 0, fine: 0 },
+    { stt: 3, name: 'Lý Văn K', sessions: 4, total: 300000, rate: 100000, court: 300000, fund: 0, fine: 0 }
   ],
   guests: [
-    { stt: 1, name: 'Khách 01', sessions: 4, total: 400000, rate: 100000, court: 400000, fund: 0, fine: 0 },
-    { stt: 2, name: 'Khách 02', sessions: 3, total: 300000, rate: 100000, court: 300000, fund: 0, fine: 0 },
-    { stt: 3, name: 'Khách 03', sessions: 2, total: 200000, rate: 100000, court: 200000, fund: 0, fine: 0 },
-    { stt: 4, name: 'Khách 04', sessions: 1, total: 100000, rate: 100000, court: 100000, fund: 0, fine: 0 }
+    { stt: 1, name: 'Khách 01', sessions: 4, total: 400000, rate: 100000, court: 40000, fund: 0, fine: 0 },
+    { stt: 2, name: 'Khách 02', sessions: 3, total: 300000, rate: 100000, court: 30000, fund: 0, fine: 0 },
+    { stt: 3, name: 'Khách 03', sessions: 2, total: 200000, rate: 100000, court: 20000, fund: 0, fine: 0 },
+    { stt: 4, name: 'Khách 04', sessions: 1, total: 100000, rate: 100000, court: 10000, fund: 0, fine: 0 }
   ],
   kpi: {
     participants: 17,
     participantsDetail: '(14 TV + 3 Khách)',
     totalSessions: 69,
-    totalCollected: 6850000,
-    totalCourt: 5425000,
-    totalFund: 1325000,
+    totalCollected: 5775000,
+    totalCourt: 4525000,
+    totalFund: 250000,
     totalFine: 100000,
-    closingClubFund: 1325000,
+    closingClubFund: 250000,
     closingAdvanceFund: 0,
-    closingTotalFund: 1325000
+    closingTotalFund: 250000
   }
 };
 
@@ -17704,6 +17704,19 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
   if (!skipSnapshotCheck && AppState.settlementSnapshots) {
     const snap = AppState.settlementSnapshots[standardMonthKey] || AppState.settlementSnapshots[slashMonthKey];
     if (snap && snap.reportData) {
+      if (Array.isArray(snap.reportData.guests)) {
+        snap.reportData.guests.forEach(g => {
+          if (g && g.sessions !== undefined) {
+            g.court = (Number(g.sessions) || 0) * 10000;
+          }
+        });
+      }
+      if (snap.reportData.kpi) {
+        const offCourt = (snap.reportData.official || []).reduce((s, r) => s + (r.court || 0), 0);
+        const honCourt = (snap.reportData.honorary || []).reduce((s, r) => s + (r.court || 0), 0);
+        const guestCourt = (snap.reportData.guests || []).reduce((s, r) => s + (r.court || 0), 0);
+        snap.reportData.kpi.totalCourt = offCourt + honCourt + guestCourt;
+      }
       return snap.reportData;
     }
   }
@@ -17881,9 +17894,9 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
     (ses.guests || []).forEach(g => {
       const gName = (g.name || 'Khách giao lưu').trim();
       const gKey = gName.toLowerCase();
-      const prev = guestMap.get(gKey) || { name: gName, sessions: 0, court: 0 };
+      const prev = guestMap.get(gKey) || { name: gName, sessions: 0, total: 0 };
       prev.sessions += 1;
-      prev.court += (Number(g.fee) || 70000);
+      prev.total += (Number(g.fee) || 70000);
       guestMap.set(gKey, prev);
     });
   });
@@ -17901,22 +17914,24 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
       const sCount = hasSessionsInMonth ? guestSessions : (m.monthlySessions || 0);
       if (sCount > 0) {
         const fee = Number(m.fee) || 70000;
-        guestMap.set(gKey, { name: m.name, sessions: sCount, court: sCount * fee });
+        guestMap.set(gKey, { name: m.name, sessions: sCount, total: sCount * fee });
       }
     }
   });
 
   guestMap.forEach(gItem => {
-    const total = gItem.court;
+    const total = gItem.total || 0;
     const rate = gItem.sessions > 0 ? Math.round(total / gItem.sessions) : 70000;
+    // TIỀN SÂN KHÁCH GIAO LƯU: 10.000đ * số buổi
+    const court = (Number(gItem.sessions) || 0) * 10000;
     guests.push({
       stt: sttG++,
       name: gItem.name,
       sessions: gItem.sessions,
       total: total,
-      totalSessionCost: 0,
+      totalSessionCost: total,
       rate: rate,
-      court: gItem.court,
+      court: court,
       fund: 0,
       fine: 0
     });
@@ -17940,12 +17955,12 @@ function generateLiveSettlementReportData(monthStr, skipSnapshotCheck = false) {
 
   // Chuẩn hóa quỹ theo chu kỳ:
   // Tháng 09/2026 (chu kỳ đã chốt): Tổng quỹ chốt là 4.400.000 đ
-  // Tháng 10/2026 (chu kỳ hiện tại): Quỹ tồn (4.400.000) + Thu T10 (2.300.000) = 6.700.000 đ
+  // Tháng 10/2026 (chu kỳ hiện tại): Quỹ tồn (4.400.000) + Thu T10 (1.150.000) = 5.550.000 đ (23 TV x 50.000đ)
   if (standardMonthKey === '2026-09' || slashMonthKey === '09/2026') {
     currentClubFund = 4400000;
     currentAdvanceFund = 0;
   } else if (standardMonthKey === '2026-10' || slashMonthKey === '10/2026') {
-    currentClubFund = 6700000;
+    currentClubFund = 5550000;
     currentAdvanceFund = 0;
   }
 
@@ -18981,8 +18996,8 @@ function applyCloudSnapshotToAppState(cloudData, cleanSlug, isForcedSync = false
     AppState.funds.courtPaidTotal = 0;
     needsPushCorrectedData = true;
   }
-  if (AppState.funds.clubFund !== 6700000) {
-    AppState.funds.clubFund = 6700000;
+  if (AppState.funds.clubFund !== 5550000) {
+    AppState.funds.clubFund = 5550000;
     needsPushCorrectedData = true;
   }
   if (needsPushCorrectedData && !isSyncingToCloud) {
